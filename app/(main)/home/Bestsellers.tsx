@@ -10,7 +10,7 @@ export default function BestSellers() {
   const products = getBestsellerProducts();
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-12 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* Header */}
@@ -18,7 +18,7 @@ export default function BestSellers() {
           <div>
             <span className="inline-flex items-center gap-2 text-xs font-bold text-amber-600 tracking-widest uppercase mb-2">
               <Trophy size={12} className="text-amber-500" />
-              Community favourites
+              Favourites
             </span>
             <h2
               className="text-4xl sm:text-5xl font-black text-slate-900 leading-tight tracking-tight"
@@ -37,7 +37,7 @@ export default function BestSellers() {
         </Reveal>
 
         {/* Grid with #1, #2... badges */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {products.map((product, i) => (
             <Reveal key={product.id} delay={i * 0.08} direction="up">
               <div className="relative">

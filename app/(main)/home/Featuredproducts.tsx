@@ -10,7 +10,7 @@ export default function FeaturedProducts() {
   const products = getFeaturedProducts();
 
   return (
-    <section className="py-20 bg-[#FFFBEB]">
+    <section className="py-12 bg-[#FFFBEB]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* Header */}
@@ -36,8 +36,8 @@ export default function FeaturedProducts() {
         </Reveal>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.slice(0, 4).map((product, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          {products.slice(0, 6).map((product, i) => (
             <Reveal key={product.id} delay={i * 0.08} direction="up">
               <ProductCard product={product} index={i} />
             </Reveal>

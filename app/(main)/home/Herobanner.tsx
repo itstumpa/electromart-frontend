@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -60,13 +60,6 @@ const heroSlides = [
     image: 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=800&q=80',
     bgGradient: 'from-orange-50/60 via-amber-50 to-yellow-50/40',
   },
-];
-
-const trustBadges = [
-  { icon: Truck, label: 'Free Shipping', desc: 'Orders ৳5,000+' },
-  { icon: ShieldCheck, label: 'Genuine Products', desc: '100% Authentic' },
-  { icon: RotateCcw, label: 'Easy Returns', desc: '30-Day Policy' },
-  { icon: Award, label: 'Warranty', desc: 'Official Coverage' },
 ];
 
 const floatingProducts = [
@@ -150,8 +143,9 @@ export default function HeroBanner() {
     <section className="relative overflow-hidden bg-white">
       {/* ── Background ── */}
       <div
+
         className={cn(
-          'absolute inset-0 transition-all duration-1000 bg-gradient-to-br',
+          'absolute inset-0 transition-all duration-1000 bg-linear-to-br',
           slide.bgGradient
         )}
       />
@@ -167,12 +161,12 @@ export default function HeroBanner() {
       />
 
       {/* Ambient glow blobs */}
-      <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-amber-200/25 blur-[100px] pointer-events-none" />
-      <div className="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full bg-orange-200/20 blur-[80px] pointer-events-none" />
+      <div className="absolute -top-40 -right-40 w-125 h-125 rounded-full bg-amber-200/25 blur-[100px] pointer-events-none" />
+      <div className="absolute -bottom-32 -left-32 w-100 h-100 rounded-full bg-orange-200/20 blur-[80px] pointer-events-none" />
 
       {/* ── Content ── */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-12 gap-8 lg:gap-6 items-center min-h-[92vh] py-16 lg:py-0">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-6 items-center min-h-[78vh] py-12 md:py-0">
           {/* ═══ LEFT COLUMN — 7 cols ═══ */}
           <div className="lg:col-span-7 flex flex-col gap-6 order-2 lg:order-1">
             <AnimatePresence mode="wait">
@@ -244,7 +238,7 @@ export default function HeroBanner() {
                   <Link href="/products">
                     <Button
                       size="xl"
-                      className="rounded-2xl px-8 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200 group"
+                      className="rounded-2xl px-4 md:px-8 py-2 md:py-4 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200 group"
                     >
                       <ShoppingBag className="h-5 w-5" />
                       Shop Now
@@ -255,7 +249,7 @@ export default function HeroBanner() {
                     <Button
                       variant="outline"
                       size="xl"
-                      className="rounded-2xl px-8 border-2 border-amber-200 hover:border-primary hover:bg-accent-light transition-all duration-200"
+                      className="rounded-2xl px-4 md:px-8 py-2 md:py-4 border-2 border-amber-200 hover:border-primary hover:bg-accent-light transition-all duration-200"
                     >
                       <Zap className="h-4 w-4 text-primary" />
                       Today&apos;s Deals
@@ -357,204 +351,180 @@ export default function HeroBanner() {
           </div>
 
           {/* ═══ RIGHT COLUMN — 5 cols ═══ */}
-          <div className="lg:col-span-5 order-1 lg:order-2 flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-md lg:max-w-lg">
-              {/* Background ring decoration */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1, delay: 0.3 }}
-                className="absolute inset-0 flex items-center justify-center"
-              >
-                <div className="w-[85%] h-[85%] rounded-full border-2 border-dashed border-amber-200/60" />
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 0.4, scale: 1 }}
-                transition={{ duration: 1, delay: 0.4 }}
-                className="absolute inset-0 flex items-center justify-center"
-              >
-                <div className="w-[95%] h-[95%] rounded-full border border-amber-100/80" />
-              </motion.div>
+<div className="lg:col-span-5 order-1 lg:order-2 flex justify-center lg:justify-end">
+  <div className="relative w-full max-w-md lg:max-w-lg aspect-square">
 
-              {/* Glow behind product */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-amber-300/30 rounded-full blur-[80px] pointer-events-none" />
+    {/* Outer decorative ring — solid subtle */}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+      animate={{ opacity: 0.5, scale: 1, rotate: 0 }}
+      transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      className="absolute inset-0 flex items-center justify-center"
+    >
+      <div className="w-[98%] h-[98%] rounded-full border border-amber-200/40" />
+    </motion.div>
 
-              {/* Main product image */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={slide.id}
-                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  transition={{
-                    duration: 0.7,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                  className="relative z-10 flex items-center justify-center aspect-square"
-                >
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 5,
-                      ease: 'easeInOut',
-                    }}
-                    className="w-[75%] h-[75%] relative"
-                  >
-                    <Image
-                      src={slide.image}
-                      alt={`${slide.title} ${slide.highlight}`}
-                      fill
-                      className="object-contain drop-shadow-2xl"
-                      priority
-                      sizes="(max-width: 768px) 80vw, 40vw"
-                    />
-                  </motion.div>
-                </motion.div>
-              </AnimatePresence>
+    {/* Middle decorative ring — dashed rotating */}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 1, delay: 0.4 }}
+      className="absolute inset-0 flex items-center justify-center"
+    >
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ repeat: Infinity, duration: 60, ease: 'linear' }}
+        className="w-[90%] h-[90%] rounded-full border-2 border-dashed border-amber-300/40"
+      />
+    </motion.div>
 
-              {/* ── Floating card: Top-right — Rating ── */}
-              <motion.div
-                initial={{ opacity: 0, x: 30, y: -10 }}
-                animate={{ opacity: 1, x: 0, y: 0 }}
-                transition={{ duration: 0.6, delay: 1 }}
-                className="absolute top-6 -right-2 sm:top-10 sm:-right-4 z-20"
-              >
-                <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/[0.06] p-3.5 border border-amber-100/80 min-w-[140px]">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
-                      />
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-lg font-black text-foreground">
-                      4.9
-                    </span>
-                    <span className="text-xs text-foreground-muted font-medium">
-                      / 5.0
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-foreground-muted mt-0.5">
-                    Based on 2,431 reviews
-                  </p>
-                </div>
-              </motion.div>
+    {/* Glow behind circle */}
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] bg-amber-300/25 rounded-full blur-[80px] pointer-events-none" />
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50%] h-[50%] bg-orange-300/15 rounded-full blur-[50px] pointer-events-none" />
 
-              {/* ── Floating card: Bottom-left — Product ── */}
-              <motion.div
-                initial={{ opacity: 0, x: -30, y: 10 }}
-                animate={{ opacity: 1, x: 0, y: 0 }}
-                transition={{ duration: 0.6, delay: 1.2 }}
-                className="absolute -bottom-2 -left-3 sm:bottom-4 sm:-left-6 z-20"
-              >
-                <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/[0.06] p-3 border border-amber-100/80 flex items-center gap-3 min-w-[200px]">
-                  <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-amber-50 shrink-0">
-                    <Image
-                      src={floatingProducts[0].image}
-                      alt={floatingProducts[0].name}
-                      fill
-                      className="object-cover"
-                      sizes="56px"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1 mb-0.5">
-                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                      <span className="text-xs font-bold text-foreground">
-                        {floatingProducts[0].rating}
-                      </span>
-                      <span className="text-[10px] text-foreground-muted">
-                        ({floatingProducts[0].reviews.toLocaleString()})
-                      </span>
-                    </div>
-                    <p className="text-sm font-bold text-foreground truncate">
-                      {floatingProducts[0].name}
-                    </p>
-                    <p className="text-sm font-black text-primary">
-                      {floatingProducts[0].price}
-                    </p>
-                  </div>
-                  <button className="h-9 w-9 rounded-xl bg-primary/10 hover:bg-primary hover:text-white text-primary flex items-center justify-center transition-all duration-200 shrink-0">
-                    <ShoppingBag className="h-4 w-4" />
-                  </button>
-                </div>
-              </motion.div>
+    {/* ── THE CIRCLE CONTAINER — this clips the image ── */}
+    <div className="absolute inset-0 flex items-center justify-center z-10">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={slide.id}
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full h-full rounded-full overflow-hidden "
+        >
+          {/* Subtle inner gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-amber-100/40 via-transparent to-white/30 pointer-events-none z-10" />
 
-              {/* ── Floating card: Mid-right — Free shipping ── */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 1.4 }}
-                className="absolute top-1/2 -right-3 sm:-right-8 z-20 hidden sm:block"
-              >
-                <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg shadow-black/[0.04] px-3.5 py-2.5 border border-amber-100/80 flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-lg bg-success-light flex items-center justify-center">
-                    <Truck className="h-4 w-4 text-success" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-foreground leading-none">
-                      Free Shipping
-                    </p>
-                    <p className="text-[10px] text-foreground-muted mt-0.5">
-                      On this product
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* ── Floating: Wishlist button ── */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: 1.5, type: 'spring' }}
-                className="absolute top-4 left-4 z-20"
-              >
-                <button className="h-10 w-10 rounded-full bg-white/90 backdrop-blur-md shadow-lg shadow-black/[0.06] border border-amber-100/80 flex items-center justify-center text-foreground-muted hover:text-red-500 hover:bg-red-50 transition-all duration-200 group">
-                  <Heart className="h-4.5 w-4.5 group-hover:scale-110 transition-transform" />
-                </button>
-              </motion.div>
+          {/* Floating image inside circle */}
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{
+              repeat: Infinity,
+              duration: 5,
+              ease: 'easeInOut',
+            }}
+            className="absolute inset-0 flex items-center justify-center p-6"
+          >
+            <div className="relative w-90 h-90 rounded-full overflow-hidden">
+              <Image
+                src={slide.image}
+                alt={`${slide.title} ${slide.highlight}`}
+                fill
+                className="object-cover drop-shadow-xl"
+                priority
+                sizes="(max-width: 768px) 60vw, 30vw"
+              />
             </div>
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    </div>
+
+    {/* ── Floating card: Top-right — Rating ── */}
+    <motion.div
+      initial={{ opacity: 0, x: 30, y: -10 }}
+      animate={{ opacity: 1, x: 0, y: 0 }}
+      transition={{ duration: 0.6, delay: 1 }}
+      className="absolute top-4 -right-2 sm:top-6 sm:-right-4 z-20"
+    >
+      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/[0.06] p-3.5 border border-amber-100/80 min-w-[140px]">
+        <div className="flex items-center gap-1.5 mb-1">
+          {[...Array(5)].map((_, i) => (
+            <Star
+              key={i}
+              className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
+            />
+          ))}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-lg font-black text-foreground">4.9</span>
+          <span className="text-xs text-foreground-muted font-medium">/ 5.0</span>
+        </div>
+        <p className="text-[11px] text-foreground-muted mt-0.5">
+          Based on 2,431 reviews
+        </p>
+      </div>
+    </motion.div>
+
+    {/* ── Floating card: Bottom-left — Product ── */}
+    <motion.div
+      initial={{ opacity: 0, x: -30, y: 10 }}
+      animate={{ opacity: 1, x: 0, y: 0 }}
+      transition={{ duration: 0.6, delay: 1.2 }}
+      className="absolute -bottom-2 -left-3 sm:bottom-6 sm:-left-6 z-20"
+    >
+      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/[0.06] p-3 border border-amber-100/80 flex items-center gap-3 min-w-[200px]">
+        <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-amber-50 shrink-0">
+          <Image
+            src={floatingProducts[0].image}
+            alt={floatingProducts[0].name}
+            fill
+            className="object-cover"
+            sizes="56px"
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1 mb-0.5">
+            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+            <span className="text-xs font-bold text-foreground">
+              {floatingProducts[0].rating}
+            </span>
+            <span className="text-[10px] text-foreground-muted">
+              ({floatingProducts[0].reviews.toLocaleString()})
+            </span>
           </div>
+          <p className="text-sm font-bold text-foreground truncate">
+            {floatingProducts[0].name}
+          </p>
+          <p className="text-sm font-black text-primary">
+            {floatingProducts[0].price}
+          </p>
+        </div>
+        <button className="h-9 w-9 rounded-xl bg-primary/10 hover:bg-primary hover:text-white text-primary flex items-center justify-center transition-all duration-200 shrink-0">
+          <ShoppingBag className="h-4 w-4" />
+        </button>
+      </div>
+    </motion.div>
+
+    {/* ── Floating card: Mid-right — Free shipping ── */}
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.6, delay: 1.4 }}
+      className="absolute top-[55%] -right-3 sm:-right-8 z-20 hidden sm:block"
+    >
+      <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg shadow-black/[0.04] px-3.5 py-2.5 border border-amber-100/80 flex items-center gap-2.5">
+        <div className="h-8 w-8 rounded-lg bg-success-light flex items-center justify-center">
+          <Truck className="h-4 w-4 text-success" />
+        </div>
+        <div>
+          <p className="text-xs font-bold text-foreground leading-none">
+            Free Shipping
+          </p>
+          <p className="text-[10px] text-foreground-muted mt-0.5">
+            On this product
+          </p>
         </div>
       </div>
+    </motion.div>
 
-      {/* ── Trust badges bar ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 0.6 }}
-        className="relative border-t border-amber-100/80 bg-white/60 backdrop-blur-sm"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-            {trustBadges.map(({ icon: Icon, label, desc }, i) => (
-              <motion.div
-                key={label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.1 + i * 0.1, duration: 0.4 }}
-                className="flex items-center gap-3 group"
-              >
-                <div className="h-11 w-11 rounded-xl bg-accent-light group-hover:bg-primary/10 flex items-center justify-center transition-colors duration-300 shrink-0">
-                  <Icon className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground leading-none">
-                    {label}
-                  </p>
-                  <p className="text-xs text-foreground-muted mt-0.5">
-                    {desc}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.div>
+    {/* ── Floating: Wishlist button ── */}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.5 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, delay: 1.5, type: 'spring' }}
+      className="absolute top-4 left-6 z-20"
+    >
+      <button className="h-10 w-10 rounded-full bg-white/90 backdrop-blur-md shadow-lg shadow-black/[0.06] border border-amber-100/80 flex items-center justify-center text-foreground-muted hover:text-red-500 hover:bg-red-50 transition-all duration-200 group">
+        <Heart className="h-4.5 w-4.5 group-hover:scale-110 transition-transform" />
+      </button>
+    </motion.div>
+  </div>
+</div>
+</div>
+</div>
+     
     </section>
   );
 }
