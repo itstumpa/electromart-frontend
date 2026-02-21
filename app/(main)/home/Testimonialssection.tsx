@@ -215,7 +215,7 @@ export default function TestimonialsSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-24 bg-gradient-to-b from-white via-amber-50/20 to-white overflow-hidden"
+      className="relative py-12 bg-gradient-to-b from-white via-amber-50/20 to-white overflow-hidden"
     >
       {/* Background decoration */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-amber-100/20 blur-[120px] pointer-events-none" />
@@ -264,45 +264,6 @@ export default function TestimonialsSection() {
             of Customers
           </motion.h2>
 
-          <motion.p
-            variants={fadeUp}
-            custom={2}
-            className="text-foreground-secondary mt-4 text-lg max-w-xl mx-auto"
-          >
-            Real stories from real people. Every review is from a verified
-            purchase — no filters, no edits.
-          </motion.p>
-        </motion.div>
-
-        {/* ═══ STATS STRIP ═══ */}
-        <motion.div
-          initial="hidden"
-          animate={isInView ? 'visible' : 'hidden'}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16"
-        >
-          {stats.map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              variants={fadeUp}
-              custom={i + 1}
-              className="relative bg-white rounded-2xl border border-border/80 p-5 text-center group hover:border-primary/30 hover:shadow-lg hover:shadow-primary/[0.04] transition-all duration-300"
-            >
-              <div
-                className={cn(
-                  'inline-flex h-11 w-11 items-center justify-center rounded-xl mb-3 transition-transform group-hover:scale-110 duration-300',
-                  stat.color
-                )}
-              >
-                <stat.icon className="h-5 w-5" />
-              </div>
-              <p className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-                {stat.value}
-              </p>
-              <p className="text-sm text-foreground-muted font-medium mt-1">
-                {stat.label}
-              </p>
-            </motion.div>
-          ))}
         </motion.div>
 
         {/* ═══ FEATURED REVIEW — Large Card ═══ */}
@@ -483,84 +444,6 @@ export default function TestimonialsSection() {
           </div>
         </motion.div>
 
-        {/* ═══ REVIEW GRID — Remaining cards ═══ */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {testimonials.slice(3).map((t, i) => (
-            <motion.div
-              key={t.id}
-              initial="hidden"
-              animate={isInView ? 'visible' : 'hidden'}
-              variants={scaleCard}
-              custom={i + 5}
-            >
-              <div className="group relative bg-white rounded-2xl border border-border/80 p-6 flex flex-col gap-4 h-full hover:border-primary/30 hover:shadow-xl hover:shadow-primary/[0.04] transition-all duration-300">
-                {/* Hover glow */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-50/0 via-amber-50/0 to-amber-50/0 group-hover:from-amber-50/50 group-hover:via-transparent group-hover:to-orange-50/30 transition-all duration-500 pointer-events-none" />
-
-                <div className="relative space-y-4 flex-1 flex flex-col">
-                  {/* Top row — Stars + Date */}
-                  <div className="flex items-center justify-between">
-                    <StarRating rating={t.rating} />
-                    <span className="text-[11px] text-foreground-muted font-medium">
-                      {t.date}
-                    </span>
-                  </div>
-
-                  {/* Quote */}
-                  <p className="text-sm text-foreground-secondary leading-relaxed flex-1">
-                    &ldquo;{t.comment}&rdquo;
-                  </p>
-
-                  {/* Product tag */}
-                  <div className="flex items-center gap-2.5 bg-background-alt rounded-xl px-3 py-2.5 border border-border-light">
-                    <div className="relative w-9 h-9 rounded-lg overflow-hidden bg-amber-50 shrink-0">
-                      <Image
-                        src={t.productImage}
-                        alt={t.product}
-                        fill
-                        className="object-cover"
-                        sizes="36px"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] text-foreground-muted font-medium uppercase tracking-wide">
-                        Purchased
-                      </p>
-                      <p className="text-xs font-bold text-foreground truncate">
-                        {t.product}
-                      </p>
-                    </div>
-                    {t.verified && (
-                      <BadgeCheck size={16} className="text-success shrink-0" />
-                    )}
-                  </div>
-
-                  {/* Author */}
-                  <div className="flex items-center gap-3 pt-4 border-t border-border-light">
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-amber-100 ring-offset-1 shrink-0">
-                      <Image
-                        src={t.avatar}
-                        alt={t.name}
-                        fill
-                        className="object-cover"
-                        sizes="40px"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-foreground truncate">
-                        {t.name}
-                      </p>
-                      <p className="text-xs text-foreground-muted">
-                        {t.role} • {t.location}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
         {/* ═══ BOTTOM CTA ═══ */}
         <motion.div
           initial="hidden"
@@ -610,7 +493,7 @@ export default function TestimonialsSection() {
               <p className="text-sm font-semibold text-foreground">
                 Ready to join them?
               </p>
-              <Button size="md" className="rounded-xl group">
+              <Button size="md" className="rounded-xl group py-4 px-3">
                 <ShoppingBag className="h-4 w-4" />
                 Start Shopping
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
