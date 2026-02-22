@@ -23,6 +23,7 @@ import {
   Cable,
 } from 'lucide-react';
 import { mockCart } from '@/data/mock-data';
+import { search } from '../(main)/search/page'
 
 /* ─────────────────────────────────────────────
    NAV DATA
@@ -259,6 +260,7 @@ export default function MainNavbar() {
               className="p-2 rounded-lg text-slate-600 hover:text-amber-600 hover:bg-amber-50 transition-colors"
             >
               <Search size={20} />
+              <search />
             </button>
 
             {/* Wishlist */}
