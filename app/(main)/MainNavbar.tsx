@@ -45,8 +45,7 @@ const navLinks = [
   { label: 'Products',   href: '/products' },
   { label: 'Categories', href: '/products', dropdown: true },
   { label: 'Sale',       href: '/sale',     highlight: true },
-  { label: 'About',      href: '/about' },
-  { label: 'Contact',    href: '/contact' },
+  { label: 'Dashboard',      href: '/dashboard' },
 ];
 
 /* ─────────────────────────────────────────────
@@ -157,7 +156,7 @@ export default function MainNavbar() {
 
                     {/* Active indicator dot */}
                     {isCategoryActive && (
-                      <span className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-amber-600" />
+                      <span className="absolute -bottom-px left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-amber-600" />
                     )}
 
                     <AnimatePresence>
@@ -243,7 +242,7 @@ export default function MainNavbar() {
                   {isActive && (
                     <motion.span
                       layoutId="nav-dot"
-                      className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-amber-600"
+                      className="absolute -bottom-px left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-amber-600"
                     />
                   )}
                 </div>
