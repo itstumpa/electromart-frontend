@@ -1,8 +1,3 @@
-// ─────────────────────────────────────────────────────────────
-// SERVER COMPONENT — no 'use client' directive
-// Next.js 15+: params is a Promise → must be awaited
-// Data fetching happens here; interactivity lives in sub-components
-// ─────────────────────────────────────────────────────────────
 
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -15,11 +10,6 @@ import ProductTabs from '@/components/features/product/ProductTabs';
 import Reveal from '../../Utilities/Reveal';
 import ProductCard from '../../Utilities/Productcard';
 import ProductActions from '@/components/features/product/ProductActions';
-// import ProductCard from '@/components/features/product/ProductGallery';
-// import ProductGallery from '@/components/features/product/ProductGallery';
-// import ProductActions from '@/components/features/product/ProductActions';
-// import ProductTabs from '@/components/features/product/ProductTabs';
-// import Reveal from '@/components/common/Reveal';
 
 /* ── Types ──────────────────────────────────── */
 interface Props {

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 interface Props {
   images: string[];
@@ -22,7 +23,7 @@ export default function ProductGallery({ images, name, discount, bestseller }: P
         transition={{ duration: 0.22 }}
         className="relative aspect-square bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm"
       >
-        <img
+        <Image
           src={images[activeImage]}
           alt={name}
           className="w-full h-full object-contain p-8"
@@ -52,7 +53,7 @@ export default function ProductGallery({ images, name, discount, bestseller }: P
             }`}
             aria-label={`View image ${i + 1}`}
           >
-            <img src={img} alt="" className="w-full h-full object-contain p-2" />
+            <Image src={img} alt="" className="w-full h-full object-contain p-2" />
           </button>
         ))}
       </div>

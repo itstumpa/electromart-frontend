@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import type { ProductSpecification, Review } from '@/data/types';
+import Image from 'next/image';
 
 interface Props {
   specifications: ProductSpecification[];
@@ -96,7 +97,7 @@ export default function ProductTabs({ specifications, reviews }: Props) {
                 className="flex gap-4 pb-5 border-b border-slate-100 last:border-0 last:pb-0"
               >
                 {review.customerAvatar && (
-                  <img
+                  <Image
                     src={review.customerAvatar}
                     alt={review.customerName}
                     className="w-10 h-10 rounded-full object-cover shrink-0"

@@ -14,6 +14,7 @@ import {
 
 import Reveal from '../Utilities/Reveal';
 import ProductCard from '../Utilities/Productcard';
+import Image from 'next/image';
 
 const sortOptions = [
   { label: 'Newest',        value: 'newest' },
@@ -73,18 +74,13 @@ export default function ProductsPage() {
       <div className="bg-white border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
           <Reveal>
-            <p className="text-xs font-bold text-amber-600 tracking-widest uppercase mb-1">
-              ElectroMart Store
-            </p>
             <h1
               className="text-4xl font-black text-slate-900 tracking-tight"
               style={{ fontFamily: "'Georgia', serif" }}
             >
               {activeCatLabel}
             </h1>
-            <p className="text-slate-500 text-sm mt-1">
-              {filtered.length} product{filtered.length !== 1 ? 's' : ''} found
-            </p>
+          
           </Reveal>
 
           {/* Breadcrumb */}
@@ -305,7 +301,7 @@ export default function ProductsPage() {
                       <Link href={`/products/${product.slug}`} className="group block">
                         <div className="flex gap-5 bg-white rounded-2xl border border-slate-100 hover:border-amber-200 hover:shadow-lg hover:shadow-amber-50 p-4 transition-all duration-300">
                           <div className="relative w-28 h-28 sm:w-36 sm:h-36 shrink-0 rounded-xl overflow-hidden bg-slate-50">
-                            <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <Image src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                             {product.originalPrice && (
                               <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                                 -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%

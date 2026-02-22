@@ -2,8 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Flame, Zap, SlidersHorizontal, ChevronDown, X } from 'lucide-react';
-import Link from 'next/link';
+import { Flame, Zap, ChevronDown, X } from 'lucide-react';
 import { mockProducts, mockCategories } from '@/data/mock-data';
 
 import Reveal from '../Utilities/Reveal';
@@ -46,9 +45,9 @@ export default function SalePage() {
     <div className="min-h-screen bg-[#FFFBEB]">
 
       {/* ── Hero banner ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-[#0c1222] to-slate-900 py-16 sm:py-20">
+      <section className="relative overflow-hidden bg-linear-to-br from-slate-900 via-[#0c1222] to-slate-900 py-16 sm:py-20">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-amber-600/10 blur-[80px] rounded-full" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-150 h-75 bg-amber-600/10 blur-[80px] rounded-full" />
           <div className="absolute inset-0 opacity-[0.03]"
             style={{ backgroundImage: 'linear-gradient(rgba(217,119,6,0.4) 1px,transparent 1px),linear-gradient(90deg,rgba(217,119,6,0.4) 1px,transparent 1px)', backgroundSize: '48px 48px' }}
           />
@@ -69,7 +68,7 @@ export default function SalePage() {
             className="text-5xl sm:text-6xl font-black text-white leading-tight mb-3"
             style={{ fontFamily: "'Georgia', serif" }}
           >
-            Mega <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">Sale</span>
+            Mega <span className="bg-linear-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">Sale</span>
           </motion.h1>
 
           <motion.p
@@ -109,8 +108,8 @@ export default function SalePage() {
       </section>
 
       {/* ── Filters ── */}
-      <div className="bg-white border-b border-slate-100 sticky top-16 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3 overflow-x-auto scrollbar-hide">
+      <div className="bg-white sticky top-16 z-30">
+        <div className="max-w-7xl  mx-auto px-4 sm:px-6 md:px-8 py-3 flex flex-row gap-3 overflow-hidden flex-wrap">
           {/* Category pills */}
           <button
             onClick={() => setCategory('')}
