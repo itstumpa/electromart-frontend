@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { CheckCircle2, XCircle, Eye, Store, X, Star, Package, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { VendorProfile } from '@/types';
-import AdminDataTable, { Column } from '@/components/dashboard/admin/AdminDataTable';
-import ConfirmModal from '@/components/dashboard/admin/ConfirmModal';
+// import AdminDataTable, { Column } from '@/components/dashboard/admin/AdminDataTable';
+// import ConfirmModal from '@/components/dashboard/admin/ConfirmModal';
 import { mockUsers } from '@/data/mock-data';
+import AdminDataTable, { Column } from '../Admindatatable';
+import ConfirmModal from '../Confirmmodal';
 
 export default function VendorsClient({ initialVendors }: { initialVendors: VendorProfile[] }) {
   const [vendors,    setVendors]    = useState(initialVendors);

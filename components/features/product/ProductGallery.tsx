@@ -24,6 +24,9 @@ export default function ProductGallery({ images, name, discount, bestseller }: P
         className="relative aspect-square bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm"
       >
         <Image
+        fill
+        // width={200}
+        // height={200}
           src={images[activeImage]}
           alt={name}
           className="w-full h-full object-contain p-8"
@@ -53,7 +56,7 @@ export default function ProductGallery({ images, name, discount, bestseller }: P
             }`}
             aria-label={`View image ${i + 1}`}
           >
-            <Image src={img} alt="" className="w-full h-full object-contain p-2" />
+            <Image fill src={img} alt="" className="w-full h-full object-contain p-2" />
           </button>
         ))}
       </div>

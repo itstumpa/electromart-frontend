@@ -2,7 +2,7 @@
 import { Metadata } from 'next';
 import { Store } from 'lucide-react';
 import { mockVendorProfiles } from '@/data/mock-data';
-import VendorsClient from '@/components/dashboard/admin/vendors/VendorsClient';
+import VendorsClient from '@/components/dashboard/admin/vendors/Vendorsclient';
 
 export const metadata: Metadata = { title: 'Vendor Management — Admin' };
 

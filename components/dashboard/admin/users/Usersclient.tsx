@@ -8,8 +8,10 @@ import {
 } from 'lucide-react';
 import type { User, UserRole } from '@/types';
 import { mockUsers } from '@/data/mock-data';
-import AdminDataTable, { Column } from '@/components/dashboard/admin/AdminDataTable';
-import ConfirmModal from '@/components/dashboard/admin/ConfirmModal';
+import AdminDataTable from '../Admindatatable';
+import ConfirmModal from '../Confirmmodal';
+// import AdminDataTable, { Column } from '@/components/dashboard/admin/AdminDataTable';
+// import ConfirmModal from '@/components/dashboard/admin/ConfirmModal';
 
 const roleConfig: Record<UserRole, { label: string; color: string; icon: React.ElementType }> = {
   SUPER_ADMIN: { label: 'Admin',    color: 'bg-purple-100 text-purple-700', icon: Shield },

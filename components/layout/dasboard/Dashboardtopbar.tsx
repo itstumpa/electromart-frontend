@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Bell, Search, ChevronDown, LogOut, User, Settings } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
-import type { User as UserType } from '@/types';
+import type { User as UserType } from '@data/types';
 import { mockNotifications } from '@/data/mock-data';
 
 interface Props { user: UserType }

@@ -21,12 +21,12 @@ interface NavItem {
 }
 
 const adminNav: NavItem[] = [
-  { label: 'Overview',    href: '/admin',              icon: LayoutDashboard },
-  { label: 'Users',       href: '/admin/users',         icon: Users },
-  { label: 'Vendors',     href: '/admin/vendors',       icon: Store,      badge: 2 },
-  { label: 'Products',    href: '/admin/products',      icon: Package },
-  { label: 'Orders',      href: '/admin/orders',        icon: ShoppingBag },
-  { label: 'Categories',  href: '/admin/categories',    icon: Tag },
+  { label: 'Overview',    href: '/dashboard/overview',              icon: LayoutDashboard },
+  { label: 'Users',       href: '/dashboard/users',         icon: Users },
+  { label: 'Vendors',     href: '/dashboard/vendors',       icon: Store,      badge: 2 },
+  { label: 'Products',    href: '/dashboard/products',      icon: Package },
+  { label: 'Orders',      href: '/dashboard/orders',        icon: ShoppingBag },
+  { label: 'Categories',  href: '/dashboard/categories',    icon: Tag },
 ];
 
 interface Props { role: UserRole }
@@ -67,7 +67,7 @@ export default function DashboardSidebar({ role }: Props) {
         <span className="flex-1">{item.label}</span>
         {item.badge && (
           <span className={cn(
-            'text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center',
+            'text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-4.5 text-center',
             isActive ? 'bg-white/25 text-white' : 'bg-amber-600 text-white'
           )}>
             {item.badge}
@@ -109,7 +109,7 @@ export default function DashboardSidebar({ role }: Props) {
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-3">
             Account
           </p>
-          <Link href="/admin/settings"
+          <Link href="/dashboard/settings"
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
           >
             <Settings size={17} className="text-slate-500" />

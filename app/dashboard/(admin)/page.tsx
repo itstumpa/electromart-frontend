@@ -12,6 +12,8 @@ import {
 } from '@/data/mock-data';
 import RevenueChart from '@/components/dashboard/admin/Revenuechart';
 import StatCard from '@/components/dashboard/admin/Statcard';
+// import StatCard from '@/components/dashboard/admin/StatCard';
+// import RevenueChart from '@/components/dashboard/admin/RevenueChart';
 
 export const metadata: Metadata = { title: 'Admin Overview — ElectroMart' };
 

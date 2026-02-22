@@ -2,7 +2,7 @@
 import { Metadata } from 'next';
 import { Users } from 'lucide-react';
 import { mockUsers } from '@/data/mock-data';
-import UsersClient from '@/components/dashboard/admin/users/UsersClient';
+import UsersClient from '@/components/dashboard/admin/users/Usersclient';
 
 export const metadata: Metadata = { title: 'User Management — Admin' };
 

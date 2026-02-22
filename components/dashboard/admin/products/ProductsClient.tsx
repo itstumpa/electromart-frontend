@@ -5,8 +5,10 @@ import { Eye, EyeOff, ExternalLink, Star, X, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import type { Product } from '@/types';
-import AdminDataTable, { Column } from '@/components/dashboard/admin/AdminDataTable';
-import ConfirmModal from '@/components/dashboard/admin/ConfirmModal';
+import AdminDataTable, { Column } from '../Admindatatable';
+import ConfirmModal from '../Confirmmodal';
+// import AdminDataTable, { Column } from '@/components/dashboard/admin/AdminDataTable';
+// import ConfirmModal from '@/components/dashboard/admin/ConfirmModal';
 
 export default function ProductsClient({ initialProducts }: { initialProducts: Product[] }) {
   const [products,     setProducts]     = useState(initialProducts);

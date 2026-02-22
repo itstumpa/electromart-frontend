@@ -1,12 +1,15 @@
 // SERVER COMPONENT — layout shell, no interactivity needed
 import type { ReactNode } from 'react';
-
 import { mockUsers } from '@/data/mock-data';
 import DashboardTopbar from '@/components/layout/dasboard/Dashboardtopbar';
 import DashboardSidebar from '@/components/layout/dasboard/Dashboardsidebar';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-  // In production: get from session/auth
+    // ─── In production replace with: ───────────────────────────
+  // import { getServerSession } from 'next-auth'
+  // const session = await getServerSession(authOptions)
+  // const currentUser = session?.user
+  // ────────────────────────────────────────────────────────────
   const currentUser = mockUsers.find((u) => u.role === 'SUPER_ADMIN')!;
 
   return (
