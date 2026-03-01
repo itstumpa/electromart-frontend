@@ -1,20 +1,19 @@
 // app/not-found.tsx — Next.js custom 404 page
 // SERVER component — no 'use client' needed
 
-import Link from 'next/link';
-import { Search, Home, ArrowRight } from 'lucide-react';
+import { ArrowRight, Home, Search } from "lucide-react";
+import Link from "next/link";
 
 const SUGGESTIONS = [
-  { label: 'Browse All Products', href: '/products' },
-  { label: 'Sale Items',          href: '/sale' },
-  { label: 'Contact Support',     href: '/contact' },
+  { label: "Browse All Products", href: "/products" },
+  { label: "Sale Items", href: "/sale" },
+  { label: "Contact Support", href: "/contact" },
 ];
 
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-[#FFFBEB] flex items-center justify-center px-4">
       <div className="max-w-lg w-full text-center">
-
         {/* Giant 404 */}
         <div className="relative mb-8 select-none">
           <p
@@ -39,8 +38,8 @@ export default function NotFound() {
           Page Not Found
         </h1>
         <p className="text-slate-500 text-sm sm:text-base leading-relaxed mb-8 max-w-sm mx-auto">
-          The page you're looking for doesn't exist or has been moved.
-          Let's get you back on track.
+          The page you&apos;re looking for doesn&apos;t exist or has been moved.
+          Let&apos;s get you back on track.
         </p>
 
         {/* Primary CTA */}
@@ -65,7 +64,10 @@ export default function NotFound() {
                 className="group flex items-center justify-center gap-1.5 px-4 py-2 bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-slate-600 hover:text-amber-700 text-sm font-semibold rounded-xl transition-all"
               >
                 {label}
-                <ArrowRight size={13} className="opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" />
+                <ArrowRight
+                  size={13}
+                  className="opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all"
+                />
               </Link>
             ))}
           </div>
