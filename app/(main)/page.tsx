@@ -1,9 +1,7 @@
 import BestSellers from "./home/TopSaleProducts";
 import CategoryGrid from "./home/Categorygrid";
-import DealsBanner from "./home/Dealsbanner";
 import FeaturedProducts from "./home/Featuredproducts";
 import HeroBanner from "./home/Herobanner";
-import SaleBanner from "./home/Salebanner";
 import OnSale from "./home/Onsale";
 import TestimonialsSection from "./home/Testimonialssection";
 import TopVendors from "./home/Topvendors";
@@ -24,14 +22,12 @@ export default function HomePage() {
       <HeroBanner />
       <CategoryGrid />
       <FeaturedProducts />
-      <SaleBanner />
       <PopularProducts />
       <CTABentoGrid />
       <BestSellers />
       <TopVendors />
       <TopBrands />
       <OnSale />
-      {/* <DealsBanner /> */}
       <TestimonialsSection />
     </>
   );

@@ -1,23 +1,13 @@
 // components/features/testimonials/testimonials-section.tsx
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRef } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence, useInView } from 'framer-motion';
-import {
-  Star,
-  Quote,
-  ChevronLeft,
-  ChevronRight,
-  BadgeCheck,
-  ShoppingBag,
-  TrendingUp,
-  Users,
-  Clock,
-  ArrowRight,
-} from 'lucide-react';
+import { motion, useInView } from 'framer-motion';
+import { Star, BadgeCheck, ShoppingBag, ArrowRight, Quote } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import Marquee from 'react-fast-marquee';
 
 /* ── Data ─────────────────────────────────────── */
 const testimonials = [
@@ -30,8 +20,6 @@ const testimonials = [
       'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80',
     rating: 5,
     product: 'MacBook Pro M3',
-    productImage:
-      'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=120&q=80',
     comment:
       'Ordered on a Tuesday, arrived Thursday. The MacBook Pro was exactly as described — factory sealed, genuine Apple warranty. ElectroMart is now my go-to for all tech purchases.',
     verified: true,
@@ -46,8 +34,6 @@ const testimonials = [
       'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80',
     rating: 5,
     product: 'Sony Alpha A7R V',
-    productImage:
-      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=120&q=80',
     comment:
       'I was nervous spending ৳350,000 online but the customer service team was incredible. They walked me through the purchase, confirmed authenticity, and even helped with setup.',
     verified: true,
@@ -62,8 +48,6 @@ const testimonials = [
       'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80',
     rating: 5,
     product: 'Sony WH-1000XM5',
-    productImage:
-      'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=120&q=80',
     comment:
       "The noise-canceling is life-changing in a studio environment. ElectroMart had the best price I could find, shipping was fast, and the product came perfectly packaged.",
     verified: true,
@@ -78,8 +62,6 @@ const testimonials = [
       'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80',
     rating: 5,
     product: 'Samsung Galaxy S24 Ultra',
-    productImage:
-      'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=120&q=80',
     comment:
       'First time buying a phone online and I was a bit worried. But the process was smooth from cart to door. The phone is incredible and ELECTRO20 saved me a lot!',
     verified: true,
@@ -94,8 +76,6 @@ const testimonials = [
       'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',
     rating: 5,
     product: 'PlayStation 5 Slim',
-    productImage:
-      'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=120&q=80',
     comment:
       'Got the PS5 Slim within 2 days, controllers included. ElectroMart stock is always up to date unlike other stores. The unboxing condition was pristine.',
     verified: true,
@@ -110,64 +90,84 @@ const testimonials = [
       'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80',
     rating: 4,
     product: 'Apple Watch Ultra 2',
-    productImage:
-      'https://images.unsplash.com/photo-1546868871-af0de0ae72be?w=120&q=80',
     comment:
       'Great service overall. The watch came with full Apple warranty. The product and price made it all worth it. Would definitely recommend to friends and family.',
     verified: true,
     date: '2 months ago',
   },
+  {
+    id: 7,
+    name: 'Rahim Uddin',
+    role: 'Entrepreneur',
+    location: 'Comilla, BD',
+    avatar:
+      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80',
+    rating: 5,
+    product: 'iPad Pro M4',
+    comment:
+      'ElectroMart delivers what they promise. The iPad Pro arrived in perfect condition with all accessories. Their return policy gave me confidence to buy online.',
+    verified: true,
+    date: '4 days ago',
+  },
+  {
+    id: 8,
+    name: 'Fatima Khan',
+    role: 'Content Creator',
+    location: 'Rangpur, BD',
+    avatar:
+      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80',
+    rating: 5,
+    product: 'DJI Mini 4 Pro',
+    comment:
+      'Amazing shopping experience! The drone was packed securely and arrived a day early. Customer support was responsive when I had questions about the warranty.',
+    verified: true,
+    date: '1 week ago',
+  },
+    {
+    id: 9,
+    name: 'Sophia Nakamura',
+    role: 'Photographer',
+    location: 'Chittagong, BD',
+    avatar:
+      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80',
+    rating: 5,
+    product: 'Sony Alpha A7R V',
+    comment:
+      'I was nervous spending ৳350,000 online but the customer service team was incredible. They walked me through the purchase, confirmed authenticity, and even helped with setup.',
+    verified: true,
+    date: '1 month ago',
+  },
+    {
+    id: 10,
+    name: 'Daniel Torres',
+    role: 'Game Developer',
+    location: 'Dhaka, BD',
+    avatar:
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',
+    rating: 5,
+    product: 'PlayStation 5 Slim',
+    comment:
+      'Got the PS5 Slim within 2 days, controllers included. ElectroMart stock is always up to date unlike other stores. The unboxing condition was pristine.',
+    verified: true,
+    date: '1 week ago',
+  },
 ];
 
-const stats = [
-  {
-    icon: Users,
-    value: '50,000+',
-    label: 'Happy Customers',
-    color: 'bg-amber-50 text-amber-600',
-  },
-  {
-    icon: Star,
-    value: '4.9/5',
-    label: 'Average Rating',
-    color: 'bg-amber-50 text-amber-600',
-  },
-  {
-    icon: Clock,
-    value: '99.2%',
-    label: 'On-time Delivery',
-    color: 'bg-emerald-50 text-emerald-600',
-  },
-  {
-    icon: TrendingUp,
-    value: '98.7%',
-    label: 'Satisfaction Rate',
-    color: 'bg-blue-50 text-blue-600',
-  },
-];
+const firstRow = testimonials.slice(0, 10);
+// const secondRow = testimonials.slice(4, 8);
 
 /* ── Animations ───────────────────────────────── */
 const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
+  hidden: { opacity: 0, y: 24 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] },
-  }),
-};
-
-const scaleCard = {
-  hidden: { opacity: 0, y: 30, scale: 0.96 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    scale: 1,
     transition: { delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] },
   }),
 };
 
 /* ── Star renderer ────────────────────────────── */
-function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
+function StarRating({ rating, size = 13 }: { rating: number; size?: number }) {
   return (
     <div className="flex items-center gap-0.5">
       {Array.from({ length: 5 }).map((_, i) => (
@@ -185,266 +185,176 @@ function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
   );
 }
 
-/* ── Component ────────────────────────────────── */
+/* ── Review Card ──────────────────────────────── */
+function ReviewCard({
+  testimonial,
+}: {
+  testimonial: (typeof testimonials)[0];
+}) {
+  return (
+    <div className="w-85 sm:w-95 mx-2.5 shrink-0">
+      <div className="h-full  bg-white rounded-2xl border border-border-primary/60 p-6 flex flex-col gap-4 hover:border-primary/30 hover:shadow-md hover:shadow-amber-900/4 transition-all duration-300">
+        {/* Header — Avatar + Info */}
+        <div className="flex items-center gap-3.5">
+          <div className="relative w-11 h-11 rounded-full overflow-hidden ring-2 ring-amber-100 ring-offset-1 shrink-0">
+            <Image
+              src={testimonial.avatar}
+              alt={testimonial.name}
+              fill
+              className="object-cover"
+              sizes="44px"
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-semibold text-foreground truncate">
+                {testimonial.name}
+              </p>
+              {testimonial.verified && (
+                <BadgeCheck
+                  size={14}
+                  className="text-primary fill-primary/15 shrink-0"
+                />
+              )}
+            </div>
+            <p className="text-xs text-foreground-muted truncate">
+              {testimonial.role} · {testimonial.location}
+            </p>
+          </div>
+        </div>
+
+        {/* Rating + Product */}
+        <div className="flex items-center justify-between gap-3">
+          <StarRating rating={testimonial.rating} />
+          <span className="text-[11px] font-medium text-foreground-muted bg-surface-secondary px-2.5 py-1 rounded-full truncate max-w-40">
+            {testimonial.product}
+          </span>
+        </div>
+
+        {/* Comment */}
+        <div className="relative flex-1">
+          <Quote
+            size={28}
+            className="absolute -top-0.5 -left-0.5 text-amber-200/50 rotate-180"
+          />
+          <p className="text-[13.5px] leading-relaxed text-foreground-secondary pl-5">
+            {testimonial.comment}
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-3 border-t border-border-primary/40">
+          {testimonial.verified && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-success">
+              <BadgeCheck size={11} />
+              Verified Purchase
+            </span>
+          )}
+          <span className="text-[11px] text-foreground-muted ml-auto">
+            {testimonial.date}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main Component ───────────────────────────── */
 export default function TestimonialsSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const isInView = useInView(sectionRef, { once: true, margin: '-80px' });
-
-  /* Featured testimonial index (first 3 rotate) */
-  const [featured, setFeatured] = useState(0);
-  const featuredTestimonial = testimonials[featured];
-
-  /* Auto-rotate featured */
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setFeatured((p) => (p + 1) % 3);
-    }, 7000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const goFeatured = useCallback(
-    (dir: 'prev' | 'next') => {
-      setFeatured((p) => {
-        if (dir === 'next') return (p + 1) % 3;
-        return p === 0 ? 2 : p - 1;
-      });
-    },
-    []
-  );
+  const isInView = useInView(sectionRef, { once: true, margin: '-60px' });
 
   return (
     <section
       ref={sectionRef}
-      className="relative py-12 bg-gradient-to-b from-white via-amber-50/20 to-white overflow-hidden"
+      className="container mx-auto relative py-16 sm:py-20 bg-linear-to-b from-white via-amber-50/15 to-white overflow-hidden"
     >
-      {/* Background decoration */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-amber-100/20 blur-[120px] pointer-events-none" />
-      <div
-        className="absolute inset-0 opacity-[0.02] pointer-events-none"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle, #92400e 0.8px, transparent 0.8px)',
-          backgroundSize: '28px 28px',
-        }}
-      />
+      {/* Subtle background */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 rounded-full bg-amber-100/15 blur-[100px] pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ═══ HEADER ═══ */}
+      {/* ═══ HEADER ═══ */}
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
         <motion.div
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
-          variants={fadeUp}
-          custom={0}
-          className="text-center mb-16"
+          className="text-center mb-12 sm:mb-14"
         >
           <motion.span
             variants={fadeUp}
             custom={0}
-            className="inline-flex items-center gap-2 bg-accent-light text-primary text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-5"
+            className="inline-flex items-center gap-1.5 bg-accent-light text-primary text-xs font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full mb-4"
           >
-            <BadgeCheck size={14} />
-            Verified Reviews
+            <BadgeCheck size={13} />
+            Customer Reviews
           </motion.span>
 
           <motion.h2
             variants={fadeUp}
             custom={1}
-            className="text-4xl sm:text-5xl font-extrabold text-foreground leading-tight tracking-tight"
+            className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-foreground leading-tight tracking-tight"
           >
-            Loved by{' '}
+            What Our Customers{' '}
             <span className="relative inline-block">
-              <span className="text-primary">Thousands</span>
+              <span className="text-primary">Say</span>
               <motion.span
                 initial={{ scaleX: 0 }}
                 animate={isInView ? { scaleX: 1 } : {}}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                className="absolute -bottom-1 left-0 right-0 h-1 bg-accent/50 rounded-full origin-left"
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="absolute -bottom-1 left-0 right-0 h-0.75 bg-accent/50 rounded-full origin-left"
               />
-            </span>{' '}
-            of Customers
+            </span>
           </motion.h2>
 
+          <motion.p
+            variants={fadeUp}
+            custom={2}
+            className="mt-3 text-foreground-secondary max-w-lg mx-auto text-sm sm:text-base"
+          >
+            Thousands of happy customers trust ElectroMart for genuine products and fast delivery.
+          </motion.p>
         </motion.div>
+      </div>
 
-        {/* ═══ FEATURED REVIEW — Large Card ═══ */}
-        <motion.div
-          initial="hidden"
-          animate={isInView ? 'visible' : 'hidden'}
-          variants={fadeUp}
-          custom={3}
-          className="mb-14"
+      {/* ═══ MARQUEE ROWS ═══ */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        className="space-y-5 overflow-hidden"
+      >
+        {/* Row 1 — Left to Right */}
+        <Marquee
+          speed={30}
+          gradient
+          gradientColor="white"
+          gradientWidth={80}
+          pauseOnHover
+          className="py-1 overflow-hidden"
         >
-          <div className="relative bg-gradient-to-br from-amber-50/80 via-white to-orange-50/40 rounded-3xl border border-amber-100/80 overflow-hidden">
-            {/* Decorative elements */}
-            <div className="absolute top-0 right-0 w-72 h-72 bg-amber-200/15 rounded-full blur-[80px] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-56 h-56 bg-orange-200/10 rounded-full blur-[60px] pointer-events-none" />
-            <Quote
-              size={200}
-              className="absolute -top-6 -left-6 text-amber-100/40 pointer-events-none rotate-180"
-            />
+          {firstRow.map((t) => (
+            <ReviewCard key={t.id} testimonial={t} />
+          ))}
+        </Marquee>
 
-            <div className="relative grid lg:grid-cols-5 gap-0">
-              {/* Left — Content */}
-              <div className="lg:col-span-3 p-8 sm:p-10 lg:p-12 flex flex-col justify-center">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={featuredTestimonial.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    className="space-y-6"
-                  >
-                    {/* Stars + Verified */}
-                    <div className="flex items-center gap-3">
-                      <StarRating rating={featuredTestimonial.rating} size={18} />
-                      {featuredTestimonial.verified && (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-success bg-success-light px-2.5 py-1 rounded-full">
-                          <BadgeCheck size={12} />
-                          Verified Purchase
-                        </span>
-                      )}
-                    </div>
+        {/* Row 2 — Right to Left */}
+        {/* <Marquee
+          speed={25}
+          gradient
+          gradientColor="white"
+          gradientWidth={80}
+          pauseOnHover
+          direction="right"
+          className="py-1"
+        >
+          {secondRow.map((t) => (
+            <ReviewCard key={t.id} testimonial={t} />
+          ))}
+        </Marquee> */}
+      </motion.div>
 
-                    {/* Quote */}
-                    <blockquote className="text-lg sm:text-xl lg:text-2xl text-foreground font-medium leading-relaxed">
-                      &ldquo;{featuredTestimonial.comment}&rdquo;
-                    </blockquote>
-
-                    {/* Product tag */}
-                    <div className="inline-flex items-center gap-2.5 bg-white rounded-xl border border-amber-100 px-4 py-2.5 shadow-sm">
-                      <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-amber-50 shrink-0">
-                        <Image
-                          src={featuredTestimonial.productImage}
-                          alt={featuredTestimonial.product}
-                          fill
-                          className="object-cover"
-                          sizes="40px"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-[11px] text-foreground-muted font-medium uppercase tracking-wide">
-                          Purchased
-                        </p>
-                        <p className="text-sm font-bold text-foreground leading-none">
-                          {featuredTestimonial.product}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Author */}
-                    <div className="flex items-center justify-between pt-4 border-t border-amber-100/80">
-                      <div className="flex items-center gap-3.5">
-                        <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-amber-200/60 ring-offset-2">
-                          <Image
-                            src={featuredTestimonial.avatar}
-                            alt={featuredTestimonial.name}
-                            fill
-                            className="object-cover"
-                            sizes="48px"
-                          />
-                        </div>
-                        <div>
-                          <p className="text-base font-bold text-foreground flex items-center gap-1.5">
-                            {featuredTestimonial.name}
-                            <BadgeCheck
-                              size={15}
-                              className="text-primary fill-primary/20"
-                            />
-                          </p>
-                          <p className="text-sm text-foreground-muted">
-                            {featuredTestimonial.role} •{' '}
-                            {featuredTestimonial.location}
-                          </p>
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-foreground-muted hidden sm:block">
-                        {featuredTestimonial.date}
-                      </p>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Navigation */}
-                <div className="flex items-center gap-3 mt-8">
-                  <button
-                    onClick={() => goFeatured('prev')}
-                    className="h-10 w-10 rounded-xl border border-amber-200 bg-white hover:bg-amber-50 hover:border-primary/40 flex items-center justify-center text-foreground-secondary hover:text-primary transition-all duration-200 cursor-pointer"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => goFeatured('next')}
-                    className="h-10 w-10 rounded-xl border border-amber-200 bg-white hover:bg-amber-50 hover:border-primary/40 flex items-center justify-center text-foreground-secondary hover:text-primary transition-all duration-200 cursor-pointer"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                  <div className="flex items-center gap-1.5 ml-2">
-                    {[0, 1, 2].map((i) => (
-                      <button
-                        key={i}
-                        onClick={() => setFeatured(i)}
-                        className={cn(
-                          'h-1.5 rounded-full transition-all duration-500 cursor-pointer',
-                          featured === i
-                            ? 'w-8 bg-primary'
-                            : 'w-3 bg-amber-300/50 hover:bg-amber-400/70'
-                        )}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right — Large avatar / visual */}
-              <div className="lg:col-span-2 hidden lg:flex items-center justify-center p-8">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={featuredTestimonial.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                    className="relative"
-                  >
-                    {/* Decorative ring */}
-                    <div className="absolute inset-0 rounded-full border-2 border-dashed border-amber-200/50 scale-110" />
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-200/30 to-orange-200/20 blur-2xl scale-125" />
-
-                    <div className="relative w-56 h-56 xl:w-64 xl:h-64 rounded-full overflow-hidden ring-4 ring-white shadow-2xl shadow-amber-900/10">
-                      <Image
-                        src={featuredTestimonial.avatar}
-                        alt={featuredTestimonial.name}
-                        fill
-                        className="object-cover"
-                        sizes="256px"
-                      />
-                    </div>
-
-                    {/* Floating rating badge */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3, duration: 0.4 }}
-                      className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-lg border border-amber-100 px-4 py-2 flex items-center gap-2"
-                    >
-                      <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                      <span className="text-sm font-black text-foreground">
-                        {featuredTestimonial.rating}.0
-                      </span>
-                      <span className="text-xs text-foreground-muted">
-                        rating
-                      </span>
-                    </motion.div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ═══ BOTTOM CTA ═══ */}
+      {/* ═══ BOTTOM CTA ═══ */}
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
+{/* ═══ BOTTOM CTA ═══ */}
         <motion.div
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
@@ -452,7 +362,7 @@ export default function TestimonialsSection() {
           custom={9}
           className="mt-14 text-center"
         >
-          <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-gradient-to-r from-amber-50 via-white to-amber-50 rounded-2xl border border-amber-100/80 px-8 py-6 shadow-sm">
+          <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-linear-to-r from-amber-50 via-white to-amber-50 rounded-2xl border border-amber-100/80 px-8 py-6 shadow-sm">
             <div className="flex items-center gap-3">
               {/* Stacked avatars */}
               <div className="flex -space-x-2.5">
@@ -493,7 +403,7 @@ export default function TestimonialsSection() {
               <p className="text-sm font-semibold text-foreground">
                 Ready to join them?
               </p>
-              <Button size="md" className="rounded-xl group py-4 px-3">
+              <Button size="sm" className="rounded-xl group py-4 px-3">
                 <ShoppingBag className="h-4 w-4" />
                 Start Shopping
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />

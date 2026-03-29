@@ -83,8 +83,8 @@ const CELLS = [
     href: '/products?vendor=pixelhub',
     // Rich cobalt-blue mirrorless camera
     image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=90',
-    gradientFrom: 'from-blue-950/90',
-    gradientVia: 'via-blue-800/20',
+    gradientFrom: 'from-rose-950/90',
+    gradientVia: 'via-rose-800/30',
     badgeBg: 'bg-blue-500',
     offer: 'Free Delivery',
     offerIcon: Truck,
@@ -168,7 +168,7 @@ export default function HeroBentoGrid() {
           <motion.div
             variants={fadeUp}
             className="col-span-2 lg:col-span-8 lg:row-span-4 relative overflow-hidden rounded-2xl sm:rounded-3xl group"
-            style={{ minHeight: 500 }}
+            style={{ minHeight: 340 }}
           >
             <Image
               src={CELLS[0].image}
@@ -179,9 +179,9 @@ export default function HeroBentoGrid() {
               sizes="(max-width: 1024px) 100vw, 66vw"
             />
             {/* Deep colorful overlay */}
-            <div className={`absolute inset-0 bg-gradient-to-t ${CELLS[0].gradientFrom} ${CELLS[0].gradientVia} to-transparent`} />
+            <div className={`absolute inset-0 bg-linear-to-t ${CELLS[0].gradientFrom} ${CELLS[0].gradientVia} to-transparent`} />
             {/* Extra colour wash from bottom */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-purple-800/40 via-transparent to-pink-700/20" />
+            <div className="absolute inset-0 bg-linear-to-tr from-purple-800/40 via-transparent to-pink-700/20" />
 
             {/* Floating badge 1 — top left */}
             <motion.div {...bob(0)} className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10">
@@ -206,7 +206,7 @@ export default function HeroBentoGrid() {
             </motion.div>
 
             {/* Floating badge 3 — middle right (desktop only) */}
-            <motion.div {...bob(2)} className="absolute top-1/2 -translate-y-1/2 right-4 sm:right-6 z-10 hidden sm:block">
+            <motion.div {...bob(2)} className="absolute top-4 right-4 sm:top-22 sm:right-6 z-10 hidden sm:block">
               <div className="bg-amber-500 text-white flex items-center gap-2 px-3 py-2 rounded-2xl shadow-xl shadow-amber-500/40 backdrop-blur-sm border border-white/10">
                 <Gift size={13} className="shrink-0" />
                 <div>
@@ -257,7 +257,7 @@ export default function HeroBentoGrid() {
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
                 />
                 {/* Colorful gradient */}
-                <div className={`absolute inset-0 bg-gradient-to-t ${cell.gradientFrom} ${cell.gradientVia} to-transparent`} />
+                <div className={`absolute inset-0 bg-linear-to-t ${cell.gradientFrom} ${cell.gradientVia} to-transparent`} />
 
                 {/* Floating offer badge */}
                 <motion.div {...bob(i)} className="absolute top-2.5 right-2.5 z-10">
