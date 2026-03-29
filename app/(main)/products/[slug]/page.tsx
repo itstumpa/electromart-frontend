@@ -1,26 +1,25 @@
+import { ChevronRight, Star } from "lucide-react";
+import { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { Metadata } from 'next';
-import { ChevronRight, Star } from 'lucide-react';
-
-import { getProductBySlug, mockProducts, mockReviews } from '@/data/mock-data';
-import ProductGallery from '@/components/features/product/ProductGallery';
-import ProductTabs from '@/components/features/product/ProductTabs';
-import Reveal from '../../Utilities/Reveal';
-import ProductCard from '../../Utilities/Productcard';
-import ProductActions from '@/components/features/product/ProductActions';
+import ProductActions from "@/components/features/product/ProductActions";
+import ProductGallery from "@/components/features/product/ProductGallery";
+import ProductTabs from "@/components/features/product/ProductTabs";
+import { getProductBySlug, mockProducts, mockReviews } from "@/data/mock-data";
+import ProductCard from "../../Utilities/Productcard";
+import Reveal from "../../Utilities/Reveal";
 
 /* ── Types ──────────────────────────────────── */
 interface Props {
-  params: Promise<{ slug: string }>;   // Next.js 15+: params is a Promise
+  params: Promise<{ slug: string }>; // Next.js 15+: params is a Promise
 }
 
 /* ── Dynamic metadata (also async) ─────────── */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = getProductBySlug(slug);
-  if (!product) return { title: 'Product Not Found — ElectroMart' };
+  if (!product) return { title: "Product Not Found — ElectroMart" };
 
   return {
     title: `${product.name} — ElectroMart`,
@@ -48,7 +47,9 @@ export default async function ProductDetailPage({ params }: Props) {
   if (!product) notFound();
 
   const discount = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    ? Math.round(
+        ((product.originalPrice - product.price) / product.originalPrice) * 100,
+      )
     : null;
 
   const productReviews = mockReviews.filter((r) => r.productId === product.id);
@@ -57,28 +58,39 @@ export default async function ProductDetailPage({ params }: Props) {
     .filter((p) => p.categoryId === product.categoryId && p.id !== product.id)
     .slice(0, 4);
 
-  const categorySlug = product.categoryName.toLowerCase().replace(/[\s&]+/g, '-');
+  const categorySlug = product.categoryName
+    .toLowerCase()
+    .replace(/[\s&]+/g, "-");
 
   return (
     <div className="min-h-screen bg-[#FFFBEB]">
-
       {/* ── Breadcrumb (server-rendered, no JS needed) ── */}
       <div className="bg-white border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+        <div className="max-w-10/12 mx-auto px-4 sm:px-6 py-3">
           <nav aria-label="Breadcrumb">
             <ol className="flex items-center gap-2 text-xs text-slate-400 flex-wrap">
               <li>
-                <Link href="/" className="hover:text-amber-600 transition-colors">
+                <Link
+                  href="/"
+                  className="hover:text-amber-600 transition-colors"
+                >
                   Home
                 </Link>
               </li>
-              <li><ChevronRight size={11} /></li>
               <li>
-                <Link href="/products" className="hover:text-amber-600 transition-colors">
+                <ChevronRight size={11} />
+              </li>
+              <li>
+                <Link
+                  href="/products"
+                  className="hover:text-amber-600 transition-colors"
+                >
                   Products
                 </Link>
               </li>
-              <li><ChevronRight size={11} /></li>
+              <li>
+                <ChevronRight size={11} />
+              </li>
               <li>
                 <Link
                   href={`/products?category=${categorySlug}`}
@@ -87,7 +99,9 @@ export default async function ProductDetailPage({ params }: Props) {
                   {product.categoryName}
                 </Link>
               </li>
-              <li><ChevronRight size={11} /></li>
+              <li>
+                <ChevronRight size={11} />
+              </li>
               <li>
                 <span className="text-slate-700 font-medium truncate max-w-50 block">
                   {product.name}
@@ -98,11 +112,9 @@ export default async function ProductDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-
+      <div className="max-w-10/12 mx-auto px-4 sm:px-6 py-10">
         {/* ── Product hero ── */}
         <div className="grid lg:grid-cols-2 gap-10 mb-16">
-
           {/* 
             CLIENT COMPONENT — handles image switching 
             All data passed as props from server 
@@ -116,14 +128,15 @@ export default async function ProductDetailPage({ params }: Props) {
 
           {/* ── Product info (server-rendered) ── */}
           <div className="flex flex-col gap-5">
-
             {/* Brand + category */}
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-amber-600 uppercase tracking-widest">
                 {product.brandName}
               </span>
               <span className="text-slate-300">·</span>
-              <span className="text-xs text-slate-500">{product.categoryName}</span>
+              <span className="text-xs text-slate-500">
+                {product.categoryName}
+              </span>
               {product.featured && (
                 <>
                   <span className="text-slate-300">·</span>
@@ -151,24 +164,28 @@ export default async function ProductDetailPage({ params }: Props) {
                     size={16}
                     className={
                       i < Math.floor(product.rating)
-                        ? 'fill-amber-400 text-amber-400'
-                        : 'fill-slate-200 text-slate-200'
+                        ? "fill-amber-400 text-amber-400"
+                        : "fill-slate-200 text-slate-200"
                     }
                   />
                 ))}
               </div>
-              <span className="text-sm font-bold text-slate-900">{product.rating}</span>
+              <span className="text-sm font-bold text-slate-900">
+                {product.rating}
+              </span>
               <span className="text-sm text-slate-400">
                 ({product.reviewCount.toLocaleString()} reviews)
               </span>
               <span
                 className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
                   product.stock > 0
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-red-100 text-red-600'
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-600"
                 }`}
               >
-                {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+                {product.stock > 0
+                  ? `In Stock (${product.stock})`
+                  : "Out of Stock"}
               </span>
             </div>
 
@@ -183,7 +200,8 @@ export default async function ProductDetailPage({ params }: Props) {
                     ${product.originalPrice.toLocaleString()}
                   </span>
                   <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
-                    Save ${(product.originalPrice - product.price).toLocaleString()}
+                    Save $
+                    {(product.originalPrice - product.price).toLocaleString()}
                   </span>
                 </>
               )}
@@ -257,7 +275,6 @@ export default async function ProductDetailPage({ params }: Props) {
             </div>
           </Reveal>
         )}
-
       </div>
     </div>
   );
