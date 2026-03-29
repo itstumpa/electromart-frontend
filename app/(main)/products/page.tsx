@@ -395,7 +395,7 @@ const sortOptions = [
                   {[1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
-                      className="h-8 w-8 rounded-full border-2 border-white bg-gradient-to-br from-amber-200 to-amber-400 flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
+                      className="h-8 w-8 rounded-full border-2 border-white bg-linear-to-br from-amber-200 to-amber-400 flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
                     >
                       {String.fromCharCode(64 + i)}
                     </div>
@@ -462,7 +462,7 @@ const sortOptions = [
           className="w-full h-full rounded-full overflow-hidden "
         >
           {/* Subtle inner gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-amber-100/40 via-transparent to-white/30 pointer-events-none z-10" />
+          <div className="absolute inset-0 bg-linear-to-t from-amber-100/40 via-transparent to-white/30 pointer-events-none z-10" />
 
           {/* Floating image inside circle */}
           <motion.div
@@ -496,7 +496,7 @@ const sortOptions = [
       transition={{ duration: 0.6, delay: 1 }}
       className="absolute top-4 -right-2 sm:top-6 sm:-right-4 z-20"
     >
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/[0.06] p-3.5 border border-amber-100/80 min-w-[140px]">
+      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/[0.06] p-3.5 border border-amber-100/80 min-w-35">
         <div className="flex items-center gap-1.5 mb-1">
           {[...Array(5)].map((_, i) => (
             <Star
@@ -522,7 +522,7 @@ const sortOptions = [
       transition={{ duration: 0.6, delay: 1.2 }}
       className="absolute -bottom-2 -left-3 sm:bottom-6 sm:-left-6 z-20"
     >
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/[0.06] p-3 border border-amber-100/80 flex items-center gap-3 min-w-[200px]">
+      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/[0.06] p-3 border border-amber-100/80 flex items-center gap-3 min-w-50">
         <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-amber-50 shrink-0">
           <Image
             src={floatingProducts[0].image}
