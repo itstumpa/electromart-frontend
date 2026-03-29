@@ -10,18 +10,18 @@ export default function BestSellers() {
   const products = getBestsellerProducts();
 
   return (
-    <section className="py-12 bg-white">
+    <section className="py-6 bg-white">
       <div className="container mx-auto px-4 sm:px-6">
 
         {/* Header */}
-        <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+        <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
           <div>
             <span className="inline-flex items-center gap-2 text-xs font-bold text-amber-600 tracking-widest uppercase mb-2">
               <Trophy size={12} className="text-amber-500" />
               Favourites
             </span>
             <h2
-              className="text-4xl sm:text-5xl font-black text-slate-900 leading-tight tracking-tight"
+              className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight tracking-tight"
               style={{ fontFamily: "'Georgia', serif" }}
             >
              Top <span className="text-amber-600"> Selling Products</span>

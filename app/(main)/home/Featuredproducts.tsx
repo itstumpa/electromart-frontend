@@ -10,17 +10,14 @@ export default function FeaturedProducts() {
   const products = getFeaturedProducts();
 
   return (
-    <section className="py-12 bg-[#FFFBEB]">
-      <div className="container mx-auto px-4 sm:px-6">
+    <section className="py-5 bg-[#FFFBEB]">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
 
         {/* Header */}
-        <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+        <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-4">
           <div>
-            <span className="text-xs font-bold text-amber-600 tracking-widest uppercase mb-2 block">
-              Handpicked for you
-            </span>
             <h2
-              className="text-4xl sm:text-5xl font-black text-slate-900 leading-tight tracking-tight"
+              className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight tracking-tight"
               style={{ fontFamily: "'Georgia', serif" }}
             >
               Featured <span className="text-amber-600">Products</span>

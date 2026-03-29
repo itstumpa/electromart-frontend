@@ -142,7 +142,7 @@ export default function HeroBentoGrid() {
   const inView  = useInView(ref, { once: true, margin: '-60px' });
 
   return (
-    <section ref={ref} className="bg-[#FFFBEB] py-2">
+    <section ref={ref} className="bg-[#FFFBEB] py-2 pb-6">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
 
         {/* ── Header ── */}

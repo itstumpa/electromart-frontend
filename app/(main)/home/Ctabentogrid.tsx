@@ -20,7 +20,7 @@ export default function CTABentoGrid() {
   };
 
   return (
-    <section className="bg-white py-10 sm:py-14">
+    <section className="bg-white py-10 sm:py-4">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
 
         {/* Label */}
@@ -30,10 +30,7 @@ export default function CTABentoGrid() {
           viewport={{ once: true }}
           className="mb-6"
         >
-          <p className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-1">More from ElectroMart</p>
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>
-            Grow With Us
-          </h2>
+
         </motion.div>
 
         {/* ── Bento grid ── */}

@@ -60,7 +60,7 @@ const MARQUEE_BRANDS = [
 
 export default function TopBrands() {
   return (
-    <section className="bg-[#FFFBEB] py-10 sm:py-14 overflow-hidden">
+    <section className="bg-[#FFFBEB] py-6 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
 
         {/* Header */}

@@ -13,13 +13,10 @@ export default function CategoryGrid() {
       <div className="container mx-auto px-4 sm:px-6">
 
         {/* Section Header */}
-        <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+        <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-4">
           <div>
-            <span className="text-xs font-bold text-amber-600 tracking-widest uppercase mb-2 block">
-              Browse by category
-            </span>
             <h2
-              className="text-4xl sm:text-5xl font-black text-slate-900 leading-tight tracking-tight"
+              className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight tracking-tight"
               style={{ fontFamily: "'Georgia', serif" }}
             >
               Featured{' '}

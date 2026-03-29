@@ -51,7 +51,7 @@ export default function PopularProducts() {
     p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
 
   return (
-    <section className="bg-[#FFFBEB] py-10 sm:py-14">
+    <section className="bg-[#FFFBEB] py-10 sm:py-4">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
 
         {/* Header */}
@@ -228,10 +228,10 @@ export default function PopularProducts() {
         </div>
 
         {/* View all CTA */}
-        <div className="text-center mt-8 sm:mt-10">
+        <div className="text-end mt-2 sm:mt-4">
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 border-2 border-amber-600 text-amber-700 hover:bg-amber-600 hover:text-white font-black px-8 py-3 rounded-xl transition-all duration-200 text-sm"
+            className="inline-flex items-center gap-2 text-amber-700 hover:bg-amber-600 hover:text-white font-black px-2 py-3 rounded-xl transition-all duration-200 text-sm"
           >
             View All Products <ArrowRight size={16} />
           </Link>
