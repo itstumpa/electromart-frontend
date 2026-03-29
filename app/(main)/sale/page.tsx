@@ -2,11 +2,12 @@
 
 import { mockCategories, mockProducts } from "@/data/mock-data";
 import { motion } from "framer-motion";
-import { ChevronDown, Flame, X, Zap } from "lucide-react";
+import { ArrowRight, ChevronDown, Flame, X, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import ProductCard from "../Utilities/Productcard";
 import Reveal from "../Utilities/Reveal";
+import Link from "next/link";
 
 const sortOptions = [
   { label: "Biggest Discount", value: "discount" },
@@ -58,104 +59,24 @@ export default function SalePage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FFFBEB]">
-      {/* ── Hero banner ── */}
-      <section className="relative overflow-hidden bg-linear-to-br from-slate-900 via-[#0c1222] to-slate-900 py-16 sm:py-20">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-150 h-75 bg-amber-600/10 blur-[80px] rounded-full" />
-          <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(217,119,6,0.4) 1px,transparent 1px),linear-gradient(90deg,rgba(217,119,6,0.4) 1px,transparent 1px)",
-              backgroundSize: "48px 48px",
-            }}
-          />
-        </div>
-        <div className="relative max-w-10/12 mx-auto px-4 sm:px-6 text-center">
-          <motion.span
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-5"
-          >
-            <motion.span
-              animate={{ scale: [1, 1.35, 1] }}
-              transition={{ repeat: Infinity, duration: 1.6 }}
+    <div className="min-h-screen  bg-[#FFFBEB]">
+
+              {/* Section Header */}
+        <Reveal className="flex container mx-auto flex-col sm:flex-row sm:items-end justify-between gap-4 mb-2 pt-10 px-4 sm:px-6 md:px-8">
+          <div>
+            <h2
+              className="text-4xl sm:text-5xl font-black text-slate-900 leading-tight tracking-tight"
+              style={{ fontFamily: "'Georgia', serif" }}
             >
-              <Flame size={12} className="fill-amber-400" />
-            </motion.span>
-            Limited Time Offers
-          </motion.span>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl sm:text-6xl font-black text-white leading-tight mb-3"
-            style={{ fontFamily: "'Georgia', serif" }}
-          >
-            Mega{" "}
-            <span className="bg-linear-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
-              Sale
-            </span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-slate-400 text-base sm:text-lg mb-8 max-w-md mx-auto"
-          >
-            Up to 40% off top electronics. All products include genuine
-            warranty.
-          </motion.p>
-
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-wrap justify-center gap-6 sm:gap-12"
-          >
-            {[
-              { value: `${saleProducts.length}+`, label: "Products On Sale" },
-              { value: "Up to 40%", label: "Max Discount" },
-              {
-                value: `$${Math.round(totalSavings).toLocaleString()}+`,
-                label: "Total Savings Available",
-              },
-            ].map(({ value, label }) => (
-              <div key={label} className="text-center">
-                <p className="text-2xl font-black text-white">{value}</p>
-                <p className="text-xs text-slate-400 font-medium mt-0.5">
-                  {label}
-                </p>
-              </div>
-            ))}
-          </motion.div>
-
-          {/* Coupon */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="mt-8 inline-flex items-center gap-3 bg-white/10 border border-white/20 px-6 py-3 rounded-2xl"
-          >
-            <Zap size={16} className="text-amber-400" />
-            <span className="text-white text-sm font-medium">
-              Extra 20% off with code
-            </span>
-            <span className="bg-amber-600 text-white text-sm font-black px-3 py-1 rounded-lg tracking-widest">
-              ELECTRO20
-            </span>
-          </motion.div>
-        </div>
-      </section>
+              Ongoing{' '}
+              <span className="text-amber-600">Sales</span>
+            </h2>
+          </div>
+        </Reveal>
 
       {/* ── Filters ── */}
-      <div className="bg-white sticky top-16 z-30">
-        <div className="max-w-10/12  mx-auto px-4 sm:px-6 md:px-8 py-3 flex flex-row gap-3 overflow-hidden flex-wrap">
+      <div className=" sticky top-16 z-30">
+        <div className="container  mx-auto px-4 sm:px-6 md:px-8 py-3 flex flex-row gap-3 overflow-hidden flex-wrap">
           {/* Category pills */}
           <button
             onClick={() => setCategory("")}
@@ -195,7 +116,7 @@ export default function SalePage() {
       </div>
 
       {/* ── Products ── */}
-      <div className="max-w-10/12 mx-auto px-4 sm:px-6 py-10">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-2">
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm text-slate-500">
             <span className="font-bold text-slate-900">
@@ -227,7 +148,7 @@ export default function SalePage() {
             <p className="text-slate-500">No sale products in this category.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
             {saleProducts.map((product, i) => (
               <Reveal key={product.id} delay={i * 0.05} direction="up">
                 <ProductCard product={product} index={i} />

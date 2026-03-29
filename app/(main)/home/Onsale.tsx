@@ -195,7 +195,7 @@ export default function FlashSaleSection() {
         />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ── HEADER ── */}
         <motion.div
@@ -268,7 +268,7 @@ export default function FlashSaleSection() {
           >
             <Link href={`/products/${featured.slug}`} className="group block h-full">
               <div className="relative h-full bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden hover:border-amber-500/40 transition-all duration-400">
-                <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/[0.03] transition-all duration-500 pointer-events-none" />
+                <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/3 transition-all duration-500 pointer-events-none" />
 
                 {/* Top row: badge + wishlist */}
                 <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">

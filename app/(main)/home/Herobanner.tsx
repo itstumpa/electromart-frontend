@@ -1,530 +1,314 @@
-// components/features/hero/hero-banner.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence, } from 'framer-motion';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
+import { motion, useInView } from 'framer-motion';
+import { useRef } from 'react';
 import {
-  ArrowRight,
-  ShieldCheck,
-  Truck,
-  RotateCcw,
-  Zap,
-  Star,
-  ChevronRight,
-  Play,
-  ShoppingBag,
-  TrendingUp,
-  Award,
-  Heart,
+  ArrowRight, Truck, Zap, Gift,
+  Tag, RotateCcw, Star, ShoppingBag,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 
-/* ── Slide data ──────────────────────────────── */
-const heroSlides = [
+// ─── All images: vivid, high-contrast, colorful Unsplash picks ─
+const CELLS = [
   {
-    id: 1,
-    badge: 'NEW RELEASE',
-    title: 'iPhone 15 Pro',
-    highlight: 'Titanium',
-    subtitle: 'Forged in titanium. Powered by A17 Pro chip. With a groundbreaking camera system.',
-    price: '৳159,999',
-    originalPrice: '৳179,999',
-    discount: '11% OFF',
-    image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80',
-    bgGradient: 'from-amber-50 via-orange-50/50 to-yellow-50/30',
+    id: 'hero',
+    label: 'Featured Drop',
+    title: 'Premium Electronics,\nAll in One Place',
+    href: '/products',
+    // Colorful neon flatlay with purple/pink/blue tones
+    image: 'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=1400&q=95',
+    gradientFrom: 'from-purple-950/85',
+    gradientVia: 'via-purple-900/40',
+    accentColor: 'text-purple-300',
+    ctaBg: 'bg-white hover:bg-purple-50 text-purple-900',
+    span: 'hero',
   },
   {
-    id: 2,
-    badge: 'BEST SELLER',
-    title: 'MacBook Pro',
-    highlight: 'M3 Max',
-    subtitle: 'The most advanced Mac ever. Supercharged by M3 Max for unprecedented performance.',
-    price: '৳299,999',
-    originalPrice: '৳349,999',
-    discount: '14% OFF',
-    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80',
-    bgGradient: 'from-slate-50 via-amber-50/30 to-orange-50/20',
+    id: 'v1',
+    label: 'TechStore Pro',
+    title: 'Smartphones',
+    href: '/products?vendor=techstore-pro',
+    // Vivid pink/coral iPhone on gradient
+    image: 'https://images.unsplash.com/photo-1601972599720-36938d4ecd31?w=800&q=90',
+    gradientFrom: 'from-rose-950/90',
+    gradientVia: 'via-rose-800/30',
+    badgeBg: 'bg-rose-500',
+    offer: 'Flash Sale',
+    offerIcon: Zap,
   },
   {
-    id: 3,
-    badge: 'TRENDING',
-    title: 'Sony WH',
-    highlight: '1000XM5',
-    subtitle: 'Industry-leading noise canceling. Crystal clear sound. 30-hour battery life.',
-    price: '৳34,999',
-    originalPrice: '৳42,999',
-    discount: '19% OFF',
-    image: 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=800&q=80',
-    bgGradient: 'from-orange-50/60 via-amber-50 to-yellow-50/40',
+    id: 'v2',
+    label: 'GadgetZone',
+    title: 'Audio & Wearables',
+    href: '/products?vendor=gadgetzone',
+    // Bold lime-yellow headphones
+    image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&q=90',
+    gradientFrom: 'from-yellow-950/90',
+    gradientVia: 'via-yellow-800/20',
+    badgeBg: 'bg-yellow-500',
+    offer: '40% OFF',
+    offerIcon: Tag,
+  },
+  {
+    id: 'v3',
+    label: 'NovaTech',
+    title: 'Gaming Gear',
+    href: '/products?vendor=novatech',
+    // Cyan/green RGB gaming setup
+    image: 'https://images.unsplash.com/photo-1491933382434-500287f9b54b?w=800&q=80',
+    gradientFrom: 'from-cyan-950/90',
+    gradientVia: 'via-cyan-800/20',
+    badgeBg: 'bg-cyan-500',
+    offer: 'Buy 1 Get 1',
+    offerIcon: Gift,
+  },
+  {
+    id: 'v4',
+    label: 'PixelHub',
+    title: 'Cameras & Drones',
+    href: '/products?vendor=pixelhub',
+    // Rich cobalt-blue mirrorless camera
+    image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=90',
+    gradientFrom: 'from-blue-950/90',
+    gradientVia: 'via-blue-800/20',
+    badgeBg: 'bg-blue-500',
+    offer: 'Free Delivery',
+    offerIcon: Truck,
+  },
+  {
+    id: 'v5',
+    label: 'PixelHub',
+    title: 'Cameras & Drones',
+    href: '/products?vendor=pixelhub',
+    // Rich cobalt-blue mirrorless camera
+    image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=90',
+    gradientFrom: 'from-blue-950/90',
+    gradientVia: 'via-blue-800/20',
+    badgeBg: 'bg-blue-500',
+    offer: 'Free Delivery',
+    offerIcon: Truck,
+  },
+  {
+    id: 'v6',
+    label: 'PixelHub',
+    title: 'Cameras & Drones',
+    href: '/products?vendor=pixelhub',
+    // Rich cobalt-blue mirrorless camera
+    image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=90',
+    gradientFrom: 'from-blue-950/90',
+    gradientVia: 'via-blue-800/20',
+    badgeBg: 'bg-blue-500',
+    offer: 'Free Delivery',
+    offerIcon: Truck,
   },
 ];
 
-const floatingProducts = [
-  {
-    name: 'AirPods Pro',
-    price: '৳29,999',
-    rating: 4.8,
-    reviews: 2340,
-    image: 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=120&q=80',
-  },
-  {
-    name: 'Galaxy Watch 6',
-    price: '৳42,999',
-    rating: 4.7,
-    reviews: 1205,
-    image: 'https://images.unsplash.com/photo-1546868871-af0de0ae72be?w=120&q=80',
-  },
+const PILLS = [
+  { icon: Truck,     label: 'Free Delivery',  sub: 'On orders $99+',   bg: 'bg-emerald-500', shadow: 'shadow-emerald-200' },
+  { icon: Zap,       label: 'Flash Sale',      sub: 'Up to 40% OFF',    bg: 'bg-rose-500',    shadow: 'shadow-rose-200' },
+  { icon: Gift,      label: 'Buy 1 Get 1',     sub: 'Selected items',   bg: 'bg-violet-600',  shadow: 'shadow-violet-200' },
+  { icon: Tag,       label: 'Code ELECTRO20',  sub: '20% off sitewide', bg: 'bg-amber-600',   shadow: 'shadow-amber-200' },
+  { icon: RotateCcw, label: 'Free Returns',    sub: '30 day guarantee', bg: 'bg-blue-600',    shadow: 'shadow-blue-200' },
+  { icon: Star,      label: '4.8★ Rated',      sub: '50k+ reviews',     bg: 'bg-orange-500',  shadow: 'shadow-orange-200' },
 ];
 
-/* ── Animation variants ──────────────────────── */
+// ─── Framer variants ─────────────────────────────────────────
 const stagger = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } },
+  show: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
 };
 
-const fadeSlideUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+const fadeUp = {
+  hidden: { opacity: 0, y: 36, scale: 0.96 },
+  show:   { opacity: 1, y: 0,  scale: 1, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
+};
+
+const fadeSlide = {
+  hidden: { opacity: 0, x: -28 },
+  show:   { opacity: 1, x: 0,  transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+};
+
+const bob = (i: number) => ({
+  animate: {
+    y: [0, -8, 0],
+    rotate: [0, i % 2 === 0 ? 2 : -2, 0],
+    transition: { duration: 3.2 + i * 0.5, repeat: Infinity, ease: 'easeInOut', delay: i * 0.35 },
   },
-};
+});
 
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.88 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
-/* ── Counter hook ─────────────────────────────── */
-function useCountUp(target: number, duration = 2000) {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    let start = 0;
-    const step = target / (duration / 16);
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, 16);
-    return () => clearInterval(timer);
-  }, [target, duration]);
-  return count;
-}
-
-/* ── Component ────────────────────────────────── */
-export default function HeroBanner() {
-  const [active, setActive] = useState(0);
-  const slide = heroSlides[active];
-
-  // Auto-advance slides
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActive((prev) => (prev + 1) % heroSlides.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const customers = useCountUp(50000, 2200);
-  const products = useCountUp(12000, 2000);
+export default function HeroBentoGrid() {
+  const ref     = useRef(null);
+  const inView  = useInView(ref, { once: true, margin: '-60px' });
 
   return (
-    <section className="relative overflow-hidden bg-white">
-      {/* ── Background ── */}
-      <div
+    <section ref={ref} className="bg-[#FFFBEB] py-2">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
 
-        className={cn(
-          'absolute inset-0 transition-all duration-1000 bg-linear-to-br',
-          slide.bgGradient
-        )}
-      />
-
-      {/* Subtle dot grid */}
-      <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle, #92400e 0.8px, transparent 0.8px)',
-          backgroundSize: '24px 24px',
-        }}
-      />
-
-      {/* Ambient glow blobs */}
-      <div className="absolute -top-40 -right-40 w-125 h-125 rounded-full bg-amber-200/25 blur-[100px] pointer-events-none" />
-      <div className="absolute -bottom-32 -left-32 w-100 h-100 rounded-full bg-orange-200/20 blur-[80px] pointer-events-none" />
-
-      {/* ── Content ── */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-12 gap-8 lg:gap-6 items-center min-h-[78vh] py-12 md:py-0">
-          {/* ═══ LEFT COLUMN — 7 cols ═══ */}
-          <div className="lg:col-span-7 flex flex-col gap-6 order-2 lg:order-1">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={slide.id}
-                variants={stagger}
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                className="flex flex-col gap-5"
-              >
-                {/* Badge row */}
-                <motion.div
-                  variants={fadeSlideUp}
-                  className="flex items-center gap-3"
-                >
-                  <span className="inline-flex items-center gap-1.5 bg-primary text-white text-[11px] font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full shadow-lg shadow-primary/25">
-                    <Zap size={12} className="fill-white" />
-                    {slide.badge}
-                  </span>
-                  <span className="inline-flex items-center gap-1 bg-error-light text-error text-[11px] font-bold px-2.5 py-1 rounded-full">
-                    {slide.discount}
-                  </span>
-                </motion.div>
-
-                {/* Headline */}
-                <motion.div variants={fadeSlideUp}>
-                  <h1 className="text-[clamp(2.5rem,6vw,4.5rem)] font-extrabold leading-[1.05] tracking-tight text-foreground">
-                    {slide.title}
-                    <br />
-                    <span className="relative inline-block text-primary">
-                      {slide.highlight}
-                      <motion.span
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: 1 }}
-                        transition={{ duration: 0.6, delay: 0.6 }}
-                        className="absolute -bottom-1.5 left-0 right-0 h-1.5 bg-accent/60 rounded-full origin-left"
-                      />
-                    </span>
-                  </h1>
-                </motion.div>
-
-                {/* Description */}
-                <motion.p
-                  variants={fadeSlideUp}
-                  className="text-base sm:text-lg text-foreground-secondary max-w-lg leading-relaxed"
-                >
-                  {slide.subtitle}
-                </motion.p>
-
-                {/* Price block */}
-                <motion.div
-                  variants={fadeSlideUp}
-                  className="flex items-end gap-3"
-                >
-                  <span className="text-3xl sm:text-4xl font-black text-foreground tracking-tight">
-                    {slide.price}
-                  </span>
-                  <span className="text-lg text-foreground-muted line-through mb-0.5">
-                    {slide.originalPrice}
-                  </span>
-                </motion.div>
-
-                {/* CTAs */}
-                <motion.div
-                  variants={fadeSlideUp}
-                  className="flex flex-wrap items-center gap-3 pt-1"
-                >
-                  <Link href="/products">
-                    <Button
-                      size="xl"
-                      className="rounded-2xl px-4 md:px-8 py-2 md:py-4 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200 group"
-                    >
-                      <ShoppingBag className="h-5 w-5" />
-                      Shop Now
-                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Button>
-                  </Link>
-                  <Link href="/products?deal=true">
-                    <Button
-                      variant="outline"
-                      size="xl"
-                      className="rounded-2xl px-4 md:px-8 py-2 md:py-4 border-2 border-amber-200 hover:border-primary hover:bg-accent-light transition-all duration-200"
-                    >
-                      <Zap className="h-4 w-4 text-primary" />
-                      Today&apos;s Deals
-                    </Button>
-                  </Link>
-                </motion.div>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* ── Slide indicators ── */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="flex items-center gap-2 pt-2"
-            >
-              {heroSlides.map((s, i) => (
-                <button
-                  key={s.id}
-                  onClick={() => setActive(i)}
-                  className={cn(
-                    'h-1.5 rounded-full transition-all duration-500 cursor-pointer',
-                    active === i
-                      ? 'w-10 bg-primary'
-                      : 'w-4 bg-amber-300/60 hover:bg-amber-400/80'
-                  )}
-                />
-              ))}
-              <span className="ml-3 text-xs font-medium text-foreground-muted tabular-nums">
-                {String(active + 1).padStart(2, '0')} / {String(heroSlides.length).padStart(2, '0')}
-              </span>
-            </motion.div>
-
-            {/* ── Stats row ── */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.6 }}
-              className="flex items-center gap-8 pt-4 border-t border-amber-200/50 mt-2"
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-accent-light flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xl font-black text-foreground tabular-nums">
-                    {customers.toLocaleString()}+
-                  </p>
-                  <p className="text-xs text-foreground-muted font-medium">
-                    Happy Customers
-                  </p>
-                </div>
-              </div>
-
-              <div className="h-10 w-px bg-amber-200/60" />
-
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-accent-light flex items-center justify-center">
-                  <ShoppingBag className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xl font-black text-foreground tabular-nums">
-                    {products.toLocaleString()}+
-                  </p>
-                  <p className="text-xs text-foreground-muted font-medium">
-                    Products
-                  </p>
-                </div>
-              </div>
-
-              <div className="h-10 w-px bg-amber-200/60 hidden sm:block" />
-
-              <div className="hidden sm:flex items-center gap-2">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="h-8 w-8 rounded-full border-2 border-white bg-gradient-to-br from-amber-200 to-amber-400 flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
-                    >
-                      {String.fromCharCode(64 + i)}
-                    </div>
-                  ))}
-                </div>
-                <div>
-                  <div className="flex items-center gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-3 w-3 fill-amber-400 text-amber-400"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-[10px] text-foreground-muted font-medium">
-                    4.9/5 (2.4k reviews)
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* ═══ RIGHT COLUMN — 5 cols ═══ */}
-<div className="lg:col-span-5 order-1 lg:order-2 flex justify-center lg:justify-end">
-  <div className="relative w-full max-w-md lg:max-w-lg aspect-square">
-
-    {/* Outer decorative ring — solid subtle */}
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-      animate={{ opacity: 0.5, scale: 1, rotate: 0 }}
-      transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute inset-0 flex items-center justify-center"
-    >
-      <div className="w-[98%] h-[98%] rounded-full border border-amber-200/40" />
-    </motion.div>
-
-    {/* Middle decorative ring — dashed rotating */}
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 1, delay: 0.4 }}
-      className="absolute inset-0 flex items-center justify-center"
-    >
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ repeat: Infinity, duration: 60, ease: 'linear' }}
-        className="w-[90%] h-[90%] rounded-full border-2 border-dashed border-amber-300/40"
-      />
-    </motion.div>
-
-    {/* Glow behind circle */}
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] bg-amber-300/25 rounded-full blur-[80px] pointer-events-none" />
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50%] h-[50%] bg-orange-300/15 rounded-full blur-[50px] pointer-events-none" />
-
-    {/* ── THE CIRCLE CONTAINER — this clips the image ── */}
-    <div className="absolute inset-0 flex items-center justify-center z-10">
-      <AnimatePresence mode="wait">
+        {/* ── Header ── */}
         <motion.div
-          key={slide.id}
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full h-full rounded-full overflow-hidden "
+          variants={fadeSlide}
+          initial="hidden"
+          animate={inView ? 'show' : 'hidden'}
+          className="flex items-end justify-between mb-6 sm:mb-8 flex-wrap gap-3"
         >
-          {/* Subtle inner gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-amber-100/40 via-transparent to-white/30 pointer-events-none z-10" />
-
-          {/* Floating image inside circle */}
-          <motion.div
-            animate={{ y: [0, -8, 0] }}
-            transition={{
-              repeat: Infinity,
-              duration: 5,
-              ease: 'easeInOut',
-            }}
-            className="absolute inset-0 flex items-center justify-center p-6"
-          >
-            <div className="relative w-90 h-90 rounded-full overflow-hidden">
-              <Image
-                src={slide.image}
-                alt={`${slide.title} ${slide.highlight}`}
-                fill
-                className="object-cover drop-shadow-xl"
-                priority
-                sizes="(max-width: 768px) 60vw, 30vw"
-              />
-            </div>
-          </motion.div>
+          
+       
         </motion.div>
-      </AnimatePresence>
-    </div>
 
-    {/* ── Floating card: Top-right — Rating ── */}
-    <motion.div
-      initial={{ opacity: 0, x: 30, y: -10 }}
-      animate={{ opacity: 1, x: 0, y: 0 }}
-      transition={{ duration: 0.6, delay: 1 }}
-      className="absolute top-4 -right-2 sm:top-6 sm:-right-4 z-20"
-    >
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/[0.06] p-3.5 border border-amber-100/80 min-w-[140px]">
-        <div className="flex items-center gap-1.5 mb-1">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
+        {/* ── Bento grid ── */}
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          animate={inView ? 'show' : 'hidden'}
+          className="grid grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4"
+        >
+
+          {/* ████ HERO CELL — big, left, spans 4 cols + 2 rows ████ */}
+          <motion.div
+            variants={fadeUp}
+            className="col-span-2 lg:col-span-8 lg:row-span-4 relative overflow-hidden rounded-2xl sm:rounded-3xl group"
+            style={{ minHeight: 500 }}
+          >
+            <Image
+              src={CELLS[0].image}
+              alt="Premium electronics"
+              fill
+              priority
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+              sizes="(max-width: 1024px) 100vw, 66vw"
             />
-          ))}
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-lg font-black text-foreground">4.9</span>
-          <span className="text-xs text-foreground-muted font-medium">/ 5.0</span>
-        </div>
-        <p className="text-[11px] text-foreground-muted mt-0.5">
-          Based on 2,431 reviews
-        </p>
-      </div>
-    </motion.div>
+            {/* Deep colorful overlay */}
+            <div className={`absolute inset-0 bg-gradient-to-t ${CELLS[0].gradientFrom} ${CELLS[0].gradientVia} to-transparent`} />
+            {/* Extra colour wash from bottom */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-purple-800/40 via-transparent to-pink-700/20" />
 
-    {/* ── Floating card: Bottom-left — Product ── */}
-    <motion.div
-      initial={{ opacity: 0, x: -30, y: 10 }}
-      animate={{ opacity: 1, x: 0, y: 0 }}
-      transition={{ duration: 0.6, delay: 1.2 }}
-      className="absolute -bottom-2 -left-3 sm:bottom-6 sm:-left-6 z-20"
-    >
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/[0.06] p-3 border border-amber-100/80 flex items-center gap-3 min-w-[200px]">
-        <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-amber-50 shrink-0">
-          <Image
-            src={floatingProducts[0].image}
-            alt={floatingProducts[0].name}
-            fill
-            className="object-cover"
-            sizes="56px"
-          />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1 mb-0.5">
-            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-            <span className="text-xs font-bold text-foreground">
-              {floatingProducts[0].rating}
-            </span>
-            <span className="text-[10px] text-foreground-muted">
-              ({floatingProducts[0].reviews.toLocaleString()})
-            </span>
+            {/* Floating badge 1 — top left */}
+            <motion.div {...bob(0)} className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10">
+              <div className="bg-rose-500 text-white flex items-center gap-2 px-3 py-2 rounded-2xl shadow-xl shadow-rose-500/40 backdrop-blur-sm border border-white/10">
+                <Zap size={13} className="fill-white shrink-0" />
+                <div>
+                  <p className="text-[10px] sm:text-xs font-black leading-tight">Flash Sale</p>
+                  <p className="text-[8px] sm:text-[10px] opacity-80 leading-tight hidden sm:block">Up to 40% OFF</p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Floating badge 2 — top right */}
+            <motion.div {...bob(1)} className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
+              <div className="bg-emerald-500 text-white flex items-center gap-2 px-3 py-2 rounded-2xl shadow-xl shadow-emerald-500/40 backdrop-blur-sm border border-white/10">
+                <Truck size={13} className="shrink-0" />
+                <div>
+                  <p className="text-[10px] sm:text-xs font-black leading-tight">Free Delivery</p>
+                  <p className="text-[8px] sm:text-[10px] opacity-80 leading-tight hidden sm:block">Orders $99+</p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Floating badge 3 — middle right (desktop only) */}
+            <motion.div {...bob(2)} className="absolute top-1/2 -translate-y-1/2 right-4 sm:right-6 z-10 hidden sm:block">
+              <div className="bg-amber-500 text-white flex items-center gap-2 px-3 py-2 rounded-2xl shadow-xl shadow-amber-500/40 backdrop-blur-sm border border-white/10">
+                <Gift size={13} className="shrink-0" />
+                <div>
+                  <p className="text-[10px] sm:text-xs font-black leading-tight">Buy 1 Get 1</p>
+                  <p className="text-[8px] sm:text-[10px] opacity-80 leading-tight hidden sm:block">Selected items</p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Hero bottom text */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 z-10"
+            >
+              <p className={`text-xs sm:text-sm font-bold uppercase tracking-widest mb-2 ${CELLS[0].accentColor}`}>
+                Featured Collection
+              </p>
+              <h3 className="text-white text-xl sm:text-3xl font-black leading-tight mb-4" style={{ fontFamily: "'Georgia', serif" }}>
+                Premium Electronics,
+                <br />
+                <span className={CELLS[0].accentColor}>All in One Place</span>
+              </h3>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                <Link href="/products" className={`inline-flex items-center gap-2 ${CELLS[0].ctaBg} text-sm font-black px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl transition-colors shadow-2xl`}>
+                  Shop Now <ArrowRight size={15} />
+                </Link>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+
+          {/* ████ 4 VENDOR SMALL CARDS ████ */}
+          {CELLS.slice(1).map((cell, i) => {
+            const Icon = cell.offerIcon!;
+            return (
+              <motion.div
+                key={cell.id}
+                variants={fadeUp}
+                className="col-span-2 relative overflow-hidden rounded-2xl sm:rounded-3xl group cursor-pointer"
+                style={{ minHeight: 170 }}
+              >
+                <Image
+                  src={cell.image}
+                  alt={cell.label}
+                  fill
+                  className="object-cover transition-transform duration-600 ease-out group-hover:scale-110"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
+                />
+                {/* Colorful gradient */}
+                <div className={`absolute inset-0 bg-gradient-to-t ${cell.gradientFrom} ${cell.gradientVia} to-transparent`} />
+
+                {/* Floating offer badge */}
+                <motion.div {...bob(i)} className="absolute top-2.5 right-2.5 z-10">
+                  <div className={`${cell.badgeBg} text-white flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-lg text-[9px] sm:text-[10px] font-black border border-white/10`}>
+                    <Icon size={10} className="shrink-0 sm:w-3 sm:h-3" />
+                    <span className="whitespace-nowrap">{cell.offer}</span>
+                  </div>
+                </motion.div>
+
+                {/* Bottom info */}
+                <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 z-10">
+                  <p className="text-white/55 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider mb-0.5">{cell.label}</p>
+                  <p className="text-white text-xs sm:text-sm font-black leading-tight">{cell.title}</p>
+                </div>
+
+                {/* Hover shimmer overlay */}
+                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors duration-300" />
+
+                <Link href={cell.href} className="absolute inset-0 z-20" aria-label={`Shop ${cell.label}`} />
+              </motion.div>
+            );
+          })}
+        </motion.div>
+
+        {/* ── Offer pills strip ── */}
+        <div className="mt-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-none pb-1">
+            {PILLS.map((pill, i) => {
+              const Icon = pill.icon;
+              return (
+                <motion.div
+                  key={pill.label}
+                  initial={{ opacity: 0, y: 18, scale: 0.88 }}
+                  animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                  transition={{ duration: 0.45, delay: 0.4 + i * 0.07, ease: [0.22, 1, 0.36, 1] }}
+                  className={`${pill.bg} shrink-0 flex items-center gap-2 sm:gap-2.5 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-md ${pill.shadow}`}
+                >
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0">
+                    <Icon size={13} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-xs font-black whitespace-nowrap leading-tight">{pill.label}</p>
+                    <p className="text-[8px] sm:text-[10px] opacity-75 whitespace-nowrap leading-tight hidden sm:block">{pill.sub}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
-          <p className="text-sm font-bold text-foreground truncate">
-            {floatingProducts[0].name}
-          </p>
-          <p className="text-sm font-black text-primary">
-            {floatingProducts[0].price}
-          </p>
         </div>
-        <button className="h-9 w-9 rounded-xl bg-primary/10 hover:bg-primary hover:text-white text-primary flex items-center justify-center transition-all duration-200 shrink-0">
-          <ShoppingBag className="h-4 w-4" />
-        </button>
-      </div>
-    </motion.div>
 
-    {/* ── Floating card: Mid-right — Free shipping ── */}
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.6, delay: 1.4 }}
-      className="absolute top-[55%] -right-3 sm:-right-8 z-20 hidden sm:block"
-    >
-      <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg shadow-black/[0.04] px-3.5 py-2.5 border border-amber-100/80 flex items-center gap-2.5">
-        <div className="h-8 w-8 rounded-lg bg-success-light flex items-center justify-center">
-          <Truck className="h-4 w-4 text-success" />
-        </div>
-        <div>
-          <p className="text-xs font-bold text-foreground leading-none">
-            Free Shipping
-          </p>
-          <p className="text-[10px] text-foreground-muted mt-0.5">
-            On this product
-          </p>
-        </div>
       </div>
-    </motion.div>
-
-    {/* ── Floating: Wishlist button ── */}
-    <motion.div
-      initial={{ opacity: 0, scale: 0.5 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4, delay: 1.5, type: 'spring' }}
-      className="absolute top-4 left-6 z-20"
-    >
-      <button className="h-10 w-10 rounded-full bg-white/90 backdrop-blur-md shadow-lg shadow-black/[0.06] border border-amber-100/80 flex items-center justify-center text-foreground-muted hover:text-red-500 hover:bg-red-50 transition-all duration-200 group">
-        <Heart className="h-4.5 w-4.5 group-hover:scale-110 transition-transform" />
-      </button>
-    </motion.div>
-  </div>
-</div>
-</div>
-</div>
-     
     </section>
   );
 }

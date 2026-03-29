@@ -8,7 +8,7 @@ import Reveal from '../Utilities/Reveal';
 export default function DealsBanner() {
   return (
     <section className="py-16 bg-[#FFFBEB]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="container mx-auto px-4 sm:px-6">
         <Reveal direction="none">
           <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-amber-600 via-amber-500 to-yellow-500 p-1 shadow-2xl shadow-amber-300/30">
             <div className="bg-linear-to-r from-amber-600 via-amber-500 to-yellow-500 rounded-4xl p-10 sm:p-16 relative overflow-hidden">

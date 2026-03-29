@@ -50,7 +50,7 @@ export default function ContactPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-14">
         <div className="grid lg:grid-cols-3 gap-10">
 
           {/* ── Left: info + quick support ── */}

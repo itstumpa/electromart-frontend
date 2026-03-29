@@ -83,7 +83,7 @@ export default function MainFooter() {
       </div>
 
       {/* Main footer body */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+      <div className="container mx-auto px-4 sm:px-6 py-14">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
 
           {/* Brand column */}
@@ -183,7 +183,7 @@ export default function MainFooter() {
 
       {/* Bottom bar */}
       <div className="border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="container mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-slate-500">
             © {new Date().getFullYear()} ElectroMart. All rights reserved.
           </p>

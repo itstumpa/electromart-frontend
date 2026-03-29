@@ -11,7 +11,7 @@ export default function FeaturedProducts() {
 
   return (
     <section className="py-12 bg-[#FFFBEB]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="container mx-auto px-4 sm:px-6">
 
         {/* Header */}
         <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
@@ -36,7 +36,7 @@ export default function FeaturedProducts() {
         </Reveal>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
           {products.slice(0, 6).map((product, i) => (
             <Reveal key={product.id} delay={i * 0.08} direction="up">
               <ProductCard product={product} index={i} />

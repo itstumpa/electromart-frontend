@@ -72,7 +72,7 @@ export default function ProductsPage() {
 
       {/* ── Page header ── */}
       <div className="bg-white border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+        <div className="container mx-auto px-4 sm:px-6 py-10">
           <Reveal>
             <h1
               className="text-4xl font-black text-slate-900 tracking-tight"
@@ -92,7 +92,7 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-8">
         <div className="flex gap-8">
 
           {/* ══ FILTER SIDEBAR (desktop) ══ */}
@@ -289,7 +289,7 @@ export default function ProductsPage() {
               <motion.div
                 layout
                 className={view === 'grid'
-                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5'
+                  ? 'grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-5'
                   : 'flex flex-col gap-4'}
               >
                 {filtered.map((product, i) => (

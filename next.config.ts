@@ -4,6 +4,7 @@ const nextConfig: import('next').NextConfig = {
     remotePatterns: [
   { protocol: "https", hostname: "randomuser.me" },
   { protocol: "https", hostname: "images.unsplash.com" },
+  { protocol: "https", hostname: "unsplash.com" },
   { protocol: "https", hostname: "i.pravatar.cc" },
   { protocol: "https", hostname: "upload.wikimedia.org" },
     ],

@@ -17,7 +17,7 @@ export default function TopBar() {
           transition={{ duration: 0.3 }}
           className="bg-amber-600 text-white overflow-hidden"
         >
-          <div className="max-w-7xl mx-auto px-4 h-9 flex items-center justify-between text-sm">
+          <div className="container mx-auto px-4 h-9 flex items-center justify-between text-sm">
             {/* Left spacer */}
             <div className="w-6 hidden sm:block" />
 

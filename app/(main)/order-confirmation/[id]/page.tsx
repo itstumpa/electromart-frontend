@@ -2,7 +2,7 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { CheckCircle2, Package, Truck, MapPin, ArrowRight, Download } from 'lucide-react';
+import { CheckCircle2, Package, Truck, MapPin, ArrowRight } from 'lucide-react';
 import { mockOrders } from '@/data/mock-data';
 
 interface Props {
@@ -42,7 +42,7 @@ export default async function OrderConfirmationPage({ params }: Props) {
             Order Confirmed!
           </h1>
           <p className="text-slate-500 text-base">
-            Thank you for your order. We've received it and are getting it ready.
+            Thank you for your order. We&apos;ve received it and are getting it ready.
           </p>
           <div className="inline-flex items-center gap-2 bg-amber-600 text-white font-black px-5 py-2 rounded-xl mt-4 text-sm">
             Order #{order.orderNumber}

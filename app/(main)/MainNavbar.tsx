@@ -106,7 +106,7 @@ export default function MainNavbar() {
         scrolled ? 'shadow-md shadow-amber-100/60' : 'border-b border-slate-100'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
 
           {/* ── Logo ── */}

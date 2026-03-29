@@ -11,7 +11,7 @@ export default function BestSellers() {
 
   return (
     <section className="py-12 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="container mx-auto px-4 sm:px-6">
 
         {/* Header */}
         <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
@@ -24,20 +24,20 @@ export default function BestSellers() {
               className="text-4xl sm:text-5xl font-black text-slate-900 leading-tight tracking-tight"
               style={{ fontFamily: "'Georgia', serif" }}
             >
-              Best <span className="text-amber-600">Sellers</span>
+             Top <span className="text-amber-600"> Selling Products</span>
             </h2>
           </div>
           <Link
             href="/products?bestseller=true"
             className="group inline-flex items-center gap-2 text-sm font-bold text-amber-600 hover:text-amber-700 shrink-0"
           >
-            See All Bestsellers
+            See All Top Selling Products
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </Reveal>
 
         {/* Grid with #1, #2... badges */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {products.map((product, i) => (
             <Reveal key={product.id} delay={i * 0.08} direction="up">
               <div className="relative">

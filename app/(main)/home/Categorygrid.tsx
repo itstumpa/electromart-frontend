@@ -10,7 +10,7 @@ import Image from 'next/image';
 export default function CategoryGrid() {
   return (
     <section className="py-8 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="container mx-auto px-4 sm:px-6">
 
         {/* Section Header */}
         <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
@@ -36,7 +36,7 @@ export default function CategoryGrid() {
         </Reveal>
 
         {/* Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
           {mockCategories.map((cat, i) => (
             <Reveal key={cat.id} delay={i * 0.07} direction="up">
               <Link
