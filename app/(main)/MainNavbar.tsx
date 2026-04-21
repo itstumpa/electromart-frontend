@@ -23,7 +23,7 @@ import {
   Cable,
 } from 'lucide-react';
 import { mockCart } from '@/data/mock-data';
-import { search } from '../(main)/search/page'
+import  SearchPage from '../(main)/search/page'
 
 /* ─────────────────────────────────────────────
    NAV DATA
