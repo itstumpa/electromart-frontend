@@ -82,14 +82,14 @@ const fadeUp = {
   hidden: { opacity: 0, y: 26 },
   visible: (i: number) => ({
     opacity: 1, y: 0,
-    transition: { delay: i * 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 const cardVariant = {
   hidden: { opacity: 0, y: 20, scale: 0.97 },
   visible: (i: number) => ({
     opacity: 1, y: 0, scale: 1,
-    transition: { delay: i * 0.09, duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.09, duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
@@ -106,9 +106,9 @@ function Digit({ value, label }: { value: number; label: string }) {
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 5, opacity: 0, scale: 0.88 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/60 rounded-xl flex items-center justify-center text-white font-black text-xl sm:text-2xl tabular-nums shadow-lg"
+            className="relative w-12 h-12 sm:w-14 sm:h-14 bg-linear-to-b from-slate-800 to-slate-900 border border-slate-700/60 rounded-xl flex items-center justify-center text-white font-black text-xl sm:text-2xl tabular-nums shadow-lg"
           >
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
             {String(value).padStart(2, '0')}
           </motion.div>
         </AnimatePresence>
@@ -152,8 +152,8 @@ function StockBar({ sold, stock }: { sold: number; stock: number }) {
           viewport={{ once: true }}
           transition={{ duration: 1.1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className={cn('h-full rounded-full', hot
-            ? 'bg-gradient-to-r from-red-500 to-orange-400'
-            : 'bg-gradient-to-r from-amber-500 to-amber-400')}
+            ? 'bg-linear-to-r from-red-500 to-orange-400'
+            : 'bg-linear-to-r from-amber-500 to-amber-400')}
         />
       </div>
     </div>
@@ -171,6 +171,7 @@ export default function FlashSaleSection() {
 
   const toggleWish = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     setWished((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   };
 
@@ -180,12 +181,12 @@ export default function FlashSaleSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-18 overflow-hidden bg-gradient-to-br from-slate-900 via-[#0c1222] to-slate-900"
+      className="relative py-18 overflow-hidden bg-linear-to-br from-slate-900 via-[#0c1222] to-slate-900"
     >
       {/* Ambient bg */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[260px] bg-amber-600/[0.06] blur-[100px] rounded-full" />
-        <div className="absolute bottom-0 left-1/4 w-72 h-72 bg-amber-500/[0.04] blur-[80px] rounded-full" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-175 h-65 bg-amber-600/6 blur-[100px] rounded-full" />
+        <div className="absolute bottom-0 left-1/4 w-72 h-72 bg-amber-500/4 blur-[80px] rounded-full" />
         <div
           className="absolute inset-0 opacity-[0.025]"
           style={{
@@ -224,14 +225,14 @@ export default function FlashSaleSection() {
             >
               Deals That{' '}
               <span className="relative inline-block">
-                <span className="bg-gradient-to-r from-amber-400 via-amber-300 to-orange-400 bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-amber-400 via-amber-300 to-orange-400 bg-clip-text text-transparent">
                   Won&apos;t Last
                 </span>
                 <motion.span
                   initial={{ scaleX: 0 }}
                   animate={isInView ? { scaleX: 1 } : {}}
                   transition={{ duration: 0.55, delay: 0.5 }}
-                  className="absolute -bottom-1 left-0 right-0 h-[3px] bg-gradient-to-r from-amber-500 to-orange-500 rounded-full origin-left"
+                  className="absolute -bottom-1 left-0 right-0 h-0.75 bg-linear-to-r from-amber-500 to-orange-500 rounded-full origin-left"
                 />
               </span>
             </motion.h2>
@@ -290,7 +291,7 @@ export default function FlashSaleSection() {
                 </div>
 
                 {/* Discount chip */}
-                <div className="absolute top-[52px] left-4 z-10">
+                <div className="absolute top-13 left-4 z-10">
                   <span className="bg-white/10 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-lg border border-white/10">
                     -{getDiscount(featured.price, featured.originalPrice)}% OFF
                   </span>
@@ -299,7 +300,7 @@ export default function FlashSaleSection() {
                 {/* Image */}
                 <div className="relative flex items-center justify-center pt-20 pb-4 px-8">
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-40 h-40 rounded-full bg-amber-500/[0.06] blur-3xl" />
+                    <div className="w-40 h-40 rounded-full bg-amber-500/6 blur-3xl" />
                   </div>
                   <motion.div
                     animate={{ y: [0, -8, 0] }}
@@ -356,7 +357,7 @@ export default function FlashSaleSection() {
                   {/* CTA */}
                   <button
                     onClick={(e) => e.preventDefault()}
-                    className="group/btn w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 transition-all duration-300 mt-1"
+                    className="group/btn w-full flex items-center justify-center gap-2 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 transition-all duration-300 mt-1"
                   >
                     <ShoppingBag size={14} />
                     Grab This Deal
@@ -376,18 +377,18 @@ export default function FlashSaleSection() {
             >
               <Link href={`/products/${p.slug}`} className="group block">
                 <div className="relative bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden hover:border-amber-500/35 transition-all duration-300">
-                  <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/[0.025] transition-all duration-400 pointer-events-none" />
+                  <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/2.5 transition-all duration-400 pointer-events-none" />
 
                   <div className="flex items-center gap-4 p-4">
                     {/* Image */}
-                    <div className="relative w-[72px] h-[72px] shrink-0 rounded-xl bg-slate-700/40 overflow-hidden">
+                    <div className="relative w-18 h-18 shrink-0 rounded-xl bg-slate-700/40 overflow-hidden">
                       <Image
                         src={p.image} alt={p.name} fill
                         className="object-contain p-2 group-hover:scale-110 transition-transform duration-500"
                         sizes="72px"
                       />
                       <div className="absolute top-1 left-1">
-                        <span className="bg-red-500/90 backdrop-blur-sm text-white text-[9px] font-black px-1.5 py-[2px] rounded-md leading-none">
+                        <span className="bg-red-500/90 backdrop-blur-sm text-white text-[9px] font-black px-1.5 py-0.5 rounded-md leading-none">
                           -{getDiscount(p.price, p.originalPrice)}%
                         </span>
                       </div>
@@ -442,8 +443,8 @@ export default function FlashSaleSection() {
           variants={fadeUp} custom={10}
           className="mt-8"
         >
-          <div className="relative bg-amber-500/[0.06] border border-amber-500/20 rounded-2xl px-5 py-4 overflow-hidden">
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-amber-400/25 to-transparent" />
+          <div className="relative bg-amber-500/6 border border-amber-500/20 rounded-2xl px-5 py-4 overflow-hidden">
+            <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-amber-400/25 to-transparent" />
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/20 flex items-center justify-center shrink-0">
@@ -458,7 +459,7 @@ export default function FlashSaleSection() {
               </div>
               <Link
                 href="/products?deal=true"
-                className="group inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm px-6 py-2.5 rounded-xl shadow-md shadow-amber-500/15 transition-all duration-300 shrink-0"
+                className="group inline-flex items-center gap-2 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm px-6 py-2.5 rounded-xl shadow-md shadow-amber-500/15 transition-all duration-300 shrink-0"
               >
                 <Flame size={14} />
                 View All Deals

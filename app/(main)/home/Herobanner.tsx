@@ -2,11 +2,11 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, Variants } from 'framer-motion';
 import { useRef } from 'react';
 import {
   ArrowRight, Truck, Zap, Gift,
-  Tag, RotateCcw, Star, ShoppingBag,
+  Tag, RotateCcw, Star
 } from 'lucide-react';
 
 // ─── All images: vivid, high-contrast, colorful Unsplash picks ─
@@ -114,26 +114,51 @@ const PILLS = [
 ];
 
 // ─── Framer variants ─────────────────────────────────────────
-const stagger = {
+const stagger: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
+  show: {
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.05,
+    },
+  },
 };
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 36, scale: 0.96 },
-  show:   { opacity: 1, y: 0,  scale: 1, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.55,
+      ease: [0.22, 1, 0.36, 1] as const,
+    },
+  },
 };
 
-const fadeSlide = {
-  hidden: { opacity: 0, x: -28 },
-  show:   { opacity: 1, x: 0,  transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+const fadeSlide: Variants = {
+  hidden: { opacity: 0, x: 40 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1] as const,
+    },
+  },
 };
 
 const bob = (i: number) => ({
   animate: {
     y: [0, -8, 0],
     rotate: [0, i % 2 === 0 ? 2 : -2, 0],
-    transition: { duration: 3.2 + i * 0.5, repeat: Infinity, ease: 'easeInOut', delay: i * 0.35 },
+    transition: {
+      duration: 3.2 + i * 0.5,
+      repeat: Infinity,
+      ease: 'easeInOut' as const,
+      delay: i * 0.35,
+    },
   },
 });
 
@@ -220,7 +245,7 @@ export default function HeroBentoGrid() {
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] as const }}
               className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 z-10"
             >
               <p className={`text-xs sm:text-sm font-bold uppercase tracking-widest mb-2 ${CELLS[0].accentColor}`}>
@@ -292,7 +317,7 @@ export default function HeroBentoGrid() {
                   key={pill.label}
                   initial={{ opacity: 0, y: 18, scale: 0.88 }}
                   animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-                  transition={{ duration: 0.45, delay: 0.4 + i * 0.07, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: 0.45, delay: 0.4 + i * 0.07, ease: [0.22, 1, 0.36, 1] as const }}
                   className={`${pill.bg} shrink-0 flex items-center gap-2 sm:gap-2.5 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-md ${pill.shadow}`}
                 >
                   <div className="w-6 h-6 sm:w-7 sm:h-7 bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0">

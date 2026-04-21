@@ -342,6 +342,7 @@ export const mockProducts: Product[] = [
     categoryName: 'Smartphones',
     brandId: 'brand-1',
     brandName: 'Apple',
+     status: 'active',
     name: 'iPhone 15 Pro Max',
     slug: 'iphone-15-pro-max',
     description:
@@ -391,6 +392,7 @@ export const mockProducts: Product[] = [
     categoryName: 'Laptops & Computers',
     brandId: 'brand-1',
     brandName: 'Apple',
+    status: 'out-of-stock',
     name: 'MacBook Pro 14" M3 Pro',
     slug: 'macbook-pro-14-m3-pro',
     description:
@@ -436,6 +438,7 @@ export const mockProducts: Product[] = [
     brandName: 'Sony',
     name: 'Sony WH-1000XM5 Wireless Headphones',
     slug: 'sony-wh-1000xm5-wireless',
+     status: 'active',
     description:
       'Industry-leading noise canceling with two processors and eight microphones. Crystal clear hands-free calling, 30-hour battery, and multipoint connection. The WH-1000XM5 is the gold standard in wireless headphones.',
     price: 349.99,
@@ -478,6 +481,7 @@ export const mockProducts: Product[] = [
     categoryName: 'Smartphones',
     brandId: 'brand-2',
     brandName: 'Samsung',
+    status: 'out-of-stock',
     name: 'Samsung Galaxy S24 Ultra',
     slug: 'samsung-galaxy-s24-ultra',
     description:
@@ -521,6 +525,7 @@ export const mockProducts: Product[] = [
     categoryName: 'Wearables',
     brandId: 'brand-1',
     brandName: 'Apple',
+     status: 'active',
     name: 'Apple Watch Ultra 2',
     slug: 'apple-watch-ultra-2',
     description:
@@ -563,6 +568,7 @@ export const mockProducts: Product[] = [
     categoryName: 'Cameras & Photography',
     brandId: 'brand-3',
     brandName: 'Sony',
+     status: 'active',
     name: 'Sony Alpha A7R V Mirrorless Camera',
     slug: 'sony-alpha-a7r-v',
     description:
@@ -607,6 +613,7 @@ export const mockProducts: Product[] = [
     categoryName: 'Gaming',
     brandId: 'brand-3',
     brandName: 'Sony',
+     status: 'active',
     name: 'PlayStation 5 Console (Slim)',
     slug: 'playstation-5-slim',
     description:
@@ -648,6 +655,7 @@ export const mockProducts: Product[] = [
     categoryId: 'cat-7',
     categoryName: 'Smart Home',
     brandId: 'brand-1',
+     status: 'active',
     brandName: 'Apple',
     name: 'Apple HomePod (2nd Gen)',
     slug: 'apple-homepod-2nd-gen',
@@ -691,6 +699,7 @@ export const mockProducts: Product[] = [
     categoryName: 'Laptops & Computers',
     brandId: 'brand-4',
     brandName: 'Dell',
+     status: 'active',
     name: 'Dell XPS 15 (9530)',
     slug: 'dell-xps-15-9530',
     description:
@@ -736,6 +745,7 @@ export const mockProducts: Product[] = [
     brandName: 'Samsung',
     name: 'Samsung 65W USB-C Super Fast Charger Trio',
     slug: 'samsung-65w-usb-c-charger-trio',
+     status: 'active',
     description:
       'Charge three devices simultaneously at blazing fast speeds. The 65W trio charger delivers Super Fast Charging 2.0 for Galaxy devices, 45W PD for laptops, and 15W wireless. One brick to rule them all.',
     price: 69.99,

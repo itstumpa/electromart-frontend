@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Star, Package, ShieldCheck } from 'lucide-react';
-import { mockVendorProfiles, mockUsers } from '@/data/mock-data';
+import { mockVendorProfiles } from '@/data/mock-data';
 
 // Extended vendor data with cover images and additional context
 const VENDOR_EXTRAS: Record<string, {
@@ -135,7 +135,7 @@ export default function TopVendors() {
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-slate-900/60 to-transparent" />
 
                 {/* Badge */}
                 <span className={`absolute top-2.5 right-2.5 text-[10px] font-black px-2 py-1 rounded-lg ${BADGE_COLORS[vendor.extras.badge] ?? 'bg-slate-700 text-white'}`}>

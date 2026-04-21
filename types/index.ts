@@ -1,6 +1,47 @@
 // lib/constants.ts
 export const APP_NAME = "ElectroMart";
 
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image?: string;
+  productCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Brand {
+  id: string;
+  name: string;
+  slug: string;
+  logo?: string;
+  description?: string;
+  productCount: number;
+  createdAt: string;
+}
+export interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  sku?: string;
+  shortDescription?: string;
+  description?: string;
+  price: number;
+  discountPrice?: number;
+  stock: number;
+  status?: 'active' | 'draft' | 'out-of-stock';
+  featured?: boolean;
+  thumbnail?: string;
+  images?: string[];
+  brand?: string;
+  category?: string;
+  vendor?: string;
+  isPublished?: true;
+  createdAt: string;
+  updatedAt?: string;
+}
 export const NAV_CATEGORIES = [
   {
     name: "Smartphones & Tablets",

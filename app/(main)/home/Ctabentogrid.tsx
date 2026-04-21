@@ -42,7 +42,7 @@ export default function CTABentoGrid() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.45 }}
-            className="lg:col-span-2 relative overflow-hidden rounded-3xl bg-slate-900 p-6 sm:p-8 min-h-[280px] flex flex-col justify-between"
+            className="lg:col-span-2 relative overflow-hidden rounded-3xl bg-slate-900 p-6 sm:p-8 min-h-70 flex flex-col justify-between"
           >
             {/* Background texture */}
             <div
@@ -124,7 +124,7 @@ export default function CTABentoGrid() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.45, delay: 0.1 }}
-              className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-600 to-amber-700 p-5 sm:p-6 flex-1 min-h-[130px] flex flex-col justify-between"
+              className="relative overflow-hidden rounded-3xl bg-linear-to-br from-amber-600 to-amber-700 p-5 sm:p-6 flex-1 min-h-32.5 flex flex-col justify-between"
             >
               <div
                 className="absolute inset-0 opacity-10 pointer-events-none"
@@ -161,7 +161,7 @@ export default function CTABentoGrid() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.45, delay: 0.2 }}
-              className="rounded-3xl bg-slate-50 border border-slate-200 p-5 sm:p-6 flex-1 min-h-[130px] flex flex-col justify-between"
+              className="rounded-3xl bg-slate-50 border border-slate-200 p-5 sm:p-6 flex-1 min-h-32.5 flex flex-col justify-between"
             >
               <div className="flex items-center gap-2 mb-3">
                 <Mail size={16} className="text-amber-600" />
@@ -179,7 +179,7 @@ export default function CTABentoGrid() {
                     className="flex items-center gap-2 text-green-700 bg-green-100 rounded-xl px-3 py-2"
                   >
                     <CheckCircle2 size={14} />
-                    <span className="text-xs font-bold">You're subscribed!</span>
+                    <span className="text-xs font-bold">You&apos;re subscribed!</span>
                   </motion.div>
                 ) : (
                   <motion.div key="form" className="flex gap-2">

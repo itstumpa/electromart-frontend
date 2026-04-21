@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, X, Tag, Bookmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Category, Brand } from '@/types';
 import ConfirmModal from '../Confirmmodal';
+import type { Product } from '@/types';
 // import ConfirmModal from '@/components/dashboard/admin/ConfirmModal';
 
 /* ── Category Form Modal ─────────────────────────── */

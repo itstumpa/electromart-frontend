@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { mockBrands } from '@/data/mock-data';
+// import { mockBrands } from '@/data/mock-data';
 import Marquee from "react-fast-marquee";
 
 
@@ -94,7 +94,7 @@ export default function TopBrands() {
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
               />
               {/* Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-slate-900/10" />
+              <div className="absolute inset-0 bg-linear-to-t from-slate-900/90 via-slate-900/40 to-slate-900/10" />
 
               {/* Product count pill */}
               <div className="absolute top-2.5 right-2.5 z-10">
@@ -120,8 +120,8 @@ export default function TopBrands() {
         {/* ── Infinite marquee strip ── */}
         <div className="relative">
           {/* Fade edges */}
-          <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-20 bg-gradient-to-r from-[#FFFBEB] to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-20 bg-gradient-to-l from-[#FFFBEB] to-transparent z-10 pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-20 bg-linear-to-r from-[#FFFBEB] to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-20 bg-linear-to-l from-[#FFFBEB] to-transparent z-10 pointer-events-none" />
 
           {/* Scrolling track */}
           <div className="flex overflow-hidden">

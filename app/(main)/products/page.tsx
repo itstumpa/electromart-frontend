@@ -22,16 +22,16 @@ import { motion, AnimatePresence, } from 'framer-motion';
 // import Image from 'next/image';
 import {
   ArrowRight,
-  ShieldCheck,
+  // ShieldCheck,
   Truck,
-  RotateCcw,
+  // RotateCcw,
   Zap,
   Star,
-  ChevronRight,
-  Play,
+  // ChevronRight,
+  // Play,
   ShoppingBag,
   TrendingUp,
-  Award,
+  // Award,
   Heart,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -98,7 +98,7 @@ const floatingProducts = [
 /* ── Animation variants ──────────────────────── */
 const stagger = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } },
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } as const},
 };
 
 const fadeSlideUp = {
@@ -106,18 +106,10 @@ const fadeSlideUp = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const},
   },
 };
 
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.88 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
-  },
-};
 
 /* ── Counter hook ─────────────────────────────── */
 function useCountUp(target: number, duration = 2000) {
@@ -305,7 +297,7 @@ const sortOptions = [
                 >
                   <Link href="/products">
                     <Button
-                      size="xl"
+                      size="lg"
                       className="rounded-2xl px-4 md:px-8 py-2 md:py-4 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200 group"
                     >
                       <ShoppingBag className="h-5 w-5" />
@@ -316,7 +308,7 @@ const sortOptions = [
                   <Link href="/sale">
                     <Button
                       variant="outline"
-                      size="xl"
+                      size="lg"
                       className="rounded-2xl px-4 md:px-8 py-2 md:py-4 border-2 border-amber-200 hover:border-primary hover:bg-accent-light transition-all duration-200"
                     >
                       <Zap className="h-4 w-4 text-primary" />
@@ -496,7 +488,7 @@ const sortOptions = [
       transition={{ duration: 0.6, delay: 1 }}
       className="absolute top-4 -right-2 sm:top-6 sm:-right-4 z-20"
     >
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/[0.06] p-3.5 border border-amber-100/80 min-w-35">
+      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/6 p-3.5 border border-amber-100/80 min-w-35">
         <div className="flex items-center gap-1.5 mb-1">
           {[...Array(5)].map((_, i) => (
             <Star
@@ -522,7 +514,7 @@ const sortOptions = [
       transition={{ duration: 0.6, delay: 1.2 }}
       className="absolute -bottom-2 -left-3 sm:bottom-6 sm:-left-6 z-20"
     >
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/[0.06] p-3 border border-amber-100/80 flex items-center gap-3 min-w-50">
+      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/6 p-3 border border-amber-100/80 flex items-center gap-3 min-w-50">
         <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-amber-50 shrink-0">
           <Image
             src={floatingProducts[0].image}
@@ -562,7 +554,7 @@ const sortOptions = [
       transition={{ duration: 0.6, delay: 1.4 }}
       className="absolute top-[55%] -right-3 sm:-right-8 z-20 hidden sm:block"
     >
-      <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg shadow-black/[0.04] px-3.5 py-2.5 border border-amber-100/80 flex items-center gap-2.5">
+      <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg shadow-black/4 px-3.5 py-2.5 border border-amber-100/80 flex items-center gap-2.5">
         <div className="h-8 w-8 rounded-lg bg-success-light flex items-center justify-center">
           <Truck className="h-4 w-4 text-success" />
         </div>
@@ -584,7 +576,7 @@ const sortOptions = [
       transition={{ duration: 0.4, delay: 1.5, type: 'spring' }}
       className="absolute top-4 left-6 z-20"
     >
-      <button className="h-10 w-10 rounded-full bg-white/90 backdrop-blur-md shadow-lg shadow-black/[0.06] border border-amber-100/80 flex items-center justify-center text-foreground-muted hover:text-red-500 hover:bg-red-50 transition-all duration-200 group">
+      <button className="h-10 w-10 rounded-full bg-white/90 backdrop-blur-md shadow-lg shadow-black/6 border border-amber-100/80 flex items-center justify-center text-foreground-muted hover:text-red-500 hover:bg-red-50 transition-all duration-200 group">
         <Heart className="h-4.5 w-4.5 group-hover:scale-110 transition-transform" />
       </button>
     </motion.div>
