@@ -11,7 +11,7 @@ import {
   LogOut, Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { UserRole } from '@/data/types';
+import type { UserRole } from '@/data/types';
 
 interface NavItem {
   label: string;

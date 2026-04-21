@@ -1,12 +1,13 @@
 'use client';
 
+import { RevenueDataPoint } from '@/data/types';
 import { useState } from 'react';
 import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, Legend,
+  ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
-import type { RevenueDataPoint } from '@/types';
+// import type { RevenueDataPoint } from '@/types';
 
 interface Props {
   revenueData: RevenueDataPoint[];

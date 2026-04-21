@@ -6,10 +6,11 @@ import {
   UserCheck, UserX, Eye, Shield,
   Users, UserCog, Truck, Store, X, ChevronDown,
 } from 'lucide-react';
-import type { User, UserRole } from '@/types';
+// import type { User, UserRole } from '@/types';
 import { mockUsers } from '@/data/mock-data';
-import AdminDataTable from '../Admindatatable';
+import AdminDataTable, { Column } from '../Admindatatable';
 import ConfirmModal from '../Confirmmodal';
+import { User, UserRole } from '@/data/types';
 // import AdminDataTable, { Column } from '@/components/dashboard/admin/AdminDataTable';
 // import ConfirmModal from '@/components/dashboard/admin/ConfirmModal';
 
