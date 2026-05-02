@@ -88,7 +88,7 @@ export default function RegisterPage() {
       className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-100 p-8"
     >
       {/* Heading */}
-      <section className='max-w-lg mx-auto border shadow-md border-slate-500 rounded-2xl px-4 sm:px-6 md:px-12 py-8'>
+      <section className='max-w-lg mx-auto border shadow-md border-slate-200 rounded-2xl px-4 sm:px-6 md:px-12 py-8'>
 
       <div className="mb-6">
         <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>
