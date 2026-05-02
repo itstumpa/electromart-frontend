@@ -830,7 +830,7 @@ const sortOptions = [
                           <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
                             <div>
                               <p className="text-xs text-amber-600 font-semibold mb-1">{product.brandName} · {product.categoryName}</p>
-                              <h3 className="text-base font-bold text-slate-900 group-hover:text-amber-700 transition-colors leading-snug mb-2">{product.name}</h3>
+                              <h3 className="text-base font-bold text-slate-900 group-hover:text-amber-700  transition-colors leading-snug mb-2">{product.name}</h3>
                               <p className="text-sm text-slate-500 line-clamp-2">{product.description}</p>
                             </div>
                             <div className="flex items-center justify-between mt-3 flex-wrap gap-2">

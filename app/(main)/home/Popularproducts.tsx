@@ -171,7 +171,7 @@ export default function PopularProducts() {
                       {/* Info */}
                       <div className="p-3 sm:p-4">
                         <p className="text-[10px] sm:text-xs font-semibold text-amber-600 mb-1">{product.brandName}</p>
-                        <h3 className="font-bold text-slate-900 text-xs sm:text-sm leading-snug mb-2 line-clamp-2 group-hover:text-amber-700 transition-colors">
+                        <h3 className="font-bold text-slate-900 text-xs sm:text-sm leading-snug mb-2 line-clamp-1 group-hover:text-amber-700 transition-colors">
                           {product.name}
                         </h3>
 

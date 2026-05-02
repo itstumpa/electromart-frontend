@@ -75,7 +75,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
         {/* Info */}
         <div className="p-4">
           <p className="text-xs text-amber-600 font-semibold mb-1">{product.brandName}</p>
-          <h3 className="text-sm font-bold text-slate-900 leading-snug line-clamp-2 mb-2 group-hover:text-amber-700 transition-colors">
+          <h3 className="text-sm font-bold text-slate-900 leading-snug line-clamp-1 mb-2 group-hover:text-amber-700 transition-colors">
             {product.name}
           </h3>
 
