@@ -46,7 +46,7 @@ const navLinks = [
   { label: 'Products',   href: '/products' },
   { label: 'Categories', href: '/products', dropdown: true },
   { label: 'Sale',       href: '/sale',     highlight: true },
-  { label: 'Dashboard',      href: '/dashboard' },
+  { label: 'Dashboard',      href: '/dashboard/admin' },
 ];
 
 /* ─────────────────────────────────────────────
