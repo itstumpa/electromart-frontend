@@ -8,8 +8,7 @@ import {
   CheckCircle2, Clock, Truck,
 } from 'lucide-react';
 import { mockVendorProfiles, mockProducts, mockOrders, mockUsers } from '@/data/mock-data';
-import VendorRevenueChart from './overview/VendorRevenueChart';
-// import VendorRevenueChart from '@/components/dashboard/vendor/VendorRevenueChart';
+import VendorRevenueChart from './VendorRevenueChart';
 // Note: VendorRevenueChart is a CLIENT component (Recharts needs DOM)
 
 export const metadata: Metadata = { title: 'Vendor Overview — ElectroMart' };
