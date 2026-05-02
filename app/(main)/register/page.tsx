@@ -9,6 +9,8 @@ import {
   User, Mail, Lock, Phone,
   Eye, EyeOff, ArrowRight,
   ShoppingBag, Store, CheckCircle2, AlertCircle,
+  Chrome,
+  Facebook,
 } from 'lucide-react';
 
 type Role = 'CUSTOMER' | 'VENDOR';
@@ -70,11 +72,11 @@ export default function RegisterPage() {
   const socials = [
     {
       name: 'Google',
-      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/480px-Google_%22G%22_logo.svg.png',
+      logo: <Chrome size={18} className="text-red-500" />,
     },
     {
       name: 'Facebook',
-      logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/480px-2023_Facebook_icon.svg.png',
+      logo: <Facebook size={18} className="text-blue-600" />,
     },
   ];
 
@@ -86,7 +88,7 @@ export default function RegisterPage() {
       className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-100 p-8"
     >
       {/* Heading */}
-      <section className='max-w-lg mx-auto px-4 sm:px-6 md:px-8 py-8'>
+      <section className='max-w-lg mx-auto border shadow-md border-slate-500 rounded-2xl px-4 sm:px-6 md:px-12 py-8'>
 
       <div className="mb-6">
         <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>
@@ -123,7 +125,7 @@ export default function RegisterPage() {
             key={name}
             className="flex items-center justify-center gap-2.5 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 transition-colors"
           >
-            <Image src={logo} alt={name} width={18} height={18} className="rounded-sm" />
+          {logo}
             {name}
           </button>
         ))}
