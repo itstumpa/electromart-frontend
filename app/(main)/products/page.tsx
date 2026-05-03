@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-// import { motion } from 'framer-motion';
 import {
   SlidersHorizontal, X, ChevronDown, Search,
   Grid3X3, LayoutList,
@@ -11,15 +10,10 @@ import Link from 'next/link';
 import {
   mockProducts, mockCategories, mockBrands,
 } from '@/data/mock-data';
-
 import Reveal from '../Utilities/Reveal';
 import ProductCard from '../Utilities/Productcard';
 import Image from 'next/image';
-
-// import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, } from 'framer-motion';
-// import Link from 'next/link';
-// import Image from 'next/image';
 import {
   ArrowRight,
   // ShieldCheck,
@@ -158,6 +152,7 @@ const sortOptions = [
 
   const searchParams = useSearchParams();
   const urlCategory = searchParams.get('category') ?? '';
+  
 
   const [search,      setSearch]      = useState('');
   const [category,    setCategory]    = useState(urlCategory);
@@ -166,6 +161,11 @@ const sortOptions = [
   const [maxPrice,    setMaxPrice]    = useState(4000);
   const [minRating,   setMinRating]   = useState(0);
   const [sort,        setSort]        = useState('newest');
+
+  useEffect(() => {
+  setCategory(urlCategory);
+}, [urlCategory]);
+
   const [view,        setView]        = useState<'grid' | 'list'>('grid');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -197,6 +197,8 @@ const sortOptions = [
   const activeCatLabel = category
     ? mockCategories.find(c => c.slug === category)?.name ?? 'All Products'
     : 'All Products';
+
+    
 
   return (
     <>

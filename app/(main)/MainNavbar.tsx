@@ -23,12 +23,12 @@ import {
   Cable,
 } from 'lucide-react';
 import { mockCart } from '@/data/mock-data';
-// import  SearchPage from '../(main)/search/page'
-import search from "../(main)/search/page";
+
 
 /* ─────────────────────────────────────────────
    NAV DATA
 ───────────────────────────────────────────── */
+
 
 const categoryItems = [
   { label: 'Smartphones',       href: '/products?category=smartphones',       icon: Smartphone },
@@ -87,7 +87,10 @@ export default function MainNavbar() {
   const cartCount = mockCart.itemCount;
 
   // Close mobile menu on route change
-  useEffect(() => { setMobileOpen(false); setDropdownOpen(false); }, [pathname, searchParams]);
+useEffect(() => {
+  setMobileOpen(false);
+  setDropdownOpen(false);
+}, [pathname, searchParams.toString()]);
 
   // Scroll shadow
   useEffect(() => {
@@ -97,9 +100,11 @@ export default function MainNavbar() {
   }, []);
 
   // Is any category currently selected?
-  const isCategoryActive = categoryItems.some(
-    (c) => pathname === '/products' && searchParams.get('category') === c.href.split('category=')[1]
-  );
+const currentCategory = searchParams.get('category') || '';
+
+const isCategoryActive = categoryItems.some(
+  (c) => pathname === '/products' && currentCategory === c.href.split('category=')[1]
+);
 
   return (
     <header
@@ -179,8 +184,7 @@ export default function MainNavbar() {
                           {categoryItems.map((item) => {
                             const Icon = item.icon;
                             const cat = item.href.split('category=')[1];
-                            const isActive =
-                              pathname === '/products' && searchParams.get('category') === cat;
+                            const isActive = pathname === '/products' && currentCategory === cat;
 
                             return (
                               <Link

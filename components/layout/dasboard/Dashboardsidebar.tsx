@@ -160,7 +160,7 @@ export default function DashboardSidebar({ role }: Props) {
             Account
           </p>
           <Link
-            href="/dashboard/settings"
+            href="/dashboard/admin/settings"
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
           >
             <Settings size={17} className="text-slate-400" />
