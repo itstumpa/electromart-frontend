@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import {
   mockUsers, mockOrders, mockWishlist,
-  mockNotifications, mockAddresses, mockReviews,
+  mockNotifications,  mockReviews,
 } from '@/data/mock-data';
 
 export const metadata: Metadata = { title: 'My Dashboard — ElectroMart' };
