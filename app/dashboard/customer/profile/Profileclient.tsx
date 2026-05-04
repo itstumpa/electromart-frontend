@@ -127,7 +127,7 @@ export default function CustomerProfileClient() {
                     <input
                       type={type}
                       placeholder={placeholder}
-                      value={(form as any)[k]}
+                      value={form[k as keyof typeof form]}
                       onChange={(e) => setForm({ ...form, [k]: e.target.value })}
                       className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
                     />

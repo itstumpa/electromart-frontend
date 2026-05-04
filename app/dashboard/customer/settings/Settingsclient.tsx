@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Bell, Shield, Save, CheckCircle2,
   Eye, EyeOff, Lock, Smartphone, ShoppingBag,
-  Tag, Truck, Star, Trash2,
+  Tag, Star, Trash2,
 } from 'lucide-react';
+
 
 type Tab = 'account' | 'notifications' | 'security';
 
@@ -197,7 +198,7 @@ export default function CustomerSettingsClient() {
                         <Icon size={12} /> {title}
                       </p>
                       <div className="bg-white rounded-2xl border border-slate-100 px-5 divide-y divide-slate-50">
-                        {items.map(({ k, label, sub }) => (
+                        {items.map(({ k, label, sub }) => (  
                           <Toggle key={k} label={label} sub={sub} value={(notifs as any)[k]} onChange={(v) => setNotifs({ ...notifs, [k]: v })} />
                         ))}
                       </div>
