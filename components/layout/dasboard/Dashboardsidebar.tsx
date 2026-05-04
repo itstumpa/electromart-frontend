@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Users, Store, Package,
   ShoppingBag, Tag, Menu, X,
-  LogOut, Settings, Bell,
+  LogOut, Settings, Bell, User,
   Heart, MapPin, Star, Wallet,
   ClipboardList, BarChart2, Boxes,
 } from 'lucide-react';
@@ -154,16 +154,35 @@ export default function DashboardSidebar({ role }: Props) {
           <NavLink key={item.href} item={item} />
         ))}
 
-        {/* ── Account section ── */}
+        {/* ── Account section — links are dynamic per role ── */}
         <div className="pt-4 mt-4 border-t border-slate-100 space-y-0.5">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-3">
             Account
           </p>
           <Link
-            href="/dashboard/admin/settings"
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+            href={`${roleRoot}/profile`}
+            onClick={() => setMobileOpen(false)}
+            className={[
+              'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors',
+              isActive(`${roleRoot}/profile`)
+                ? 'bg-amber-600 text-white'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+            ].join(' ')}
           >
-            <Settings size={17} className="text-slate-400" />
+            <User size={17} className={isActive(`${roleRoot}/profile`) ? 'text-white' : 'text-slate-400'} />
+            My Profile
+          </Link>
+          <Link
+            href={`${roleRoot}/settings`}
+            onClick={() => setMobileOpen(false)}
+            className={[
+              'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors',
+              isActive(`${roleRoot}/settings`)
+                ? 'bg-amber-600 text-white'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+            ].join(' ')}
+          >
+            <Settings size={17} className={isActive(`${roleRoot}/settings`) ? 'text-white' : 'text-slate-400'} />
             Settings
           </Link>
           <Link
