@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -8,6 +8,9 @@ import { Bell, Search, ChevronDown, LogOut, User, Settings, X } from 'lucide-rea
 import { AnimatePresence, motion } from 'framer-motion';
 import type { User as UserType, UserRole } from '@/data/types';
 import { mockNotifications } from '@/data/mock-data';
+import { authStorage } from '@/utils/auth-storage';
+import { logoutUser } from '@/api/auth.api';
+import { toast } from 'sonner';
 
 // ─── Role-specific topbar config ─────────────────────────────
 const ROLE_CONFIG: Record<UserRole, {
@@ -56,13 +59,43 @@ interface Props { user: UserType }
 
 export default function DashboardTopbar({ user }: Props) {
   const pathname  = usePathname();
-  const config    = ROLE_CONFIG[user.role];
+  const [activeUser, setActiveUser] = useState<UserType>(user);
+  const config    = ROLE_CONFIG[activeUser.role];
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen,   setNotifOpen]   = useState(false);
 
+  useEffect(() => {
+    const storedUser = authStorage.getAuthUser();
+    if (!storedUser) return;
+
+    setActiveUser((prev) => ({
+      ...prev,
+      id: storedUser.id,
+      name: storedUser.name,
+      email: storedUser.email,
+      role: storedUser.role as UserRole,
+      avatar: storedUser.avatar,
+    }));
+  }, []);
+
   // Filter notifs for this user
-  const notifs    = mockNotifications.filter((n) => n.userId === user.id).slice(0, 5);
+  const notifs = useMemo(
+    () => mockNotifications.filter((n) => n.userId === activeUser.id).slice(0, 5),
+    [activeUser.id],
+  );
   const unread    = notifs.filter((n) => !n.isRead).length;
+  const handleSignOut = async () => {
+    try {
+      await logoutUser();
+    } catch {
+      // even if API fails, clear stale session client-side
+    } finally {
+      authStorage.clearSession();
+      toast.success('You are logged out');
+      setProfileOpen(false);
+    }
+  };
+
 
   // Breadcrumb: derive from pathname
   const segments = pathname.split('/').filter(Boolean);
@@ -153,7 +186,7 @@ export default function DashboardTopbar({ user }: Props) {
                 </div>
                 <div className="px-4 py-2.5 border-t border-slate-100 text-center">
                   <Link
-                    href={`${user.role === 'SUPER_ADMIN' ? '/dashboard/admin' : user.role === 'VENDOR' ? '/dashboard/vendor' : '/dashboard/customer'}/notifications`}
+                    href={`${activeUser.role === 'SUPER_ADMIN' ? '/dashboard/admin' : activeUser.role === 'VENDOR' ? '/dashboard/vendor' : '/dashboard/customer'}/notifications`}
                     onClick={() => setNotifOpen(false)}
                     className="text-xs font-semibold text-amber-600 hover:text-amber-700"
                   >
@@ -171,15 +204,15 @@ export default function DashboardTopbar({ user }: Props) {
             onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
             className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-200 transition-all"
           >
-            {user.avatar ? (
-              <Image src={user.avatar} alt={user.name} width={28} height={28} className="w-7 h-7 rounded-lg object-cover shrink-0" />
+            {activeUser.avatar ? (
+              <Image src={activeUser.avatar} alt={activeUser.name} width={28} height={28} className="w-7 h-7 rounded-lg object-cover shrink-0" />
             ) : (
               <div className="w-7 h-7 rounded-lg bg-amber-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                {user.name[0]}
+                {activeUser.name[0]}
               </div>
             )}
             <div className="hidden sm:block text-left">
-              <p className="text-xs font-bold text-slate-900 leading-tight">{user.name}</p>
+              <p className="text-xs font-bold text-slate-900 leading-tight">{activeUser.name}</p>
               <p className={`text-[10px] font-bold uppercase tracking-wide ${config.accentColor} rounded px-1`}>
                 {config.roleLabel}
               </p>
@@ -198,8 +231,8 @@ export default function DashboardTopbar({ user }: Props) {
               >
                 {/* User info header */}
                 <div className="px-4 py-3 border-b border-slate-100">
-                  <p className="text-sm font-bold text-slate-900 truncate">{user.name}</p>
-                  <p className="text-xs text-slate-500 mt-0.5 truncate">{user.email}</p>
+                  <p className="text-sm font-bold text-slate-900 truncate">{activeUser.name}</p>
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">{activeUser.email}</p>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1.5 inline-block ${config.accentColor}`}>
                     {config.roleLabel}
                   </span>
@@ -220,7 +253,7 @@ export default function DashboardTopbar({ user }: Props) {
                 ))}
 
                 <div className="border-t border-slate-100 mt-1">
-                  <Link href="/" onClick={() => setProfileOpen(false)}
+                  <Link href="/" onClick={handleSignOut}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
                     <LogOut size={15} />
                     Sign Out

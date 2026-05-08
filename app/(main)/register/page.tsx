@@ -12,6 +12,9 @@ import {
   Chrome,
   Facebook,
 } from 'lucide-react';
+import { signupUser } from '@/api/auth.api';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { toast } from 'sonner';
 
 type Role = 'CUSTOMER' | 'VENDOR';
 
@@ -63,10 +66,26 @@ export default function RegisterPage() {
     if (err) { setError(err); return; }
     setError('');
     setLoading(true);
-    // Swap with: await api.post('/auth/register', { ...form, role })
-    await new Promise((r) => setTimeout(r, 1500));
-    setLoading(false);
-    router.push(role === 'VENDOR' ? '/dashboard/vendor' : '/dashboard/customer');
+
+    try {
+      await signupUser({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        role,
+      });
+
+      sessionStorage.setItem(
+        'auth_notice',
+        'Registration completed. Please verify your email, then sign in.'
+      );
+      // toast.success('Registration completed. Please verify your email.');
+      router.push('/login');
+    } catch (apiError) {
+      setError(getApiErrorMessage(apiError));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const socials = [

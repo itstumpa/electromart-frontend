@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type ChangeEvent, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -9,6 +9,10 @@ import {
   ShoppingBag, Heart, Star, Package,
 } from 'lucide-react';
 import { mockUsers, mockOrders, mockWishlist, mockReviews } from '@/data/mock-data';
+import { authStorage } from '@/utils/auth-storage';
+import { getMe } from '@/api/auth.api';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { toast } from 'sonner';
 
 export default function CustomerProfileClient() {
   const customer = mockUsers.find((u) => u.role === 'CUSTOMER')!;
@@ -26,6 +30,53 @@ export default function CustomerProfileClient() {
   const [avatarPreview, setAvatarPreview] = useState(customer.avatar ?? '');
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
+  const [loadingMe, setLoadingMe] = useState(true);
+
+  useEffect(() => {
+    const loadMe = async () => {
+      try {
+        const response = await getMe();
+        const me = response.data?.data;
+        if (!me) return;
+
+        const authUser = authStorage.getAuthUser();
+        const cachedProfileRaw = localStorage.getItem('customerProfileDraft');
+        const cachedProfile = cachedProfileRaw
+          ? (JSON.parse(cachedProfileRaw) as { phone?: string; location?: string; bio?: string; avatar?: string })
+          : null;
+
+        const avatar = cachedProfile?.avatar ?? authUser?.avatar ?? '';
+
+        setForm((prev) => ({
+          ...prev,
+          name: me.name,
+          email: me.email,
+          phone: cachedProfile?.phone ?? prev.phone,
+          location: cachedProfile?.location ?? prev.location,
+          bio: cachedProfile?.bio ?? prev.bio,
+          avatar,
+        }));
+        setAvatarPreview(avatar);
+
+        if (authUser) {
+          authStorage.setAuthUser({
+            ...authUser,
+            id: me.id,
+            name: me.name,
+            email: me.email,
+            role: me.role === 'ADMIN' ? 'SUPER_ADMIN' : me.role,
+            avatar,
+          });
+        }
+      } catch (error) {
+        toast.error(getApiErrorMessage(error, 'Failed to load profile'));
+      } finally {
+        setLoadingMe(false);
+      }
+    };
+
+    loadMe();
+  }, []);
 
   const totalSpent = myOrders
     .filter((o) => o.paymentStatus === 'paid')
@@ -38,9 +89,41 @@ export default function CustomerProfileClient() {
   const save = async () => {
     setSaving(true);
     await new Promise((r) => setTimeout(r, 1200));
+    const currentAuthUser = authStorage.getAuthUser();
+    if (currentAuthUser) {
+      authStorage.setAuthUser({
+        ...currentAuthUser,
+        name: form.name.trim(),
+        email: form.email.trim(),
+        avatar: form.avatar.trim() || undefined,
+      });
+    }
+    localStorage.setItem(
+      'customerProfileDraft',
+      JSON.stringify({
+        phone: form.phone,
+        location: form.location,
+        bio: form.bio,
+        avatar: form.avatar,
+      }),
+    );
     setSaving(false);
     setSaved(true);
+    toast.success('Profile updated');
     setTimeout(() => setSaved(false), 2500);
+  };
+
+  const handleAvatarUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageDataUrl = typeof reader.result === 'string' ? reader.result : '';
+      setForm((prev) => ({ ...prev, avatar: imageDataUrl }));
+      setAvatarPreview(imageDataUrl);
+    };
+    reader.readAsDataURL(file);
   };
 
   const stats = [
@@ -49,6 +132,17 @@ export default function CustomerProfileClient() {
     { icon: Star,        label: 'Reviews',    value: myReviews.length,     color: 'text-purple-700', bg: 'bg-purple-100' },
     { icon: Package,     label: 'Delivered',  value: myOrders.filter((o) => o.status === 'delivered').length, color: 'text-green-700', bg: 'bg-green-100' },
   ];
+
+  if (loadingMe) {
+    return (
+      <div className="space-y-2">
+        <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>
+          My Profile
+        </h1>
+        <p className="text-sm text-slate-400">Loading profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -80,7 +174,7 @@ export default function CustomerProfileClient() {
                 </div>
                 <label className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-amber-600 hover:bg-amber-700 text-white rounded-xl flex items-center justify-center cursor-pointer transition-colors shadow-md">
                   <Camera size={13} />
-                  <input type="file" className="sr-only" accept="image/*" />
+                  <input type="file" className="sr-only" accept="image/*" onChange={handleAvatarUpload} />
                 </label>
               </div>
               <div>
