@@ -43,19 +43,7 @@ export const metadata: Metadata = {
 async function fetchOrder(orderId: string) {
   // MOCK — replace with real fetch above
   await new Promise((r) => setTimeout(r, 0)); // simulate async
-    const res = await fetch(
-    `${process.env.BACKEND_URL}/api/v1/orders/${orderId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,   // read from cookies()
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store',
-    }
-  );
-  if (!res.ok) return null;
-  const json = await res.json();
-  return json.data;
+  return mockOrders.find((o) => o.id === orderId || o.orderNumber === orderId) ?? null;
 }
 
 interface Props {
