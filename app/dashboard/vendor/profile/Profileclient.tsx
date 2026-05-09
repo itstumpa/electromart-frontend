@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type ChangeEvent, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -9,10 +9,15 @@ import {
   ShoppingBag, MapPin, Calendar,
 } from 'lucide-react';
 import { mockUsers, mockVendorProfiles } from '@/data/mock-data';
+import { authStorage } from '@/utils/auth-storage';
+import { getMe } from '@/api/auth.api';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { toast } from 'sonner';
 
 export default function VendorProfileClient() {
   const vendor  = mockUsers.find((u) => u.role === 'VENDOR')!;
   const profile = mockVendorProfiles[0];
+  const [loadingMe, setLoadingMe] = useState(true);
 
   const [form, setForm] = useState({
     name:     vendor.name,
@@ -27,14 +32,83 @@ export default function VendorProfileClient() {
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
 
+  useEffect(() => {
+    const loadMe = async () => {
+      try {
+        const response = await getMe();
+        const me = response.data?.data;
+        if (!me) return;
+
+        const authUser = authStorage.getAuthUser();
+        const avatar = authUser?.avatar ?? '';
+
+        setForm((prev) => ({
+          ...prev,
+          name: me.name,
+          email: me.email,
+          avatar,
+        }));
+        setAvatarPreview(avatar);
+
+        if (authUser) {
+          authStorage.setAuthUser({
+            ...authUser,
+            id: me.id,
+            name: me.name,
+            email: me.email,
+            role: me.role === 'ADMIN' ? 'SUPER_ADMIN' : me.role,
+            avatar: authUser.avatar,
+          });
+        }
+      } catch (error) {
+        toast.error(getApiErrorMessage(error, 'Failed to load profile'));
+      } finally {
+        setLoadingMe(false);
+      }
+    };
+
+    loadMe();
+  }, []);
+
   const save = async () => {
     setSaving(true);
     await new Promise((r) => setTimeout(r, 1200));
+    const currentAuthUser = authStorage.getAuthUser();
+    if (currentAuthUser) {
+      authStorage.setAuthUser({
+        ...currentAuthUser,
+        name: form.name.trim(),
+        email: form.email.trim(),
+        avatar: form.avatar.trim() || undefined,
+      });
+    }
     setSaving(false); setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
 
+  const handleAvatarUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageDataUrl = typeof reader.result === 'string' ? reader.result : '';
+      setForm((prev) => ({ ...prev, avatar: imageDataUrl }));
+      setAvatarPreview(imageDataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const joined = new Date(vendor.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  if (loadingMe) {
+    return (
+      <div className="space-y-2">
+        <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>My Profile</h1>
+        <p className="text-sm text-slate-400">Loading profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -64,7 +138,7 @@ export default function VendorProfileClient() {
                 </div>
                 <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-amber-600 hover:bg-amber-700 text-white rounded-xl flex items-center justify-center cursor-pointer transition-colors shadow-md">
                   <Camera size={13} />
-                  <input type="file" className="sr-only" accept="image/*" />
+                  <input type="file" className="sr-only" accept="image/*" onChange={handleAvatarUpload} />
                 </label>
               </div>
               <div className="flex-1 min-w-0">

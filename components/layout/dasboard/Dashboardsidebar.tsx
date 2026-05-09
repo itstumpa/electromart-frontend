@@ -12,6 +12,9 @@ import {
   ClipboardList, BarChart2, Boxes,
 } from 'lucide-react';
 import type { UserRole } from '@/data/types';
+import { authStorage } from '@/utils/auth-storage';
+import { logoutUser } from '@/api/auth.api';
+import { toast } from 'sonner';
 
 interface NavItem {
   label: string;
@@ -79,6 +82,17 @@ export default function DashboardSidebar({ role }: Props) {
   const isActive = (href: string) =>
     href === roleRoot ? pathname === href : pathname.startsWith(href);
 
+  const handleSignOut = async () => {
+    try {
+      await logoutUser();
+    } catch {
+      // Clear session regardless of API response
+    } finally {
+      authStorage.clearSession();
+      toast.success('You are logged out');
+    }
+  };
+
   const NavLink = ({ item }: { item: NavItem }) => {
     const Icon   = item.icon;
     const active = isActive(item.href);
@@ -107,7 +121,7 @@ export default function DashboardSidebar({ role }: Props) {
         <span className="flex-1 leading-none">{item.label}</span>
         {item.badge && (
           <span className={[
-            'text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center',
+            'text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-4.5 text-center',
             active ? 'bg-white/25 text-white' : 'bg-amber-600 text-white',
           ].join(' ')}>
             {item.badge}
@@ -187,6 +201,7 @@ export default function DashboardSidebar({ role }: Props) {
           </Link>
           <Link
             href="/"
+            onClick={handleSignOut}
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors group"
           >
             <LogOut size={17} className="text-slate-400 group-hover:text-red-500" />

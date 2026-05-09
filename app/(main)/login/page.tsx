@@ -12,7 +12,13 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { loginUser } from '@/api/auth.api';
+import { getApiErrorMessage } from '@/utils/api-error';
+import type { ApiResponse } from '@/types/api';
+import type { SigninResponseData } from '@/types/auth';
+import { authStorage } from '@/utils/auth-storage';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,6 +29,25 @@ export default function LoginPage() {
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState('');
 
+  useEffect(() => {
+    const notice = sessionStorage.getItem('auth_notice');
+    if (notice) {
+      toast.success(notice);
+      sessionStorage.removeItem('auth_notice');
+    }
+  }, []);
+
+  const getRedirectPathByRole = (role: string) => {
+    if (role === 'VENDOR') return '/dashboard/vendor';
+    if (role === 'ADMIN' || role === 'SUPER_ADMIN') return '/dashboard/admin';
+    return '/dashboard/customer';
+  };
+
+  const normalizeRole = (role: string) => {
+    if (role === 'ADMIN') return 'SUPER_ADMIN';
+    return role;
+  };
+
   const handleSubmit = async () => {
     if (!form.email || !form.password) {
       setError('Please enter your email and password.');
@@ -30,10 +55,32 @@ export default function LoginPage() {
     }
     setError('');
     setLoading(true);
-    // Simulate API call — swap with: await signIn('credentials', { ...form })
-    await new Promise((r) => setTimeout(r, 1400));
-    setLoading(false);
-    router.push('/dashboard/customer');
+
+    try {
+      const response = await loginUser({
+        email: form.email,
+        password: form.password,
+      });
+
+      const payload = response.data as ApiResponse<SigninResponseData>;
+      const currentUser = payload.data.user;
+      const role = normalizeRole(currentUser.role);
+
+      authStorage.setAuthUser({
+        id: currentUser.id,
+        name: currentUser.name,
+        email: currentUser.email,
+        role,
+        avatar: (currentUser as { avatar?: string }).avatar,
+      });
+      toast.success('Login successful');
+
+      router.push(getRedirectPathByRole(role));
+    } catch (apiError) {
+      setError(getApiErrorMessage(apiError));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const socials = [
