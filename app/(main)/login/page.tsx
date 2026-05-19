@@ -1,3 +1,5 @@
+// app/(auth)/login/page.tsx
+
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
@@ -9,6 +11,7 @@ import {
   Facebook,
   Lock,
   Mail,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -20,14 +23,42 @@ import type { SigninResponseData } from '@/types/auth';
 import { authStorage } from '@/utils/auth-storage';
 import { toast } from 'sonner';
 
+// ─── Demo credentials ─────────────────────────────────────────
+// These match your backend seed .env — safe for dev/demo.
+// Remove or gate behind process.env.NODE_ENV check before production.
+const DEMO_CREDENTIALS = [
+  {
+    label: 'Super Admin',
+    email: 'superadmin@electromart.com',
+    password: 'Admin@123',
+    color: 'bg-purple-100 hover:bg-purple-200 text-purple-800 border-purple-200',
+    dot: 'bg-purple-500',
+  },
+  {
+    label: 'Vendor',
+    email: 'vendor1@electromart.com',
+    password: 'Vendor@1234',
+    color: 'bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-200',
+    dot: 'bg-blue-500',
+  },
+  {
+    label: 'Customer',
+    email: 'customer@electromart.com',
+    password: 'customer@123',
+    color: 'bg-green-100 hover:bg-green-200 text-green-800 border-green-200',
+    dot: 'bg-green-500',
+  },
+] as const;
+
 export default function LoginPage() {
   const router = useRouter();
 
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [showPw,    setShowPw]    = useState(false);
-  const [remember,  setRemember]  = useState(false);
-  const [loading,   setLoading]   = useState(false);
-  const [error,     setError]     = useState('');
+  const [form, setForm]           = useState({ email: '', password: '' });
+  const [showPw, setShowPw]       = useState(false);
+  const [remember, setRemember]   = useState(false);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState('');
+  const [filledRole, setFilledRole] = useState<string | null>(null);
 
   useEffect(() => {
     const notice = sessionStorage.getItem('auth_notice');
@@ -36,6 +67,14 @@ export default function LoginPage() {
       sessionStorage.removeItem('auth_notice');
     }
   }, []);
+
+  // ── Auto-fill demo credentials ──────────────────────────────
+  const fillDemo = (cred: typeof DEMO_CREDENTIALS[number]) => {
+    setForm({ email: cred.email, password: cred.password });
+    setFilledRole(cred.label);
+    setError('');
+    setTimeout(() => setFilledRole(null), 2000);
+  };
 
   const getRedirectPathByRole = (role: string) => {
     if (role === 'VENDOR') return '/dashboard/vendor';
@@ -74,7 +113,6 @@ export default function LoginPage() {
         avatar: (currentUser as { avatar?: string }).avatar,
       });
       toast.success('Login successful');
-
       router.push(getRedirectPathByRole(role));
     } catch (apiError) {
       setError(getApiErrorMessage(apiError));
@@ -84,14 +122,8 @@ export default function LoginPage() {
   };
 
   const socials = [
-    {
-      name: 'Google',
-      logo: <Chrome size={18} className="text-red-500" />,
-    },
-    {
-      name: 'Facebook',
-      logo: <Facebook size={18} className="text-blue-600" />,
-    },
+    { name: 'Google',   logo: <Chrome   size={18} className="text-red-500" /> },
+    { name: 'Facebook', logo: <Facebook size={18} className="text-blue-600" /> },
   ];
 
   return (
@@ -99,11 +131,58 @@ export default function LoginPage() {
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-100 p-8"
+      className="bg-white p-8"
     >
-      {/* Heading */}
-      <section className='max-w-lg border shadow-md border-slate-200 rounded-2xl py-12 mx-auto px-4 sm:px-6 md:px-8'>
+      <div className='max-w-lg mx-auto border shadow-md border-slate-200 rounded-2xl px-4 sm:px-6 md:px-12 py-8'>
 
+      {/* ── Demo credentials strip ────────────────────────────── */}
+      <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+        <div className="flex items-center gap-1.5 mb-3">
+          <Zap size={13} className="text-amber-600 fill-amber-600" />
+          <p className="text-xs font-black text-amber-800 uppercase tracking-widest">
+            Demo Credentials
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {DEMO_CREDENTIALS.map((cred) => (
+            <motion.button
+              key={cred.label}
+              onClick={() => fillDemo(cred)}
+              whileTap={{ scale: 0.93 }}
+              className={[
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold',
+                'border transition-all duration-150',
+                cred.color,
+                filledRole === cred.label
+                  ? 'ring-2 ring-offset-1 ring-amber-400'
+                  : '',
+              ].join(' ')}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${cred.dot} shrink-0`} />
+              {cred.label}
+              <AnimatePresence>
+                {filledRole === cred.label && (
+                  <motion.span
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <CheckCircle2 size={11} />
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          ))}
+        </div>
+
+        <p className="text-[10px] text-amber-600 mt-2.5 font-medium">
+          Click a role to auto-fill · then hit Sign In
+        </p>
+      </div>
+
+      {/* ── Heading ── */}
       <div className="mb-7">
         <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>
           Welcome back
@@ -111,7 +190,7 @@ export default function LoginPage() {
         <p className="text-sm text-slate-400 mt-1">Sign in to your ElectroMart account</p>
       </div>
 
-      {/* Social buttons */}
+      {/* ── Social buttons ── */}
       <div className="grid grid-cols-2 gap-3 mb-6">
         {socials.map(({ name, logo }) => (
           <button
@@ -124,14 +203,14 @@ export default function LoginPage() {
         ))}
       </div>
 
-      {/* Divider */}
+      {/* ── Divider ── */}
       <div className="flex items-center gap-3 mb-6">
         <div className="flex-1 h-px bg-slate-100" />
         <span className="text-xs text-slate-400 font-medium">or continue with email</span>
         <div className="flex-1 h-px bg-slate-100" />
       </div>
 
-      {/* Error */}
+      {/* ── Error ── */}
       <AnimatePresence>
         {error && (
           <motion.div
@@ -146,8 +225,9 @@ export default function LoginPage() {
         )}
       </AnimatePresence>
 
-      {/* Form */}
+      {/* ── Form ── */}
       <div className="space-y-4">
+
         {/* Email */}
         <div>
           <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">
@@ -200,7 +280,7 @@ export default function LoginPage() {
         <label className="flex items-center gap-2.5 cursor-pointer group">
           <div
             onClick={() => setRemember((v) => !v)}
-            className={`w-4.5 h-4.5  rounded-md border-2 flex items-center justify-center transition-colors shrink-0 ${
+            className={`w-[18px] h-[18px] rounded-md border-2 flex items-center justify-center transition-colors shrink-0 ${
               remember ? 'bg-amber-600 border-amber-600' : 'border-slate-300 group-hover:border-amber-400'
             }`}
           >
@@ -210,7 +290,7 @@ export default function LoginPage() {
         </label>
       </div>
 
-      {/* Submit */}
+      {/* ── Submit ── */}
       <motion.button
         onClick={handleSubmit}
         disabled={loading}
@@ -231,15 +311,14 @@ export default function LoginPage() {
         )}
       </motion.button>
 
-      {/* Register link */}
+      {/* ── Register link ── */}
       <p className="text-center text-sm text-slate-500 mt-5">
         Don&apos;t have an account?{' '}
         <Link href="/register" className="font-bold text-amber-600 hover:text-amber-700 transition-colors">
           Create one free
         </Link>
       </p>
-          </section>
+      </div>
     </motion.div>
-
   );
 }
