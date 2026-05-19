@@ -141,9 +141,9 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open [http://localhost:3001](http://localhost:3001) in your browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-> **Note:** The backend should be running on `http://localhost:3000` (or match your `NEXT_PUBLIC_API_URL`).
+> **Note:** The backend should be running on `http://localhost:5000` (or match your `NEXT_PUBLIC_API_URL`).
 
 ---
 
@@ -153,10 +153,10 @@ Create a `.env.local` file in the root:
 
 ```bash
 # Backend API base URL (include /api/v1)
-NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
+NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
 
 # Next.js public URL (used by backend SSLCommerz redirect)
-NEXT_PUBLIC_APP_URL=http://localhost:3001
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # Optional: enable Redux DevTools in production
 NEXT_PUBLIC_REDUX_DEVTOOLS=false
