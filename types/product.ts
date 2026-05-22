@@ -34,10 +34,15 @@ export interface ProductListItemDto {
   slug: string;
   description?: string | null;
   price: string | number;
+  originalPrice?: string | number | null;
   stock: number;
   storeId: string;
   categoryId: string;
   isActive: boolean;
+  featured?: boolean;       
+  bestseller?: boolean;     
+  rating?: number;       
+  reviewCount?: number;    
   createdAt: string;
   updatedAt?: string;
   images: ProductImageDto[];
@@ -100,9 +105,7 @@ export const toNumber = (value: string | number | null | undefined): number => {
   return 0;
 };
 
-export const mapProductToUiCard = (
-  dto: ProductListItemDto,
-): UiProductCard => {
+export const mapProductToUiCard = (dto: ProductListItemDto): UiProductCard => {
   const images = dto.images?.map((i) => i.url).filter(Boolean) ?? [];
   const primaryImage = images[0] ?? "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=800&q=80";
 
@@ -112,16 +115,17 @@ export const mapProductToUiCard = (
     slug: dto.slug,
     description: dto.description ?? "",
     price: toNumber(dto.price),
+    originalPrice: dto.originalPrice != null ? toNumber(dto.originalPrice) : undefined, // ← add this
     stock: dto.stock,
     image: primaryImage,
     images,
     brandName: dto.store?.name ?? "ElectroMart",
     categoryId: dto.categoryId,
     categoryName: dto.category?.name ?? "",
-    rating: 0,
-    reviewCount: 0,
-    featured: false,
-    bestseller: false,
+    rating: dto.rating ?? 0,
+    reviewCount: dto.reviewCount ?? 0,
+    featured: dto.featured ?? false,
+    bestseller: dto.bestseller ?? false,
     createdAt: dto.createdAt,
   };
 };

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, ShoppingBag, Tag, Package, Truck, CheckCheck, Trash2, ChevronDown } from 'lucide-react';
-import { mockNotifications } from '@/data/mock-data';
+import { getMyNotifications, markAllNotificationsRead, markNotificationRead } from '@/api/notification.api';
+import { mapNotificationDtoToUi } from '@/lib/notification-mappers';
 import type { Notification, NotificationType } from '@/data/types';
 
 const TYPE_CONFIG: Record<NotificationType, { icon: React.ElementType; color: string; bg: string }> = {
@@ -23,18 +24,35 @@ function timeAgo(iso: string) {
 }
 
 export default function NotificationsClient() {
-  const myNotifs = mockNotifications.filter((n) => n.userId === 'user-cust-1');
-  const [notifs,  setNotifs]  = useState<Notification[]>(myNotifs);
+  const [notifs,  setNotifs]  = useState<Notification[]>([]);
+
+  useEffect(() => {
+    getMyNotifications()
+      .then((res) => setNotifs((res.data.data ?? []).map(mapNotificationDtoToUi)))
+      .catch(() => setNotifs([]));
+  }, []);
   const [filter,  setFilter]  = useState<NotificationType | ''>('');
 
   const filtered = filter ? notifs.filter((n) => n.type === filter) : notifs;
   const unread   = notifs.filter((n) => !n.isRead).length;
 
-  const markRead = (id: string) =>
-    setNotifs((prev) => prev.map((n) => n.id === id ? { ...n, isRead: true } : n));
+  const markRead = async (id: string) => {
+    try {
+      await markNotificationRead(id);
+      setNotifs((prev) => prev.map((n) => n.id === id ? { ...n, isRead: true } : n));
+    } catch {
+      setNotifs((prev) => prev.map((n) => n.id === id ? { ...n, isRead: true } : n));
+    }
+  };
 
-  const markAllRead = () =>
+  const markAllRead = async () => {
+    try {
+      await markAllNotificationsRead();
+    } catch {
+      /* keep optimistic UI */
+    }
     setNotifs((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  };
 
   const remove = (id: string) =>
     setNotifs((prev) => prev.filter((n) => n.id !== id));

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +8,8 @@ import {
   ShoppingBag, CheckCircle2, Truck,
   Package, X, MapPin, ChevronDown, Star,
 } from 'lucide-react';
-import { mockOrders } from '@/data/mock-data';
+import { getMyOrders } from '@/api/order.api';
+import { mapOrdersToUi } from '@/lib/order-mappers';
 import type { Order, OrderStatus } from '@/data/types';
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; dot: string }> = {
@@ -158,9 +159,15 @@ function OrderDetailModal({ order, onClose }: { order: Order; onClose: () => voi
 }
 
 export default function CustomerOrdersClient() {
-  const orders = mockOrders.filter((o) => o.customerId === 'user-cust-1');
+  const [orders, setOrders] = useState<Order[]>([]);
   const [selected,    setSelected]    = useState<Order | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
+
+  useEffect(() => {
+    getMyOrders({ limit: 50 })
+      .then((res) => setOrders(mapOrdersToUi(res.data.data ?? [])))
+      .catch(() => setOrders([]));
+  }, []);
 
   const filtered = statusFilter ? orders.filter((o) => o.status === statusFilter) : orders;
 

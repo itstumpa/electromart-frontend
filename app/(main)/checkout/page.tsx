@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -10,7 +10,18 @@ import {
   MapPin, CreditCard, ShoppingBag,
   Home, Briefcase, Plus, Shield, Lock,
 } from 'lucide-react';
-import { mockCart, mockAddresses } from '@/data/mock-data';
+import { getCart } from '@/api/cart.api';
+import { getMyAddresses, createAddress } from '@/api/address.api';
+import { placeOrder } from '@/api/order.api';
+import { initiatePayment } from '@/api/payment.api';
+import { applyCoupon } from '@/api/coupon.api';
+import { mapCartItemsToUi } from '@/lib/cart-mappers';
+import { mapAddressesToUi } from '@/lib/address-mappers';
+import { notifyCartUpdated } from '@/hooks/useCartCount';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { toast } from 'sonner';
+import type { Address, CartItem } from '@/data/types';
+import type { CreateAddressPayload } from '@/types/address';
 
 // ─── Types ───────────────────────────────────────────────────
 type Step = 'address' | 'payment' | 'review';
@@ -68,27 +79,57 @@ function StepIndicator({ current }: { current: Step }) {
 
 // ─── Step 1: Address ─────────────────────────────────────────
 function AddressStep({
+  addresses,
   onNext,
+  onAddressCreated,
 }: {
+  addresses: Address[];
   onNext: (data: ShippingForm) => void;
+  onAddressCreated: () => Promise<void>;
 }) {
-  const [useExisting,  setUseExisting]  = useState<string>(mockAddresses[0].id);
-  const [showNewForm,  setShowNewForm]  = useState(false);
+  const defaultId = addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id ?? '';
+  const [useExisting,  setUseExisting]  = useState<string>(defaultId);
+  const [showNewForm,  setShowNewForm]  = useState(addresses.length === 0);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<ShippingForm>({
     fullName: '', phone: '', street: '',
     city: '', state: '', zipCode: '', country: 'USA',
   });
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!showNewForm) {
-      const addr = mockAddresses.find((a) => a.id === useExisting)!;
+      const addr = addresses.find((a) => a.id === useExisting);
+      if (!addr) {
+        toast.error('Please select a shipping address');
+        return;
+      }
       onNext({
         fullName: addr.fullName, phone: addr.phone, street: addr.street,
         city: addr.city, state: addr.state, zipCode: addr.zipCode, country: addr.country,
       });
     } else {
       if (!form.fullName || !form.phone || !form.street || !form.city || !form.zipCode) return;
-      onNext(form);
+      setSaving(true);
+      try {
+        const payload: CreateAddressPayload = {
+          label: 'home',
+          fullName: form.fullName,
+          phone: form.phone,
+          street: form.street,
+          city: form.city,
+          state: form.state,
+          country: form.country,
+          zipCode: form.zipCode,
+          isDefault: addresses.length === 0,
+        };
+        await createAddress(payload);
+        await onAddressCreated();
+        onNext(form);
+      } catch (err) {
+        toast.error(getApiErrorMessage(err, 'Failed to save address'));
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
@@ -112,9 +153,9 @@ function AddressStep({
       </div>
 
       {/* Saved addresses */}
-      {!showNewForm && (
+      {!showNewForm && addresses.length > 0 && (
         <div className="space-y-3">
-          {mockAddresses.map((addr) => (
+          {addresses.map((addr) => (
             <label
               key={addr.id}
               className={`flex items-start gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
@@ -147,12 +188,18 @@ function AddressStep({
         </div>
       )}
 
+      {!showNewForm && addresses.length === 0 && (
+        <p className="text-sm text-slate-500">No saved addresses. Add one below.</p>
+      )}
+
       {/* New address form */}
       {showNewForm && (
-        <div className="space-y-4">
+        <motion.div className="space-y-4">
+          {addresses.length > 0 && (
           <button onClick={() => setShowNewForm(false)} className="text-sm text-amber-600 font-semibold hover:text-amber-700 flex items-center gap-1">
             ← Back to saved addresses
           </button>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <Field label="Full Name"   k="fullName"  placeholder="John Smith"   />
             <Field label="Phone"       k="phone"     placeholder="+1 (555) 000-0000" />
@@ -162,14 +209,15 @@ function AddressStep({
             <Field label="ZIP Code"    k="zipCode"   placeholder="10001"        half />
             <Field label="Country"     k="country"   placeholder="USA"          half />
           </div>
-        </div>
+        </motion.div>
       )}
 
       <button
         onClick={handleContinue}
-        className="w-full flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-black py-3.5 rounded-xl transition-colors shadow-md shadow-amber-200"
+        disabled={saving}
+        className="w-full flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white font-black py-3.5 rounded-xl transition-colors shadow-md shadow-amber-200"
       >
-        Continue to Payment <ChevronRight size={17} />
+        {saving ? 'Saving...' : <>Continue to Payment <ChevronRight size={17} /></>}
       </button>
     </div>
   );
@@ -318,24 +366,27 @@ function PaymentStep({
 
 // ─── Step 3: Review ───────────────────────────────────────────
 function ReviewStep({
-  address, payment, onBack, onPlace,
+  address, payment, items, subtotal, shipping, tax, total, onBack, onPlace,
 }: {
   address: ShippingForm;
   payment: PaymentForm;
+  items: CartItem[];
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
   onBack: () => void;
-  onPlace: () => void;
+  onPlace: () => Promise<void>;
 }) {
   const [placing, setPlacing] = useState(false);
-  const items     = mockCart.items;
-  const subtotal  = items.reduce((s, i) => s + i.price * i.quantity, 0);
-  const shipping  = subtotal >= 99 ? 0 : 14.99;
-  const tax       = subtotal * 0.09;
-  const total     = subtotal + shipping + tax;
 
   const handlePlace = async () => {
     setPlacing(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    onPlace();
+    try {
+      await onPlace();
+    } finally {
+      setPlacing(false);
+    }
   };
 
   return (
@@ -447,11 +498,91 @@ export default function CheckoutPage() {
   const [step,    setStep]    = useState<Step>('address');
   const [address, setAddress] = useState<ShippingForm | null>(null);
   const [payment, setPayment] = useState<PaymentForm | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [couponCode, setCouponCode] = useState('');
+  const [discountAmt, setDiscountAmt] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const subtotal = mockCart.items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const loadCheckoutData = useCallback(async () => {
+    try {
+      const [cartRes, addrRes] = await Promise.all([getCart(), getMyAddresses()]);
+      setCartItems(mapCartItemsToUi(cartRes.data.data?.items ?? []));
+      setAddresses(mapAddressesToUi(addrRes.data.data ?? []));
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to load checkout'));
+      setCartItems([]);
+      setAddresses([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCheckoutData();
+  }, [loadCheckoutData]);
+
+  const subtotal = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
   const shipping = subtotal >= 99 ? 0 : 14.99;
-  const tax      = subtotal * 0.09;
-  const total    = subtotal + shipping + tax;
+  const tax      = Math.max(0, (subtotal - discountAmt) * 0.09);
+  const total    = subtotal - discountAmt + shipping + tax;
+
+  const handlePlaceOrder = async () => {
+    if (!address || !payment) return;
+    try {
+      const orderRes = await placeOrder(
+        {
+          fullName: address.fullName,
+          phone: address.phone,
+          street: address.street,
+          city: address.city,
+          state: address.state,
+          zipCode: address.zipCode,
+          country: address.country,
+        },
+        couponCode || undefined,
+      );
+      const order = orderRes.data.data;
+      if (!order?.id) throw new Error('Order not created');
+      notifyCartUpdated();
+
+      if (payment.method === 'cod') {
+        router.push(`/order-confirmation/${order.id}`);
+        return;
+      }
+
+      const payRes = await initiatePayment({
+        orderId: order.id,
+        gateway: 'SSLCOMMERZ',
+      });
+      const gatewayUrl = payRes.data.data?.gatewayUrl as string | undefined;
+      if (gatewayUrl) {
+        window.location.href = gatewayUrl;
+        return;
+      }
+      router.push(`/payment/success?orderId=${order.id}`);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to place order'));
+      throw err;
+    }
+  };
+
+  if (loading) {
+    return (
+      <motion.div className="min-h-screen bg-[#FFFBEB] flex items-center justify-center">
+        <p className="text-slate-500 font-medium">Loading checkout...</p>
+      </motion.div>
+    );
+  }
+
+  if (cartItems.length === 0) {
+    return (
+      <motion.div className="min-h-screen bg-[#FFFBEB] flex flex-col items-center justify-center gap-4 px-4">
+        <p className="text-slate-600 font-semibold">Your cart is empty</p>
+        <Link href="/cart" className="text-amber-600 font-bold hover:text-amber-700">Back to cart</Link>
+      </motion.div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FFFBEB]">
@@ -487,7 +618,11 @@ export default function CheckoutPage() {
                   transition={{ duration: 0.22 }}
                 >
                   {step === 'address' && (
-                    <AddressStep onNext={(data) => { setAddress(data); setStep('payment'); }} />
+                    <AddressStep
+                      addresses={addresses}
+                      onAddressCreated={loadCheckoutData}
+                      onNext={(data) => { setAddress(data); setStep('payment'); }}
+                    />
                   )}
                   {step === 'payment' && (
                     <PaymentStep
@@ -499,8 +634,13 @@ export default function CheckoutPage() {
                     <ReviewStep
                       address={address}
                       payment={payment}
+                      items={cartItems}
+                      subtotal={subtotal}
+                      shipping={shipping}
+                      tax={tax}
+                      total={total}
                       onBack={() => setStep('payment')}
-                      onPlace={() => router.push('/order-confirmation/EM-2024-006')}
+                      onPlace={handlePlaceOrder}
                     />
                   )}
                 </motion.div>
@@ -513,7 +653,7 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-2xl border border-slate-100 p-5 sticky top-24">
               <h3 className="font-black text-slate-900 mb-4">Order Summary</h3>
               <div className="space-y-3 mb-4">
-                {mockCart.items.map((item) => (
+                {cartItems.map((item) => (
                   <div key={item.id} className="flex items-center gap-3">
                     <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-slate-50 shrink-0">
                       <Image src={item.productImage} alt={item.productName} fill className="object-cover" sizes="44px" />

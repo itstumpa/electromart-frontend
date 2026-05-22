@@ -8,26 +8,33 @@ import {
   Phone, User, MapPin, Calendar,
   ShoppingBag, Heart, Star, Package,
 } from 'lucide-react';
-import { mockUsers, mockOrders, mockWishlist, mockReviews } from '@/data/mock-data';
 import { authStorage } from '@/utils/auth-storage';
 import { getMe } from '@/api/auth.api';
+import { getMyOrders } from '@/api/order.api';
+import { getWishlist } from '@/api/wishlist.api';
+import { getMyReviews } from '@/api/review.api';
+import { updateUserProfile } from '@/api/user.api';
+import { mapOrdersToUi } from '@/lib/order-mappers';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
 
 export default function CustomerProfileClient() {
-  const customer = mockUsers.find((u) => u.role === 'CUSTOMER')!;
-  const myOrders  = mockOrders.filter((o) => o.customerId === customer.id);
-  const myReviews = mockReviews.filter((r) => r.customerId === customer.id);
+  const [userId, setUserId] = useState('');
+  const [myOrders, setMyOrders] = useState<ReturnType<typeof mapOrdersToUi>>([]);
+  const [reviewCount, setReviewCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [joinedAt, setJoinedAt] = useState('');
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
 
   const [form, setForm] = useState({
-    name:     customer.name,
-    email:    customer.email,
-    phone:    customer.phone ?? '',
+    name:     '',
+    email:    '',
+    phone:    '',
     location: 'New York, NY, USA',
     bio:      'Tech enthusiast and avid online shopper. Love finding the best deals on electronics.',
-    avatar:   customer.avatar ?? '',
+    avatar:   '',
   });
-  const [avatarPreview, setAvatarPreview] = useState(customer.avatar ?? '');
+  const [avatarPreview, setAvatarPreview] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
   const [loadingMe, setLoadingMe] = useState(true);
@@ -58,6 +65,10 @@ export default function CustomerProfileClient() {
         }));
         setAvatarPreview(avatar);
 
+        setUserId(me.id);
+        setJoinedAt(me.createdAt ?? '');
+        setIsEmailVerified(me.isEmailVerified ?? false);
+
         if (authUser) {
           authStorage.setAuthUser({
             ...authUser,
@@ -68,6 +79,15 @@ export default function CustomerProfileClient() {
             avatar,
           });
         }
+
+        const [ordersRes, wishRes, reviewsRes] = await Promise.all([
+          getMyOrders({ limit: 100 }),
+          getWishlist(),
+          getMyReviews(),
+        ]);
+        setMyOrders(mapOrdersToUi(ordersRes.data.data ?? []));
+        setWishlistCount((wishRes.data.data ?? []).length);
+        setReviewCount((reviewsRes.data.data ?? []).length);
       } catch (error) {
         toast.error(getApiErrorMessage(error, 'Failed to load profile'));
       } finally {
@@ -82,13 +102,24 @@ export default function CustomerProfileClient() {
     .filter((o) => o.paymentStatus === 'paid')
     .reduce((s, o) => s + o.total, 0);
 
-  const joined = new Date(customer.createdAt).toLocaleDateString('en-US', {
-    month: 'long', year: 'numeric',
-  });
+  const joined = joinedAt
+    ? new Date(joinedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : '';
 
   const save = async () => {
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 1200));
+    try {
+      if (userId) {
+        await updateUserProfile(userId, {
+          name: form.name.trim(),
+          email: form.email.trim(),
+        });
+      }
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to update profile'));
+      setSaving(false);
+      return;
+    }
     const currentAuthUser = authStorage.getAuthUser();
     if (currentAuthUser) {
       authStorage.setAuthUser({
@@ -128,8 +159,8 @@ export default function CustomerProfileClient() {
 
   const stats = [
     { icon: ShoppingBag, label: 'Orders',     value: myOrders.length,      color: 'text-amber-700',  bg: 'bg-amber-100' },
-    { icon: Heart,       label: 'Wishlist',   value: mockWishlist.length,  color: 'text-rose-600',   bg: 'bg-rose-100' },
-    { icon: Star,        label: 'Reviews',    value: myReviews.length,     color: 'text-purple-700', bg: 'bg-purple-100' },
+    { icon: Heart,       label: 'Wishlist',   value: wishlistCount,        color: 'text-rose-600',   bg: 'bg-rose-100' },
+    { icon: Star,        label: 'Reviews',    value: reviewCount,          color: 'text-purple-700', bg: 'bg-purple-100' },
     { icon: Package,     label: 'Delivered',  value: myOrders.filter((o) => o.status === 'delivered').length, color: 'text-green-700', bg: 'bg-green-100' },
   ];
 
@@ -324,14 +355,14 @@ export default function CustomerProfileClient() {
           </div>
 
           {/* Verification status */}
-          <div className={`rounded-2xl p-4 border ${customer.isVerified ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+          <div className={`rounded-2xl p-4 border ${isEmailVerified ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
             <div className="flex items-center gap-2">
-              <CheckCircle2 size={16} className={customer.isVerified ? 'text-green-600' : 'text-yellow-600'} />
-              <p className={`text-sm font-bold ${customer.isVerified ? 'text-green-800' : 'text-yellow-800'}`}>
-                {customer.isVerified ? 'Email Verified' : 'Email Not Verified'}
+              <CheckCircle2 size={16} className={isEmailVerified ? 'text-green-600' : 'text-yellow-600'} />
+              <p className={`text-sm font-bold ${isEmailVerified ? 'text-green-800' : 'text-yellow-800'}`}>
+                {isEmailVerified ? 'Email Verified' : 'Email Not Verified'}
               </p>
             </div>
-            {!customer.isVerified && (
+            {!isEmailVerified && (
               <button className="mt-2 text-xs font-semibold text-yellow-700 hover:text-yellow-800 underline">
                 Resend verification email
               </button>

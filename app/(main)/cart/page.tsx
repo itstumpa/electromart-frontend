@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,60 +9,90 @@ import {
   Tag, ChevronRight, ArrowRight,
   Shield, Truck, RotateCcw, CheckCircle2, X,
 } from 'lucide-react';
-import { mockCart } from '@/data/mock-data';
+import { getCart, removeCartItem, updateCartItem } from '@/api/cart.api';
+import { applyCoupon } from '@/api/coupon.api';
+import { mapCartItemsToUi } from '@/lib/cart-mappers';
+import { notifyCartUpdated } from '@/hooks/useCartCount';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { toast } from 'sonner';
 import { CartItem } from '@/data/types';
 // import type { CartItem } from '@/types';
 
-const VALID_COUPONS: Record<string, number> = {
-  ELECTRO20: 20,
-  SAVE10:    10,
-  NEWUSER15: 15,
-};
-
 export default function CartPage() {
-  const [items,       setItems]       = useState<CartItem[]>(mockCart.items);
+  const [items,       setItems]       = useState<CartItem[]>([]);
+  const [loading,     setLoading]     = useState(true);
   const [coupon,      setCoupon]      = useState('');
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
+  const [discountAmt, setDiscountAmt] = useState(0);
   const [removing,    setRemoving]    = useState<string | null>(null);
+
+  const loadCart = useCallback(async () => {
+    try {
+      const res = await getCart();
+      setItems(mapCartItemsToUi(res.data.data?.items ?? []));
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCart();
+  }, [loadCart]);
 
   /* ── Calculations ── */
   const subtotal     = items.reduce((s, i) => s + i.price * i.quantity, 0);
-  const discountPct  = VALID_COUPONS[coupon] ?? 0;
-  const discountAmt  = (subtotal * discountPct) / 100;
+  const discountFromCoupon = discountAmt;
   const shipping     = subtotal >= 99 ? 0 : 14.99;
-  const tax          = (subtotal - discountAmt) * 0.09;
-  const total        = subtotal - discountAmt + shipping + tax;
+  const tax          = (subtotal - discountFromCoupon) * 0.09;
+  const total        = subtotal - discountFromCoupon + shipping + tax;
   const itemCount    = items.reduce((s, i) => s + i.quantity, 0);
 
   /* ── Handlers ── */
-  const updateQty = (id: string, delta: number) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, Math.min(item.stock, item.quantity + delta)) }
-          : item
-      )
-    );
+  const updateQty = async (item: CartItem, delta: number) => {
+    const nextQty = Math.max(1, Math.min(item.stock, item.quantity + delta));
+    if (nextQty === item.quantity) return;
+    try {
+      await updateCartItem(item.productId, nextQty);
+      notifyCartUpdated();
+      await loadCart();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    }
   };
 
-  const removeItem = async (id: string) => {
-    setRemoving(id);
-    await new Promise((r) => setTimeout(r, 350));
-    setItems((prev) => prev.filter((i) => i.id !== id));
-    setRemoving(null);
+  const removeItem = async (item: CartItem) => {
+    setRemoving(item.id);
+    try {
+      await removeCartItem(item.productId);
+      notifyCartUpdated();
+      await loadCart();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    } finally {
+      setRemoving(null);
+    }
   };
 
-  const applyCoupon = () => {
+  const applyCouponHandler = async () => {
     const code = couponInput.trim().toUpperCase();
-    if (VALID_COUPONS[code]) {
-      setCoupon(code);
+    if (!code) return;
+    try {
+      const res = await applyCoupon(code);
+      const data = res.data.data;
+      if (!data) throw new Error('Invalid coupon');
+      setCoupon(data.code);
+      setDiscountAmt(data.discountAmount);
       setCouponApplied(true);
       setCouponError('');
-    } else {
-      setCouponError('Invalid coupon code. Try ELECTRO20.');
+    } catch (err) {
+      setCouponError(getApiErrorMessage(err, 'Invalid coupon code'));
       setCouponApplied(false);
+      setDiscountAmt(0);
     }
   };
 
@@ -71,7 +101,16 @@ export default function CartPage() {
     setCouponInput('');
     setCouponApplied(false);
     setCouponError('');
+    setDiscountAmt(0);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center bg-[#FFFBEB]">
+        <div className="w-8 h-8 border-2 border-amber-200 border-t-amber-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   /* ── Empty cart ── */
   if (items.length === 0) {
@@ -164,7 +203,7 @@ export default function CartPage() {
                         {/* Qty stepper */}
                         <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
                           <button
-                            onClick={() => updateQty(item.id, -1)}
+                            onClick={() => updateQty(item, -1)}
                             disabled={item.quantity <= 1}
                             className="w-9 h-9 flex items-center justify-center text-slate-600 hover:bg-amber-50 hover:text-amber-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                           >
@@ -174,7 +213,7 @@ export default function CartPage() {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => updateQty(item.id, 1)}
+                            onClick={() => updateQty(item, 1)}
                             disabled={item.quantity >= item.stock}
                             className="w-9 h-9 flex items-center justify-center text-slate-600 hover:bg-amber-50 hover:text-amber-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                           >
@@ -193,7 +232,7 @@ export default function CartPage() {
                             )}
                           </div>
                           <button
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => removeItem(item)}
                             className="w-9 h-9 rounded-xl bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 flex items-center justify-center transition-colors"
                             aria-label="Remove item"
                           >
@@ -284,7 +323,7 @@ export default function CartPage() {
                   <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 size={15} className="text-green-600" />
-                      <span className="text-sm font-bold text-green-800">{coupon} applied — {discountPct}% off</span>
+                      <span className="text-sm font-bold text-green-800">{coupon} applied — ${discountAmt.toFixed(2)} off</span>
                     </div>
                     <button onClick={removeCoupon} className="text-green-600 hover:text-green-800 transition-colors">
                       <X size={15} />
@@ -296,12 +335,12 @@ export default function CartPage() {
                       type="text"
                       value={couponInput}
                       onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(''); }}
-                      onKeyDown={(e) => e.key === 'Enter' && applyCoupon()}
+                      onKeyDown={(e) => e.key === 'Enter' && applyCouponHandler()}
                       placeholder="Coupon code"
                       className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition placeholder-slate-400"
                     />
                     <button
-                      onClick={applyCoupon}
+                      onClick={applyCouponHandler}
                       className="px-4 py-2.5 bg-slate-900 hover:bg-amber-600 text-white text-sm font-bold rounded-xl transition-colors"
                     >
                       Apply

@@ -8,6 +8,8 @@ import {
   Mail, ArrowRight, ArrowLeft,
   CheckCircle2, RefreshCw, AlertCircle,
 } from 'lucide-react';
+import { forgotPassword } from '@/api/auth.api';
+import { getApiErrorMessage } from '@/utils/api-error';
 
 type Step = 'email' | 'sent';
 
@@ -24,19 +26,28 @@ export default function ForgotPasswordPage() {
     if (!/\S+@\S+\.\S+/.test(email)) { setError('Please enter a valid email address.'); return; }
     setError('');
     setLoading(true);
-    // Swap with: await api.post('/auth/forgot-password', { email })
-    await new Promise((r) => setTimeout(r, 1400));
-    setLoading(false);
-    setStep('sent');
+    try {
+      await forgotPassword(email.trim());
+      setStep('sent');
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleResend = async () => {
     setResent(false);
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
-    setResent(true);
-    setTimeout(() => setResent(false), 4000);
+    try {
+      await forgotPassword(email.trim());
+      setResent(true);
+      setTimeout(() => setResent(false), 4000);
+    } catch {
+      /* ignore resend errors */
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

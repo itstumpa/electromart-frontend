@@ -78,7 +78,7 @@ export default function TopBrands() {
         </div>
 
         {/* ── Brand cards grid ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-6 mb-8">
           {ALL_BRANDS.map((brand, i) => (
             <Link
               key={brand.id}

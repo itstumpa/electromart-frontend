@@ -2,14 +2,23 @@
 
 import Link from 'next/link';
 import { ArrowRight, Trophy } from 'lucide-react';
-import { getBestsellerProducts } from '@/data/mock-data';
+import { useEffect, useState } from 'react';
+import { getProducts } from '@/api/product.api';
+import type { Product } from '@/data/types';
+import { mapListItemDtoToProduct } from '@/lib/product-mappers';
 import Reveal from '../Utilities/Reveal';
 import ProductCard from '../Utilities/Productcard';
 
 export default function BestSellers() {
-  const products = getBestsellerProducts();
+  const [products, setProducts] = useState<Product[]>([]);
 
-  return (
+useEffect(() => {
+  getProducts({ limit: 7, onSale: true })
+    .then((res) => setProducts(res.data.data.map(mapListItemDtoToProduct)))
+    .catch(() => setProducts([]));
+}, []);
+
+  return ( 
     <section className="py-6 bg-white">
       <div className="container mx-auto px-4 sm:px-6">
 
@@ -28,7 +37,7 @@ export default function BestSellers() {
             </h2>
           </div>
           <Link
-            href="/products?bestseller=true"
+            href="/sale"
             className="group inline-flex items-center gap-2 text-sm font-bold text-amber-600 hover:text-amber-700 shrink-0"
           >
             See All Top Selling Products
@@ -37,7 +46,7 @@ export default function BestSellers() {
         </Reveal>
 
         {/* Grid with #1, #2... badges */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-6">
           {products.map((product, i) => (
             <Reveal key={product.id} delay={i * 0.08} direction="up">
               <div className="relative">

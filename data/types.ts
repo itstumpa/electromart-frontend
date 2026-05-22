@@ -350,6 +350,7 @@ export interface Cart {
 export interface WishlistItem {
   id: string;
   productId: string;
+  productSlug: string;
   productName: string;
   productImage: string;
   price: number;

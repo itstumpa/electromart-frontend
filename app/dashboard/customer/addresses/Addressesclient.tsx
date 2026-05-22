@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Plus, Pencil, Trash2, Home, Briefcase, Star, X, CheckCircle2 } from 'lucide-react';
-import { mockAddresses } from '@/data/mock-data';
+import { createAddress, deleteAddress, getMyAddresses, setDefaultAddress, updateAddress } from '@/api/address.api';
+import { mapAddressesToUi } from '@/lib/address-mappers';
 import type { Address } from '@/data/types';
+import type { CreateAddressPayload } from '@/types/address';
 
 type AddressLabel = 'home' | 'office' | 'other';
 
@@ -113,32 +115,56 @@ function AddressModal({ initial, onSave, onClose }: {
 }
 
 export default function AddressesClient() {
-  const [addresses,   setAddresses]   = useState<Address[]>(mockAddresses.filter((a) => a.userId === 'user-cust-1'));
+  const [addresses,   setAddresses]   = useState<Address[]>([]);
   const [modalOpen,   setModalOpen]   = useState(false);
   const [editTarget,  setEditTarget]  = useState<Address | null>(null);
   const [deleteId,    setDeleteId]    = useState<string | null>(null);
 
-  const handleSave = (data: Omit<Address, 'id' | 'userId'>) => {
+  const loadAddresses = useCallback(async () => {
+    const res = await getMyAddresses();
+    setAddresses(mapAddressesToUi(res.data.data ?? []));
+  }, []);
+
+  useEffect(() => {
+    loadAddresses().catch(() => setAddresses([]));
+  }, [loadAddresses]);
+
+  const toPayload = (data: Omit<Address, 'id' | 'userId'>): CreateAddressPayload => ({
+    label: data.label,
+    fullName: data.fullName,
+    phone: data.phone,
+    street: data.street,
+    city: data.city,
+    state: data.state,
+    country: data.country,
+    zipCode: data.zipCode,
+    isDefault: data.isDefault,
+  });
+
+  const handleSave = async (data: Omit<Address, 'id' | 'userId'>) => {
     if (editTarget) {
-      setAddresses((prev) => prev.map((a) => a.id === editTarget.id ? { ...a, ...data } : a));
-      setEditTarget(null);
+      await updateAddress(editTarget.id, toPayload(data));
     } else {
-      const newAddr: Address = { ...data, id: `addr-${Date.now()}`, userId: 'user-cust-1' };
-      setAddresses((prev) => [...prev, newAddr]);
+      await createAddress(toPayload(data));
     }
+    await loadAddresses();
+    setEditTarget(null);
     setModalOpen(false);
   };
 
-  const setDefault = (id: string) => {
-    setAddresses((prev) => prev.map((a) => ({ ...a, isDefault: a.id === id })));
+  const setDefault = async (id: string) => {
+    await setDefaultAddress(id);
+    await loadAddresses();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     setDeleteId(id);
-    setTimeout(() => {
-      setAddresses((prev) => prev.filter((a) => a.id !== id));
+    try {
+      await deleteAddress(id);
+      await loadAddresses();
+    } finally {
       setDeleteId(null);
-    }, 350);
+    }
   };
 
   return (

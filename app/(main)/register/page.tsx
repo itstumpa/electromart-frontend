@@ -73,6 +73,9 @@ export default function RegisterPage() {
         email: form.email.trim(),
         password: form.password,
         role,
+        ...(role === 'VENDOR' && form.storeName.trim()
+          ? { storeName: form.storeName.trim() }
+          : {}),
       });
 
       sessionStorage.setItem(
