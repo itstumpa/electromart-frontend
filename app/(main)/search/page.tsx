@@ -1,6 +1,8 @@
 "use client";
 
-import { mockProducts } from "@/data/mock-data";
+import { searchProducts } from "@/api/product.api";
+import { mapListItemDtoToProduct } from "@/lib/product-mappers";
+import type { Product } from "@/data/types";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -22,17 +24,16 @@ export default function SearchPage() {
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const debouncedQuery = useDebounce(query, 320);
 
-  const results = useMemo(() => {
-    if (!debouncedQuery.trim()) return [];
-    const q = debouncedQuery.toLowerCase();
-    return mockProducts.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.brandName.toLowerCase().includes(q) ||
-        p.categoryName.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q) ||
-        p.tags.some((t) => t.toLowerCase().includes(q)),
-    );
+  const [results, setResults] = useState<Product[]>([]);
+
+  useEffect(() => {
+    if (!debouncedQuery.trim()) {
+      setResults([]);
+      return;
+    }
+    searchProducts({ q: debouncedQuery, limit: 48 })
+      .then((res) => setResults(res.data.data.map(mapListItemDtoToProduct)))
+      .catch(() => setResults([]));
   }, [debouncedQuery]);
 
   const suggestions = [

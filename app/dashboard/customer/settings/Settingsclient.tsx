@@ -7,6 +7,9 @@ import {
   Eye, EyeOff, Lock, Smartphone, ShoppingBag,
   Tag, Star, Trash2,
 } from 'lucide-react';
+import { changePassword } from '@/api/auth.api';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { toast } from 'sonner';
 
 
 type Tab = 'account' | 'notifications' | 'security';
@@ -75,6 +78,29 @@ export default function CustomerSettingsClient() {
   const [twoFA,     setTwoFA]     = useState(false);
 
   const save = async () => {
+    if (tab === 'security') {
+      if (!passwords.current || !passwords.newPass || !passwords.confirm) {
+        toast.error('Please fill in all password fields');
+        return;
+      }
+      if (passwords.newPass !== passwords.confirm) {
+        toast.error('New passwords do not match');
+        return;
+      }
+      setSaving(true);
+      try {
+        await changePassword(passwords.current, passwords.newPass);
+        setPasswords({ current: '', newPass: '', confirm: '' });
+        setSaved(true);
+        toast.success('Password updated');
+        setTimeout(() => setSaved(false), 2500);
+      } catch (err) {
+        toast.error(getApiErrorMessage(err, 'Failed to change password'));
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
     setSaving(true);
     await new Promise((r) => setTimeout(r, 1200));
     setSaving(false); setSaved(true);
@@ -223,8 +249,18 @@ export default function CustomerSettingsClient() {
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">{label}</label>
                         <div className="relative">
                           <Lock size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                          <input type={showPw[key] ? 'text' : 'password'} placeholder="••••••••"
-                            className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
+                          <input
+                            type={showPw[key] ? 'text' : 'password'}
+                            placeholder="••••••••"
+                            value={passwords[key === 'new' ? 'newPass' : key]}
+                            onChange={(e) =>
+                              setPasswords({
+                                ...passwords,
+                                [key === 'new' ? 'newPass' : key]: e.target.value,
+                              })
+                            }
+                            className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
+                          />
                           <button type="button" onClick={() => setShowPw({ ...showPw, [key]: !showPw[key] })}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
                             {showPw[key] ? <EyeOff size={14} /> : <Eye size={14} />}

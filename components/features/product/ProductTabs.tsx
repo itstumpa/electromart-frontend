@@ -5,13 +5,15 @@ import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import type { ProductSpecification, Review } from '@/data/types';
 import Image from 'next/image';
+import ProductReviewForm from './ProductReviewForm';
 
 interface Props {
   specifications: ProductSpecification[];
   reviews: Review[];
+  productId?: string;
 }
 
-export default function ProductTabs({ specifications, reviews }: Props) {
+export default function ProductTabs({ specifications, reviews, productId }: Props) {
   const [activeTab, setActiveTab] = useState<'specs' | 'reviews'>('specs');
 
   return (
@@ -139,6 +141,7 @@ export default function ProductTabs({ specifications, reviews }: Props) {
             No reviews yet. Be the first to review this product.
           </p>
         )}
+        {productId && <ProductReviewForm productId={productId} />}
       </div>
     </div>
   );

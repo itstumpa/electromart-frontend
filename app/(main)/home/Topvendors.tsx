@@ -119,7 +119,7 @@ export default function TopVendors() {
         </div>
 
         {/* Scrollable vendor cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-6">
           {allVendors.map((vendor, i) => (
             <Link
               key={vendor.id}

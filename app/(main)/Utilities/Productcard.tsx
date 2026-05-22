@@ -5,6 +5,12 @@ import Link from 'next/link';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { Product } from '@/data/types';
 import Image from 'next/image';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { addToCart } from '@/api/cart.api';
+import { addToWishlist } from '@/api/wishlist.api';
+import { notifyCartUpdated } from '@/hooks/useCartCount';
+import { getApiErrorMessage } from '@/utils/api-error';
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +19,36 @@ interface ProductCardProps {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function ProductCard({ product, index = 0 }: ProductCardProps) {
+  const [addingToCart, setAddingToCart] = useState(false);
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (addingToCart) return;
+
+    setAddingToCart(true);
+    try {
+      await addToCart(product.id, 1);
+      notifyCartUpdated();
+      toast.success('Added to cart');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await addToWishlist(product.id);
+      toast.success('Added to wishlist');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to add to wishlist'));
+    }
+  };
+
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : null;
@@ -52,7 +88,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           {/* Wishlist button */}
           <motion.button
             whileTap={{ scale: 0.85 }}
-            onClick={(e) => e.preventDefault()}
+            onClick={handleWishlist}
             className="absolute top-3 right-3 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-200"
             aria-label="Add to wishlist"
           >
@@ -63,11 +99,14 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           <div className="absolute bottom-3 left-3 right-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-250">
             <motion.button
               whileTap={{ scale: 0.97 }}
-              onClick={(e) => e.preventDefault()}
-              className="w-full flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold py-2.5 rounded-xl shadow-lg transition-colors"
+              onClick={handleAddToCart}
+              disabled={addingToCart || product.stock === 0}
+              className={`w-full flex items-center justify-center gap-2 text-white text-sm font-bold py-2.5 rounded-xl shadow-lg transition-colors ${
+                product.stock === 0 ? 'bg-slate-400 cursor-not-allowed' : 'bg-amber-600 hover:bg-amber-700'
+              }`}
             >
               <ShoppingCart size={15} />
-              Add to Cart
+              {product.stock === 0 ? 'Out of Stock' : (addingToCart ? 'Adding...' : 'Add to Cart')}
             </motion.button>
           </div>
         </div>

@@ -1,13 +1,17 @@
 "use client";
 
-import { mockCategories, mockProducts } from "@/data/mock-data";
+import { getCategories, mapCategoriesToListItems } from "@/api/category.api";
+import { getProducts } from "@/api/product.api";
+// import type { Product } from "@/data/types"; 
+import { mapListItemDtoToProduct } from "@/lib/product-mappers";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronDown, Flame, X, Zap } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import ProductCard from "../Utilities/Productcard";
 import Reveal from "../Utilities/Reveal";
 import Link from "next/link";
+import { Product } from "@/data/types";
 
 const sortOptions = [
   { label: "Biggest Discount", value: "discount" },
@@ -19,9 +23,27 @@ const sortOptions = [
 export default function SalePage() {
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("discount");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    getProducts({ limit: 100, onSale: true})
+      .then((res) => setProducts(res.data.data.map(mapListItemDtoToProduct)))
+      .catch(() => setProducts([]));
+    getCategories()
+      .then((res) =>
+        setCategories(
+          mapCategoriesToListItems(res.data.data).map((c) => ({
+            id: c.id,
+            name: c.name,
+          })),
+        ),
+      )
+      .catch(() => setCategories([]));
+  }, []);
 
   const saleProducts = useMemo(() => {
-    let list = mockProducts.filter(
+    let list = products.filter(
       (p) => p.originalPrice && p.originalPrice > p.price,
     );
     if (category) list = list.filter((p) => p.categoryId === category);
@@ -44,10 +66,10 @@ export default function SalePage() {
         break;
     }
     return list;
-  }, [category, sort]);
+  }, [category, sort, products]);
 
-  const saleCategories = mockCategories.filter((cat) =>
-    mockProducts.some(
+  const saleCategories = categories.filter((cat) =>
+    products.some(
       (p) =>
         p.categoryId === cat.id && p.originalPrice && p.originalPrice > p.price,
     ),

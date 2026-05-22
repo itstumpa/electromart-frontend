@@ -1,26 +1,65 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart, Heart, Minus, Plus,
   CheckCircle2, Shield, Truck, RotateCcw,
 } from 'lucide-react';
 
+import { addToCart } from '@/api/cart.api';
+import { addToWishlist, checkWishlistItem, removeFromWishlist } from '@/api/wishlist.api';
+import { notifyCartUpdated } from '@/hooks/useCartCount';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { toast } from 'sonner';
+
 interface Props {
+  productId: string;
   stock: number;
   price: number;
   originalPrice?: number;
 }
 
-export default function ProductActions({ stock, price, originalPrice }: Props) {
+export default function ProductActions({ productId, stock, price, originalPrice }: Props) {
   const [qty,          setQty]          = useState(1);
   const [wishlisted,   setWishlisted]   = useState(false);
   const [addedToCart,  setAddedToCart]  = useState(false);
+  const [adding,       setAdding]       = useState(false);
 
-  const handleAddToCart = () => {
-    setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 2500);
+  useEffect(() => {
+    checkWishlistItem(productId)
+      .then((res) => setWishlisted(res.data.data?.inWishlist ?? false))
+      .catch(() => setWishlisted(false));
+  }, [productId]);
+
+  const toggleWishlist = async () => {
+    try {
+      if (wishlisted) {
+        await removeFromWishlist(productId);
+        setWishlisted(false);
+        toast.success('Removed from wishlist');
+      } else {
+        await addToWishlist(productId);
+        setWishlisted(true);
+        toast.success('Added to wishlist');
+      }
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Wishlist update failed'));
+    }
+  };
+
+  const handleAddToCart = async () => {
+    setAdding(true);
+    try {
+      await addToCart(productId, qty);
+      notifyCartUpdated();
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 2500);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    } finally {
+      setAdding(false);
+    }
   };
 
   return (
@@ -54,7 +93,7 @@ export default function ProductActions({ stock, price, originalPrice }: Props) {
         <motion.button
           onClick={handleAddToCart}
           whileTap={{ scale: 0.97 }}
-          disabled={stock === 0}
+          disabled={stock === 0 || adding}
           className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all duration-300 ${
             stock === 0
               ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
@@ -91,7 +130,7 @@ export default function ProductActions({ stock, price, originalPrice }: Props) {
 
         {/* Wishlist */}
         <motion.button
-          onClick={() => setWishlisted((w) => !w)}
+          onClick={toggleWishlist}
           whileTap={{ scale: 0.88 }}
           aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
           className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${

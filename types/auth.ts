@@ -5,6 +5,7 @@ export interface SignupRequest {
   email: string;
   password: string;
   role?: AuthRole;
+  storeName?: string;
 }
 
 export interface SignupResponseUser {
@@ -28,6 +29,8 @@ export interface AuthUser {
 
 export interface SigninResponseData {
   user: AuthUser;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 export interface MeResponseData {
@@ -45,4 +48,5 @@ export interface RefreshTokenRequest {
 
 export interface RefreshTokenResponseData {
   accessToken: string;
+  refreshToken: string;
 }

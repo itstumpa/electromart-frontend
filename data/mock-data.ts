@@ -886,6 +886,7 @@ export const mockWishlist: WishlistItem[] = [
   {
     id: 'wish-1',
     productId: 'prod-2',
+    productSlug: 'macbook-pro-14-m3-pro',
     productName: 'MacBook Pro 14" M3 Pro',
     productImage: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400',
     price: 1999.99,
@@ -897,6 +898,7 @@ export const mockWishlist: WishlistItem[] = [
   {
     id: 'wish-2',
     productId: 'prod-5',
+    productSlug: 'apple-watch-ultra-2',
     productName: 'Apple Watch Ultra 2',
     productImage: 'https://images.unsplash.com/photo-1551816230-ef5deaed4a26?w=400',
     price: 799.99,
@@ -908,6 +910,7 @@ export const mockWishlist: WishlistItem[] = [
   {
     id: 'wish-3',
     productId: 'prod-7',
+    productSlug: 'playstation-5-slim',
     productName: 'PlayStation 5 Console (Slim)',
     productImage: 'https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=400',
     price: 499.99,

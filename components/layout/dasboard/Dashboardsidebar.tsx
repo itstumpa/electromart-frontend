@@ -10,6 +10,7 @@ import {
   LogOut, Settings, Bell, User,
   Heart, MapPin, Star, Wallet,
   ClipboardList, BarChart2, Boxes,
+  ArrowBigLeft,
 } from 'lucide-react';
 import type { UserRole } from '@/data/types';
 import { authStorage } from '@/utils/auth-storage';
@@ -201,11 +202,19 @@ export default function DashboardSidebar({ role }: Props) {
           </Link>
           <Link
             href="/"
+            
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors group"
+          >
+           <ArrowBigLeft size={17} className="text-slate-400 group-hover:text-red-500" />
+            Back to Store
+          </Link>
+          <Link
+            href="/"
             onClick={handleSignOut}
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors group"
           >
             <LogOut size={17} className="text-slate-400 group-hover:text-red-500" />
-            Back to Store
+            Logout
           </Link>
         </div>
       </nav>

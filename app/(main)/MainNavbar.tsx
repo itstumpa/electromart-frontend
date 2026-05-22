@@ -22,7 +22,8 @@ import {
   Home,
   Cable,
 } from 'lucide-react';
-import { mockCart } from '@/data/mock-data';
+import { useCartCount } from '@/hooks/useCartCount';
+import { useWishlistCount } from '@/hooks/useWishlistCount';
 
 
 /* ─────────────────────────────────────────────
@@ -41,13 +42,13 @@ const categoryItems = [
   { label: 'Accessories',       href: '/products?category=accessories',        icon: Cable },
 ];
 
-const navLinks = [
-  { label: 'Home',       href: '/' },
-  { label: 'Products',   href: '/products' },
-  { label: 'Categories', href: '/products', dropdown: true },
-  { label: 'Sale',       href: '/sale',     highlight: true },
-  { label: 'Dashboard',      href: '/dashboard/admin' },
+const baseNavLinks = [
+  { label: 'Home',       href: '/',         dropdown: false, highlight: false },
+  { label: 'Products',   href: '/products', dropdown: false, highlight: false },
+  { label: 'Categories', href: '/products', dropdown: true,  highlight: false },
+  { label: 'Sale',       href: '/sale',     dropdown: false, highlight: true  },
 ];
+
 
 /* ─────────────────────────────────────────────
    ACTIVE HELPERS
@@ -77,6 +78,43 @@ function useIsActive(href: string, exact = false): boolean {
 export default function MainNavbar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // ── Auth state ──
+  const [user, setUser] = useState<{ role: string } | null>(null); 
+  useEffect(() => {
+  const fetchUser = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/me`, {
+        credentials: 'include',
+      });
+
+      const data = await res.json();
+
+      if (data?.user) {
+        setUser(data.user);
+      }
+    } catch (err) {
+      setUser(null);
+    }
+  };
+
+  fetchUser();
+}, []);
+
+const dashboardHref =
+  user?.role === 'SUPER_ADMIN'
+    ? '/dashboard/admin'
+    : user?.role === 'VENDOR'
+    ? '/dashboard/vendor'
+    : '/dashboard/customer';
+
+  const navLinks = [
+    ...baseNavLinks,
+    ...(user
+      ? [{ label: 'Dashboard', href: dashboardHref, dropdown: false, highlight: false }]
+      : []),
+  ];
+
   const [scrolled, setScrolled]       = useState(false);
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [searchOpen, setSearchOpen]   = useState(false);
@@ -84,7 +122,9 @@ export default function MainNavbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileCatOpen, setMobileCatOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const cartCount = mockCart.itemCount;
+
+  const { count: cartCount } = useCartCount();
+  const { count: wishlistCount } = useWishlistCount();
 
   // Close mobile menu on route change
 useEffect(() => {
@@ -268,17 +308,22 @@ const isCategoryActive = categoryItems.some(
             </button>
 
             {/* Wishlist */}
-            <Link
-              href="/customer/wishlist"
-              aria-label="Wishlist"
-              className={`p-2 rounded-lg transition-colors hidden sm:flex ${
-                pathname === '/customer/wishlist'
-                  ? 'text-amber-600 bg-amber-50'
-                  : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50'
-              }`}
-            >
-              <Heart size={20} />
-            </Link>
+<Link
+  href="/customer/wishlist"
+  aria-label="Wishlist"
+  className={`relative p-2 rounded-lg transition-colors hidden sm:flex ${
+    pathname === '/customer/wishlist'
+      ? 'text-amber-600 bg-amber-50'
+      : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50'
+  }`}
+>
+  <Heart size={20} />
+  {wishlistCount > 0 && (
+    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-amber-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+      {wishlistCount}
+    </span>
+  )}
+</Link>
 
             {/* Cart */}
             <Link
@@ -490,7 +535,7 @@ const isCategoryActive = categoryItems.some(
               <div className="border-t border-slate-100 mt-2 pt-3 flex flex-col gap-2">
                 {/* Wishlist & Cart row */}
                 <div className="flex gap-2">
-                  <Link
+                  {/* <Link
                     href="/customer/wishlist"
                     onClick={() => setMobileOpen(false)}
                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${
@@ -501,7 +546,25 @@ const isCategoryActive = categoryItems.some(
                   >
                     <Heart size={15} />
                     Wishlist
-                  </Link>
+                  </Link> */}
+
+<Link
+  href="/customer/wishlist"
+  aria-label="Wishlist"
+  className={`relative p-2 rounded-lg transition-colors hidden sm:flex ${
+    pathname === '/customer/wishlist'
+      ? 'text-amber-600 bg-amber-50'
+      : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50'
+  }`}
+>
+  <Heart size={20} />
+  {wishlistCount > 0 && (
+    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-amber-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+      {wishlistCount}
+    </span>
+  )}
+</Link>
+                  
                   <Link
                     href="/cart"
                     onClick={() => setMobileOpen(false)}

@@ -6,9 +6,48 @@ import { notFound } from "next/navigation";
 import ProductActions from "@/components/features/product/ProductActions";
 import ProductGallery from "@/components/features/product/ProductGallery";
 import ProductTabs from "@/components/features/product/ProductTabs";
-import { getProductBySlug, mockProducts, mockReviews } from "@/data/mock-data";
+import { fetchProductBySlug, fetchRelatedProducts } from "@/lib/fetch-product";
+import { getServerApiBase } from "@/lib/api-config";
+import type { ApiResponse } from "@/types/api";
+import type { Review } from "@/data/types";
 import ProductCard from "../../Utilities/Productcard";
 import Reveal from "../../Utilities/Reveal";
+
+export const dynamic = "force-dynamic";
+
+async function fetchProductReviews(productId: string): Promise<Review[]> {
+  try {
+    const res = await fetch(
+      `${getServerApiBase()}/reviews/product/${productId}?limit=20`,
+      { cache: "no-store" },
+    );
+    if (!res.ok) return [];
+    const json = (await res.json()) as ApiResponse<{
+      reviews: Array<{
+        id: string;
+        productId: string;
+        customerId: string;
+        rating: number;
+        comment: string;
+        createdAt: string;
+        customer?: { name: string; avatar?: string | null };
+      }>;
+    }>;
+    return (json.data?.reviews ?? []).map((r) => ({
+      id: r.id,
+      productId: r.productId,
+      customerId: r.customerId,
+      customerName: r.customer?.name ?? "Customer",
+      customerAvatar: r.customer?.avatar ?? undefined,
+      rating: r.rating,
+      comment: r.comment,
+      createdAt: r.createdAt,
+      updatedAt: r.createdAt,
+    }));
+  } catch {
+    return [];
+  }
+}
 
 /* ── Types ──────────────────────────────────── */
 interface Props {
@@ -18,7 +57,7 @@ interface Props {
 /* ── Dynamic metadata (also async) ─────────── */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await fetchProductBySlug(slug);
   if (!product) return { title: "Product Not Found — ElectroMart" };
 
   return {
@@ -32,18 +71,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/* ── Static params (optional but good for SSG) ── */
-export function generateStaticParams() {
-  return mockProducts.map((p) => ({ slug: p.slug }));
-}
-
 /* ── Page component ─────────────────────────── */
 export default async function ProductDetailPage({ params }: Props) {
-  // ✅ Await params — required in Next.js 15+
   const { slug } = await params;
 
-  // ✅ Data fetching in server component — no useEffect, no loading states
-  const product = getProductBySlug(slug);
+  const product = await fetchProductBySlug(slug);
   if (!product) notFound();
 
   const discount = product.originalPrice
@@ -52,11 +84,9 @@ export default async function ProductDetailPage({ params }: Props) {
       )
     : null;
 
-  const productReviews = mockReviews.filter((r) => r.productId === product.id);
+  const productReviews = await fetchProductReviews(product.id);
 
-  const relatedProducts = mockProducts
-    .filter((p) => p.categoryId === product.categoryId && p.id !== product.id)
-    .slice(0, 4);
+  const relatedProducts = await fetchRelatedProducts(product, 4);
 
   const categorySlug = product.categoryName
     .toLowerCase()
@@ -231,6 +261,7 @@ export default async function ProductDetailPage({ params }: Props) {
               Only interactive state lives here
             */}
             <ProductActions
+              productId={product.id}
               stock={product.stock}
               price={product.price}
               originalPrice={product.originalPrice}
@@ -246,6 +277,7 @@ export default async function ProductDetailPage({ params }: Props) {
           <ProductTabs
             specifications={product.specifications}
             reviews={productReviews}
+            productId={product.id}
           />
         </Reveal>
 

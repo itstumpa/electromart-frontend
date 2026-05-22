@@ -1,15 +1,18 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   SlidersHorizontal, X, ChevronDown, Search,
   Grid3X3, LayoutList,
 } from 'lucide-react';
 import Link from 'next/link';
-import {
-  mockProducts, mockCategories, mockBrands,
-} from '@/data/mock-data';
+import type { Brand } from '@/data/types';
+import { getCategories, mapCategoriesToListItems } from '@/api/category.api';
+import { getProducts, searchProducts } from '@/api/product.api';
+import { mapListItemDtoToProduct } from '@/lib/product-mappers';
+import type { Product } from '@/data/types';
+import type { Category } from '@/data/types';
 import Reveal from '../Utilities/Reveal';
 import ProductCard from '../Utilities/Productcard';
 import Image from 'next/image';
@@ -168,24 +171,100 @@ const sortOptions = [
 
   const [view,        setView]        = useState<'grid' | 'list'>('grid');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [productList, setProductList] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
 
-  /* ── Filter + sort ── */
-  const filtered = useMemo(() => {
-    let list = [...mockProducts];
-    if (search)   list = list.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.brandName.toLowerCase().includes(search.toLowerCase()));
-    if (category) list = list.filter(p => p.categoryId === mockCategories.find(c => c.slug === category)?.id || p.categoryName.toLowerCase().replace(/[\s&]+/g, '-') === category);
-    if (brand)    list = list.filter(p => p.brandId === brand);
-    list = list.filter(p => p.price >= minPrice && p.price <= maxPrice);
-    list = list.filter(p => p.rating >= minRating);
-    switch (sort) {
-      case 'price_asc':  list.sort((a, b) => a.price - b.price); break;
-      case 'price_desc': list.sort((a, b) => b.price - a.price); break;
-      case 'rating':     list.sort((a, b) => b.rating - a.rating); break;
-      case 'reviews':    list.sort((a, b) => b.reviewCount - a.reviewCount); break;
-      default:           list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }
-    return list;
-  }, [search, category, brand, minPrice, maxPrice, minRating, sort]);
+  useEffect(() => {
+    getCategories()
+      .then((res) => {
+        const apiCats = mapCategoriesToListItems(res.data.data);
+        setCategories(
+          apiCats.map((c) => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            description: '',
+            image: c.image ?? '',
+            parentId: null,
+            productCount: c.productCount,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          })),
+        );
+      })
+      .catch(() => {
+        setCategories([]);
+      });
+  }, []);
+
+  useEffect(() => {
+    const categoryId = category
+      ? categories.find((c) => c.slug === category)?.id
+      : undefined;
+    const sortBy =
+      sort === 'price_asc' || sort === 'price_desc'
+        ? 'price'
+        : sort === 'rating'
+          ? 'rating'
+          : sort === 'reviews'
+            ? 'reviewCount'
+            : 'createdAt';
+    const sortOrder =
+      sort === 'price_asc' ? 'asc' : sort === 'price_desc' ? 'desc' : 'desc';
+
+    const query = search.trim()
+      ? {
+          q: search.trim(),
+          categoryId,
+          minPrice: minPrice > 0 ? minPrice : undefined,
+          maxPrice: maxPrice < 4000 ? maxPrice : undefined,
+          limit: 100,
+          sortBy,
+          sortOrder: sortOrder as 'asc' | 'desc',
+        }
+      : {
+          categoryId,
+          search: search.trim() || undefined,
+          minPrice: minPrice > 0 ? minPrice : undefined,
+          maxPrice: maxPrice < 4000 ? maxPrice : undefined,
+          limit: 100,
+          sortBy,
+          sortOrder: sortOrder as 'asc' | 'desc',
+        };
+
+    const fetchProducts = search.trim()
+      ? searchProducts(query)
+      : getProducts(query);
+
+    fetchProducts
+      .then((res) => {
+        const list = res.data.data.map(mapListItemDtoToProduct);
+        let filtered = list;
+        if (brand) filtered = filtered.filter((p) => p.brandId === brand);
+        if (minRating > 0) filtered = filtered.filter((p) => p.rating >= minRating);
+        setProductList(filtered);
+        const storeMap = new Map<string, Brand>();
+        filtered.forEach((p) => {
+          if (!storeMap.has(p.brandId)) {
+            storeMap.set(p.brandId, {
+              id: p.brandId,
+              name: p.brandName,
+              slug: p.brandName.toLowerCase().replace(/\s+/g, '-'),
+              logo: '',
+              productCount: 1,
+              createdAt: new Date().toISOString(),
+            });
+          } else {
+            storeMap.get(p.brandId)!.productCount += 1;
+          }
+        });
+        setBrands((prev) => (prev.length ? prev : Array.from(storeMap.values())));
+      })
+      .catch(() => setProductList([]));
+  }, [search, category, brand, minPrice, maxPrice, minRating, sort, categories]);
+
+  const filtered = productList;
 
   const clearFilters = () => {
     setSearch(''); setCategory(''); setBrand('');
@@ -195,7 +274,7 @@ const sortOptions = [
 
   /* ── Active category label ── */
   const activeCatLabel = category
-    ? mockCategories.find(c => c.slug === category)?.name ?? 'All Products'
+    ? categories.find(c => c.slug === category)?.name ?? 'All Products'
     : 'All Products';
 
     
@@ -646,7 +725,7 @@ const sortOptions = [
                   >
                     All Categories
                   </button>
-                  {mockCategories.map(cat => (
+                  {categories.map(cat => (
                     <button
                       key={cat.id}
                       onClick={() => setCategory(cat.slug)}
@@ -654,7 +733,7 @@ const sortOptions = [
                     >
                       {cat.name}
                       <span className={`text-xs ${category === cat.slug ? 'text-amber-200' : 'text-slate-400'}`}>
-                        {mockProducts.filter(p => p.categoryId === cat.id).length}
+                        {productList.filter(p => p.categoryId === cat.id).length}
                       </span>
                     </button>
                   ))}
@@ -668,7 +747,7 @@ const sortOptions = [
                   <button onClick={() => setBrand('')} className={`text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors ${!brand ? 'bg-amber-600 text-white' : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700'}`}>
                     All Brands
                   </button>
-                  {mockBrands.map(b => (
+                  {brands.map(b => (
                     <button key={b.id} onClick={() => setBrand(b.id)} className={`text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors ${brand === b.id ? 'bg-amber-600 text-white' : 'text-slate-600 hover:bg-amber-50 hover:text-amber-700'}`}>
                       {b.name}
                     </button>
@@ -770,13 +849,13 @@ const sortOptions = [
               <div className="flex flex-wrap gap-2 mb-5">
                 {category && (
                   <span className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1.5 rounded-full">
-                    {mockCategories.find(c => c.slug === category)?.name}
+                    {categories.find(c => c.slug === category)?.name}
                     <button onClick={() => setCategory('')}><X size={11} /></button>
                   </span>
                 )}
                 {brand && (
                   <span className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1.5 rounded-full">
-                    {mockBrands.find(b => b.id === brand)?.name}
+                    {brands.find(b => b.id === brand)?.name}
                     <button onClick={() => setBrand('')}><X size={11} /></button>
                   </span>
                 )}
@@ -878,7 +957,7 @@ const sortOptions = [
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Category</p>
                 <div className="flex flex-col gap-1">
                   <button onClick={() => setCategory('')} className={`text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors ${!category ? 'bg-amber-600 text-white' : 'text-slate-600 hover:bg-amber-50'}`}>All Categories</button>
-                  {mockCategories.map(cat => (
+                  {categories.map(cat => (
                     <button key={cat.id} onClick={() => setCategory(cat.slug)} className={`text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors ${category === cat.slug ? 'bg-amber-600 text-white' : 'text-slate-600 hover:bg-amber-50'}`}>
                       {cat.name}
                     </button>
@@ -889,7 +968,7 @@ const sortOptions = [
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Brand</p>
                 <div className="flex flex-col gap-1">
                   <button onClick={() => setBrand('')} className={`text-left px-3 py-2 rounded-xl text-sm font-medium ${!brand ? 'bg-amber-600 text-white' : 'text-slate-600 hover:bg-amber-50'}`}>All Brands</button>
-                  {mockBrands.map(b => (
+                  {brands.map(b => (
                     <button key={b.id} onClick={() => setBrand(b.id)} className={`text-left px-3 py-2 rounded-xl text-sm font-medium ${brand === b.id ? 'bg-amber-600 text-white' : 'text-slate-600 hover:bg-amber-50'}`}>{b.name}</button>
                   ))}
                 </div>

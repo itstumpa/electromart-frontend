@@ -2,18 +2,30 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { getFeaturedProducts } from '@/data/mock-data';
+import { useEffect, useState } from 'react';
+import { getFeaturedProducts } from '@/api/product.api';
+import { mapListItemDtoToProduct } from '@/lib/product-mappers';
+import type { Product } from '@/data/types';
 import Reveal from '../Utilities/Reveal';
 import ProductCard from '../Utilities/Productcard';
 
 export default function FeaturedProducts() {
-  const products = getFeaturedProducts();
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    getFeaturedProducts()
+      .then((res) => {
+        setProducts(res.data.data.map(mapListItemDtoToProduct));
+      })
+      .catch(() => {
+        setProducts([]);
+      });
+  }, []);
 
   return (
     <section className="py-5 bg-[#FFFBEB]">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
 
-        {/* Header */}
         <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-4">
           <div>
             <h2
@@ -32,8 +44,7 @@ export default function FeaturedProducts() {
           </Link>
         </Reveal>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-6">
           {products.slice(0, 6).map((product, i) => (
             <Reveal key={product.id} delay={i * 0.08} direction="up">
               <ProductCard product={product} index={i} />

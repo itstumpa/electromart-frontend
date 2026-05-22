@@ -7,7 +7,8 @@ import { usePathname } from 'next/navigation';
 import { Bell, Search, ChevronDown, LogOut, User, Settings, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { User as UserType, UserRole } from '@/data/types';
-import { mockNotifications } from '@/data/mock-data';
+import { getMyNotifications } from '@/api/notification.api';
+import { mapNotificationDtoToUi } from '@/lib/notification-mappers';
 import { authStorage } from '@/utils/auth-storage';
 import { logoutUser } from '@/api/auth.api';
 import { toast } from 'sonner';
@@ -63,6 +64,7 @@ export default function DashboardTopbar({ user }: Props) {
   const config    = ROLE_CONFIG[activeUser.role];
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen,   setNotifOpen]   = useState(false);
+  const [notifs, setNotifs] = useState<ReturnType<typeof mapNotificationDtoToUi>[]>([]);
 
   useEffect(() => {
     const storedUser = authStorage.getAuthUser();
@@ -78,12 +80,13 @@ export default function DashboardTopbar({ user }: Props) {
     }));
   }, []);
 
-  // Filter notifs for this user
-  const notifs = useMemo(
-    () => mockNotifications.filter((n) => n.userId === activeUser.id).slice(0, 5),
-    [activeUser.id],
-  );
-  const unread    = notifs.filter((n) => !n.isRead).length;
+  useEffect(() => {
+    getMyNotifications()
+      .then((res) => setNotifs((res.data.data ?? []).map(mapNotificationDtoToUi).slice(0, 5)))
+      .catch(() => setNotifs([]));
+  }, [activeUser.id]);
+
+  const unread = notifs.filter((n) => !n.isRead).length;
   const handleSignOut = async () => {
     try {
       await logoutUser();

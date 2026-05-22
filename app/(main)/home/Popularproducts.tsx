@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,27 +8,37 @@ import {
   Star, ShoppingCart, Heart, ArrowRight,
   TrendingUp, Eye, CheckCircle2,
 } from 'lucide-react';
-import { mockProducts } from '@/data/mock-data';
+import { getProducts } from '@/api/product.api';
+import type { Product } from '@/data/types';
+import { mapListItemDtoToProduct } from '@/lib/product-mappers';
 
-type FilterTab = 'all' | 'sale' | 'bestseller' | 'featured';
+type FilterTab = 'all' | 'sale' | 'bestseller' | 'toprated';
 
 const TABS: { key: FilterTab; label: string }[] = [
   { key: 'all',        label: 'All'        },
   { key: 'sale',       label: 'On Sale'    },
   { key: 'bestseller', label: 'Bestsellers' },
-  { key: 'featured',   label: 'Featured'   },
+  { key: 'toprated',   label: 'Top Rated'   }, 
 ];
 
 export default function PopularProducts() {
+  const [products,     setProducts]     = useState<Product[]>([]);
   const [activeTab,    setActiveTab]    = useState<FilterTab>('all');
   const [wishlist,     setWishlist]     = useState<Set<string>>(new Set());
   const [addedToCart,  setAddedToCart]  = useState<string | null>(null);
   const [hoveredId,    setHoveredId]    = useState<string | null>(null);
 
-  const filtered = mockProducts.filter((p) => {
+  useEffect(() => {
+ getProducts({ limit: 7, onSale: true })
+       .then((res) => setProducts(res.data.data.map(mapListItemDtoToProduct)))
+      .catch(() => setProducts([]));
+  }, []);
+
+
+  const filtered = products.filter((p) => {
     if (activeTab === 'sale')       return p.originalPrice && p.originalPrice > p.price;
     if (activeTab === 'bestseller') return p.bestseller;
-    if (activeTab === 'featured')   return p.featured;
+    if (activeTab === 'toprated')   return p.rating >= 4;
     return true;
   });
 
@@ -48,7 +58,7 @@ export default function PopularProducts() {
     setTimeout(() => setAddedToCart(null), 1800);
   };
 
-  const discountPct = (p: typeof mockProducts[0]) =>
+  const discountPct = (p: Product) =>
     p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
 
   return (
@@ -87,7 +97,7 @@ export default function PopularProducts() {
         </div>
 
         {/* Products grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-6 sm:gap-4">
           <AnimatePresence mode="popLayout">
             {filtered.map((product, i) => {
               const disc    = discountPct(product);
