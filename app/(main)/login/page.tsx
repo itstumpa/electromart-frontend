@@ -112,6 +112,7 @@ export default function LoginPage() {
         role,
         avatar: (currentUser as { avatar?: string }).avatar,
       });
+      window.dispatchEvent(new Event('auth-updated'));
       toast.success('Login successful');
       router.push(getRedirectPathByRole(role));
     } catch (apiError) {

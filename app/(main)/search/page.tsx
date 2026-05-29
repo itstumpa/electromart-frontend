@@ -146,7 +146,7 @@ export default function SearchPage() {
                 result{results.length !== 1 ? "s" : ""} for "
                 <span className="text-amber-700">{debouncedQuery}</span>"
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-5">
                 {results.map((p, i) => (
                   <Reveal key={p.id} delay={i * 0.05}>
                     <ProductCard product={p} index={i} />

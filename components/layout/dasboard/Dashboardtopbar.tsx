@@ -94,6 +94,7 @@ export default function DashboardTopbar({ user }: Props) {
       // even if API fails, clear stale session client-side
     } finally {
       authStorage.clearSession();
+      window.dispatchEvent(new Event('auth-updated'));
       toast.success('You are logged out');
       setProfileOpen(false);
     }
