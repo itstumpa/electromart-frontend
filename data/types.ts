@@ -178,6 +178,10 @@ export interface VendorProfile {
   userId: string;
   storeName: string;
   logo?: string;
+  coverImage?: string;
+  specialty?: string;
+  badge?: string;
+  offers?: string;
   bio?: string;
   isApproved: boolean;
   totalProducts: number;
