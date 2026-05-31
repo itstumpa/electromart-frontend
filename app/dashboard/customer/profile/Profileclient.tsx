@@ -17,6 +17,7 @@ import { updateUserProfile } from '@/api/user.api';
 import { mapOrdersToUi } from '@/lib/order-mappers';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
+import { uploadAvatar } from '@/api/user.api';
 
 export default function CustomerProfileClient() {
   const [userId, setUserId] = useState('');
@@ -99,6 +100,39 @@ const cachedProfileRaw = localStorage.getItem(`customerProfileDraft_${me.id}`);
     loadMe();
   }, []);
 
+ const [uploading, setUploading] = useState(false);
+
+const handleAvatarUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  // show preview immediately
+  const reader = new FileReader();
+  reader.onload = () => {
+    const preview = typeof reader.result === 'string' ? reader.result : '';
+    setAvatarPreview(preview);
+  };
+  reader.readAsDataURL(file);
+
+  setUploading(true);
+  try {
+    const res = await uploadAvatar(file);
+    const url = res.data.data.avatar;
+    setForm((prev) => ({ ...prev, avatar: url }));
+    setAvatarPreview(url);
+    toast.success('Avatar uploaded');
+
+    const currentAuthUser = authStorage.getAuthUser();
+    if (currentAuthUser) {
+      authStorage.setAuthUser({ ...currentAuthUser, avatar: url });
+    }
+  } catch (err) {
+    toast.error(getApiErrorMessage(err, 'Failed to upload avatar'));
+  } finally {
+    setUploading(false);
+  }
+};
+
   const totalSpent = myOrders
     .filter((o) => o.paymentStatus === 'paid')
     .reduce((s, o) => s + o.total, 0);
@@ -143,19 +177,6 @@ localStorage.setItem(
     setSaved(true);
     toast.success('Profile updated');
     setTimeout(() => setSaved(false), 2500);
-  };
-
-  const handleAvatarUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const imageDataUrl = typeof reader.result === 'string' ? reader.result : '';
-      setForm((prev) => ({ ...prev, avatar: imageDataUrl }));
-      setAvatarPreview(imageDataUrl);
-    };
-    reader.readAsDataURL(file);
   };
 
   const stats = [
@@ -204,10 +225,18 @@ localStorage.setItem(
                     </div>
                   )}
                 </div>
-                <label className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-amber-600 hover:bg-amber-700 text-white rounded-xl flex items-center justify-center cursor-pointer transition-colors shadow-md">
-                  <Camera size={13} />
-                  <input type="file" className="sr-only" accept="image/*" onChange={handleAvatarUpload} />
-                </label>
+ <label className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-amber-600 hover:bg-amber-700 text-white rounded-xl flex items-center justify-center cursor-pointer transition-colors shadow-md">
+  {uploading ? (
+    <motion.span
+      animate={{ rotate: 360 }}
+      transition={{ repeat: Infinity, duration: 0.7, ease: 'linear' }}
+      className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full block"
+    />
+  ) : (
+    <Camera size={13} />
+  )}
+  <input type="file" className="sr-only" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} />
+</label>
               </div>
               <div>
                 <p className="font-black text-slate-900">{form.name}</p>
@@ -217,23 +246,6 @@ localStorage.setItem(
                   Customer
                 </span>
               </div>
-            </div>
-
-            {/* Avatar URL input */}
-            <div className="mb-4">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">
-                Avatar URL
-              </label>
-              <input
-                type="url"
-                placeholder="https://your-image-url.com/avatar.jpg"
-                value={form.avatar}
-                onChange={(e) => {
-                  setForm({ ...form, avatar: e.target.value });
-                  setAvatarPreview(e.target.value);
-                }}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
-              />
             </div>
 
             {/* Fields grid */}

@@ -26,6 +26,20 @@ const BLANK_FORM: ProductForm = {
   categoryId: '', description: '', featured: false, isPublished: true, image: '',
 };
 
+function Field({ label, k, type = 'text', placeholder, half, form, setForm }: {
+  label: string; k: keyof ProductForm; type?: string; placeholder?: string; half?: boolean;
+  form: ProductForm; setForm: (form: ProductForm) => void;
+}) {
+  return (
+    <div className={half ? '' : 'col-span-2'}>
+      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">{label}</label>
+      <input type={type} placeholder={placeholder} value={form[k] as string}
+        onChange={(e) => setForm({ ...form, [k]: e.target.value })}
+        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
+    </div>
+  );
+}
+
 function ProductModal({ initial, onSave, onClose }: {
   initial?: Product | null;
   onSave: (data: ProductForm) => void;
@@ -51,17 +65,6 @@ function ProductModal({ initial, onSave, onClose }: {
     setSaving(false);
     onClose();
   };
-
-  const Field = ({ label, k, type = 'text', placeholder, half }: {
-    label: string; k: keyof ProductForm; type?: string; placeholder?: string; half?: boolean;
-  }) => (
-    <div className={half ? '' : 'col-span-2'}>
-      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">{label}</label>
-      <input type={type} placeholder={placeholder} value={form[k] as string}
-        onChange={(e) => setForm({ ...form, [k]: e.target.value })}
-        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
-    </div>
-  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -105,11 +108,11 @@ function ProductModal({ initial, onSave, onClose }: {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Product Name *" k="name"          placeholder="iPhone 15 Pro Max" />
-            <Field label="SKU"            k="sku"           placeholder="APL-IP15PM-256" half />
-            <Field label="Price *"        k="price"         placeholder="999.99"  type="number" half />
-            <Field label="Original Price" k="originalPrice" placeholder="1099.99" type="number" half />
-            <Field label="Stock *"        k="stock"         placeholder="100"     type="number" half />
+            <Field label="Product Name *" k="name"          placeholder="iPhone 15 Pro Max" form={form} setForm={setForm} />
+            <Field label="SKU"            k="sku"           placeholder="APL-IP15PM-256" half form={form} setForm={setForm} />
+            <Field label="Price *"        k="price"         placeholder="999.99"  type="number" half form={form} setForm={setForm} />
+            <Field label="Original Price" k="originalPrice" placeholder="1099.99" type="number" half form={form} setForm={setForm} />
+            <Field label="Stock *"        k="stock"         placeholder="100"     type="number" half form={form} setForm={setForm} />
           </div>
 
           {/* Category */}
