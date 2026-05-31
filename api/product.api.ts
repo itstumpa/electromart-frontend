@@ -72,3 +72,53 @@ export const getSearchSuggestions = (q: string) => {
     { params: { q } },
   );
 };
+
+// ── Vendor product management ──────────────────────────────
+
+export interface CreateProductDto {
+  name: string;
+  price: number;
+  originalPrice?: number;
+  stock: number;
+  categoryId: string;
+  description?: string;
+  featured?: boolean;
+  isActive?: boolean;
+}
+
+
+export const getMyProducts = () => {
+  return api.get<ApiResponse<ProductListItemDto[]>>('/products/my/products');
+};
+
+export const createProduct = (data: CreateProductDto, images?: File[]) => {
+  const formData = new FormData();
+  Object.entries(data).forEach(([k, v]) => {
+    if (v !== undefined) formData.append(k, String(v));
+  });
+  images?.forEach((f) => formData.append('files', f));
+  return api.post<ApiResponse<ProductDetailDto>>('/products', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+
+export const updateProduct = (id: string, data: Partial<CreateProductDto>, newImages?: File[]) => {
+  const formData = new FormData();
+  formData.append('data', JSON.stringify(data));
+newImages?.forEach((f) => formData.append('files', f));
+  return api.patch<ApiResponse<ProductDetailDto>>(`/products/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+
+export const deleteProduct = (id: string) => {
+  return api.delete<ApiResponse<null>>(`/products/${id}`);
+};
+
+export const toggleProductVisibility = (id: string, isActive: boolean) => {
+  const formData = new FormData();
+  formData.append('data', JSON.stringify({ isActive }));
+  return api.patch<ApiResponse<ProductDetailDto>>(`/products/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};

@@ -60,6 +60,29 @@ export const updateOrderStatus = (id: string, status: string) => {
   return api.patch<ApiResponse<OrderDto>>(`/orders/${id}`, { status });
 };
 
+export interface VendorOrderItemDto {
+  id: string;
+  orderId: string;
+  quantity: number;
+  priceAtTime: number;
+  productImage: string;
+  variant: string | null;
+  status: string;
+  createdAt: string;
+  order: {
+    id: string;
+    status: string;
+    total: number;
+    createdAt: string;
+    user: { id: string; name: string; email: string };
+  };
+  product: {
+    id: string;
+    name: string;
+    images: { url: string }[];
+  };
+}
+
 export const getVendorOrders = () => {
-  return api.get<ApiResponse<OrderDto[]>>("/orders/vendor/items");
+  return api.get<ApiResponse<VendorOrderItemDto[]>>('/orders/vendor/items');
 };

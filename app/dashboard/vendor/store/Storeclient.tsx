@@ -1,6 +1,6 @@
 'use client';
 
-import { type ElementType, useState } from 'react';
+import { type ElementType, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -9,7 +9,10 @@ import {
   Star, Package, ShoppingBag, Link as LinkIcon,
   MapPin, FileText, Shield,
 } from 'lucide-react';
-import { mockVendorProfiles, mockUsers } from '@/data/mock-data';
+import { getMyStore, updateStore, type MyStoreDto } from '@/api/store.api';
+import { getMe } from '@/api/auth.api';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { toast } from 'sonner';
 
 type FieldProps = {
   label: string;
@@ -34,31 +37,63 @@ function Field({ label, value, onChange, placeholder, type = 'text', icon: Icon 
 }
 
 export default function VendorStoreClient() {
-  const profile = mockVendorProfiles[0];
-  const vendor  = mockUsers.find((u) => u.role === 'VENDOR')!;
-
-  const [form, setForm] = useState({
-    storeName:   profile.storeName,
-    bio:         profile.bio ?? '',
-    phone:       vendor.phone ?? '',
-    email:       vendor.email,
-    website:     'https://techstorepro.com',
-    instagram:   '@techstorepro',
-    twitter:     '@techstorepro',
-    logo:        profile.logo ?? '',
-    returnPolicy: '30-day hassle-free returns on all unused products. Items must be in original packaging.',
-    shippingPolicy: 'Orders ship within 1–2 business days. Standard delivery 3–5 days. Free shipping on orders over $99.',
-    address: '456 Tech Avenue, Floor 3, New York, NY 10001',
-  });
+  const [store,     setStore]     = useState<MyStoreDto | null>(null);
+  const [loading,   setLoading]   = useState(true);
   const [activeTab, setActiveTab] = useState<'general' | 'policies' | 'danger'>('general');
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
-  const [logoPreview, setLogoPreview] = useState(form.logo);
+  const [logoPreview, setLogoPreview] = useState('');
+
+  const [form, setForm] = useState({
+    storeName:      '',
+    bio:            '',
+    phone:          '',
+    email:          '',
+    website:        '',
+    instagram:      '',
+    twitter:        '',
+    logo:           '',
+    returnPolicy:   '30-day hassle-free returns on all unused products. Items must be in original packaging.',
+    shippingPolicy: 'Orders ship within 1–2 business days. Standard delivery 3–5 days. Free shipping on orders over $99.',
+    address:        '',
+  });
+
+  useEffect(() => {
+    Promise.all([getMyStore(), getMe()])
+      .then(([storeRes, meRes]) => {
+        const s  = storeRes.data.data;
+        const me = meRes.data?.data;
+        setStore(s);
+        setForm((prev) => ({
+          ...prev,
+          storeName: s.name,
+          bio:       s.description ?? '',
+          logo:      s.logo ?? '',
+          email:     me?.email ?? '',
+          phone:     me?.phone ?? '',
+        }));
+        setLogoPreview(s.logo ?? '');
+      })
+      .catch((err) => toast.error(getApiErrorMessage(err, 'Failed to load store')))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleSave = async () => {
+    if (!store) return;
     setSaveState('saving');
-    await new Promise((r) => setTimeout(r, 1200));
-    setSaveState('saved');
-    setTimeout(() => setSaveState('idle'), 2500);
+    try {
+      await updateStore(store.id, {
+        name:        form.storeName.trim(),
+        description: form.bio.trim() || undefined,
+        logo:        form.logo.trim() || undefined,
+      });
+      setStore((prev) => prev ? { ...prev, name: form.storeName, description: form.bio, logo: form.logo } : prev);
+      setSaveState('saved');
+      toast.success('Store updated');
+      setTimeout(() => setSaveState('idle'), 2500);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to update store'));
+      setSaveState('idle');
+    }
   };
 
   const TABS = [
@@ -67,26 +102,35 @@ export default function VendorStoreClient() {
     { key: 'danger',   label: 'Danger',   icon: AlertTriangle },
   ] as const;
 
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>Store Profile</h1>
+        <div className="bg-slate-100 animate-pulse rounded-2xl h-48" />
+        <div className="bg-slate-100 animate-pulse rounded-2xl h-64" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
 
-      {/* Header + store status */}
+      {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>Store Profile</h1>
           <p className="text-sm text-slate-400 mt-0.5">Manage your store information and settings</p>
         </div>
         <span className={`inline-flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-xl border ${
-          profile.isApproved ? 'bg-green-50 border-green-200 text-green-700' : 'bg-yellow-50 border-yellow-200 text-yellow-700'
+          store?.isApproved ? 'bg-green-50 border-green-200 text-green-700' : 'bg-yellow-50 border-yellow-200 text-yellow-700'
         }`}>
-          <span className={`w-2 h-2 rounded-full ${profile.isApproved ? 'bg-green-500' : 'bg-yellow-500'}`} />
-          {profile.isApproved ? 'Store Active' : 'Pending Approval'}
+          <span className={`w-2 h-2 rounded-full ${store?.isApproved ? 'bg-green-500' : 'bg-yellow-500'}`} />
+          {store?.isApproved ? 'Store Active' : 'Pending Approval'}
         </span>
       </div>
 
       {/* Store hero card */}
       <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-        {/* Cover banner */}
         <div className="relative h-28 sm:h-36 bg-gradient-to-br from-amber-600 via-amber-700 to-amber-800">
           <div className="absolute inset-0 opacity-10"
             style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
@@ -94,7 +138,6 @@ export default function VendorStoreClient() {
 
         <div className="px-5 sm:px-6 pb-5 -mt-10">
           <div className="flex items-end gap-4 mb-4 flex-wrap">
-            {/* Logo */}
             <div className="relative shrink-0">
               <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-lg bg-slate-100">
                 {logoPreview ? (
@@ -115,13 +158,13 @@ export default function VendorStoreClient() {
               <h2 className="text-xl font-black text-slate-900">{form.storeName}</h2>
               <div className="flex items-center gap-3 mt-1 flex-wrap">
                 <span className="flex items-center gap-1 text-xs font-semibold text-amber-700">
-                  <Star size={12} className="fill-amber-500 text-amber-500" /> {profile.rating} rating
+                  <Star size={12} className="fill-amber-500 text-amber-500" /> {store?.rating ?? 0} rating
                 </span>
                 <span className="flex items-center gap-1 text-xs text-slate-400">
-                  <Package size={12} /> {profile.totalProducts} products
+                  <Package size={12} /> {store?.products?.length ?? 0} products
                 </span>
                 <span className="flex items-center gap-1 text-xs text-slate-400">
-                  <ShoppingBag size={12} /> {profile.totalSales.toLocaleString()} sales
+                  <ShoppingBag size={12} /> {store?.totalSales?.toLocaleString() ?? 0} sales
                 </span>
               </div>
             </div>
@@ -146,7 +189,8 @@ export default function VendorStoreClient() {
 
       {/* Tab content */}
       <AnimatePresence mode="wait">
-        <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+        <motion.div key={activeTab}
+          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
           className="bg-white rounded-2xl border border-slate-100 p-5 sm:p-6"
         >
@@ -156,8 +200,8 @@ export default function VendorStoreClient() {
             <div className="space-y-5">
               <h3 className="font-black text-slate-900 mb-4">Store Information</h3>
 
-              <Field label="Store Name *"    value={form.storeName} onChange={(v) => setForm({ ...form, storeName: v })}  placeholder="TechStore Pro" icon={Store} />
-              <Field label="Business Address" value={form.address}  onChange={(v) => setForm({ ...form, address: v })}    placeholder="123 Main St, City" icon={MapPin} />
+              <Field label="Store Name *"     value={form.storeName} onChange={(v) => setForm({ ...form, storeName: v })} placeholder="TechStore Pro" icon={Store} />
+              <Field label="Business Address" value={form.address}   onChange={(v) => setForm({ ...form, address: v })}   placeholder="123 Main St, City" icon={MapPin} />
 
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Store Bio</label>
@@ -176,10 +220,10 @@ export default function VendorStoreClient() {
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Support Email"  value={form.email}    onChange={(v) => setForm({ ...form, email: v })}    icon={Mail}   type="email" />
-                <Field label="Support Phone"  value={form.phone}    onChange={(v) => setForm({ ...form, phone: v })}    icon={Phone} />
-                <Field label="Website"        value={form.website}  onChange={(v) => setForm({ ...form, website: v })}  icon={Globe} />
-                <Field label="Instagram"      value={form.instagram} onChange={(v) => setForm({ ...form, instagram: v })} icon={LinkIcon} placeholder="@yourstore" />
+                <Field label="Support Email" value={form.email}     onChange={(v) => setForm({ ...form, email: v })}     icon={Mail}    type="email" />
+                <Field label="Support Phone" value={form.phone}     onChange={(v) => setForm({ ...form, phone: v })}     icon={Phone} />
+                <Field label="Website"       value={form.website}   onChange={(v) => setForm({ ...form, website: v })}   icon={Globe} />
+                <Field label="Instagram"     value={form.instagram} onChange={(v) => setForm({ ...form, instagram: v })} icon={LinkIcon} placeholder="@yourstore" />
               </div>
             </div>
           )}
@@ -254,7 +298,7 @@ export default function VendorStoreClient() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Save button — not shown on danger tab */}
+      {/* Save button */}
       {activeTab !== 'danger' && (
         <div className="flex justify-end">
           <motion.button onClick={handleSave} whileTap={{ scale: 0.97 }}

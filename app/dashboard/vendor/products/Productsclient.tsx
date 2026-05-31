@@ -1,34 +1,47 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Pencil, Trash2, Eye, EyeOff,
-  X, Upload, Star, Package, Search,
+  X, Star, Package, Search,
   ChevronDown, CheckCircle2, ImageIcon,
 } from 'lucide-react';
-import { mockProducts, mockCategories } from '@/data/mock-data';
-import type { Product } from '@/data/types';
+import {
+  getMyProducts, createProduct, updateProduct,
+  deleteProduct, toggleProductVisibility,
+  type CreateProductDto,
+} from '@/api/product.api';
+import { getCategories, mapCategoriesToListItems } from '@/api/category.api';
+import { type ProductListItemDto, toNumber } from '@/types/product';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { toast } from 'sonner';
 import ConfirmModal from '@/components/dashboard/admin/Confirmmodal';
 
-
-// ─── Product form modal ───────────────────────────────────────
+// ─── Form types ───────────────────────────────────────────────
 interface ProductForm {
-  name: string; price: string; originalPrice: string;
-  stock: string; sku: string; categoryId: string;
-  description: string; featured: boolean; isPublished: boolean;
-  image: string;
+  name: string;
+  price: string;
+  originalPrice: string;
+  stock: string;
+  categoryId: string;
+  description: string;
+  featured: boolean;
+  isActive: boolean;
+  imageUrl: string;
 }
 
 const BLANK_FORM: ProductForm = {
-  name: '', price: '', originalPrice: '', stock: '', sku: '',
-  categoryId: '', description: '', featured: false, isPublished: true, image: '',
+  name: '', price: '', originalPrice: '', stock: '',
+  categoryId: '', description: '', featured: false,
+  isActive: true, imageUrl: '',
 };
 
 function Field({ label, k, type = 'text', placeholder, half, form, setForm }: {
-  label: string; k: keyof ProductForm; type?: string; placeholder?: string; half?: boolean;
-  form: ProductForm; setForm: (form: ProductForm) => void;
+  label: string; k: keyof ProductForm; type?: string;
+  placeholder?: string; half?: boolean;
+  form: ProductForm; setForm: (f: ProductForm) => void;
 }) {
   return (
     <div className={half ? '' : 'col-span-2'}>
@@ -40,30 +53,49 @@ function Field({ label, k, type = 'text', placeholder, half, form, setForm }: {
   );
 }
 
-function ProductModal({ initial, onSave, onClose }: {
-  initial?: Product | null;
-  onSave: (data: ProductForm) => void;
+// ─── Product modal ────────────────────────────────────────────
+function ProductModal({ initial, categories, onSave, onClose }: {
+  initial?: ProductListItemDto | null;
+  categories: { id: string; name: string }[];
+  onSave: (data: ProductForm, imageFile?: File) => Promise<void>;
   onClose: () => void;
 }) {
   const [form, setForm] = useState<ProductForm>(
     initial ? {
-      name: initial.name, price: String(initial.price),
-      originalPrice: String(initial.originalPrice ?? ''), stock: String(initial.stock),
-      sku: initial.sku, categoryId: initial.categoryId,
-      description: initial.description, featured: initial.featured,
-      isPublished: initial.isPublished, image: initial.image,
+      name:          initial.name,
+      price:         String(toNumber(initial.price)),
+      originalPrice: initial.originalPrice ? String(toNumber(initial.originalPrice)) : '',
+      stock:         String(initial.stock),
+      categoryId:    initial.categoryId,
+      description:   initial.description ?? '',
+      featured:      initial.featured ?? false,
+      isActive:      initial.isActive,
+      imageUrl:      initial.images?.[0]?.url ?? '',
     } : BLANK_FORM
   );
-  const [saving, setSaving] = useState(false);
-  const [previewImg, setPreviewImg] = useState(initial?.image ?? '');
+  const [saving,     setSaving]     = useState(false);
+  const [imageFile,  setImageFile]  = useState<File | undefined>();
+  const [previewImg, setPreviewImg] = useState(initial?.images?.[0]?.url ?? '');
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setPreviewImg(URL.createObjectURL(file));
+  };
 
   const handleSave = async () => {
-    if (!form.name || !form.price || !form.stock) return;
+    if (!form.name || !form.price || !form.stock) {
+      toast.error('Name, price and stock are required');
+      return;
+    }
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    onSave(form);
-    setSaving(false);
-    onClose();
+    try {
+      await onSave(form, imageFile);
+      onClose();
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -85,7 +117,7 @@ function ProductModal({ initial, onSave, onClose }: {
         </div>
 
         <div className="p-6 space-y-5">
-          {/* Image preview + URL */}
+          {/* Image */}
           <div>
             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">Product Image</label>
             <div className="flex gap-3 items-start">
@@ -99,17 +131,20 @@ function ProductModal({ initial, onSave, onClose }: {
                 )}
               </div>
               <div className="flex-1 space-y-2">
-                <input type="url" placeholder="https://image-url.com/photo.jpg" value={form.image}
-                  onChange={(e) => { setForm({ ...form, image: e.target.value }); setPreviewImg(e.target.value); }}
+                <label className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-sm font-semibold text-amber-700 cursor-pointer hover:bg-amber-100 transition-colors w-fit">
+                  <ImageIcon size={14} /> Upload Image
+                  <input type="file" className="sr-only" accept="image/*" onChange={handleFileChange} />
+                </label>
+                <p className="text-xs text-slate-400">Or paste a URL:</p>
+                <input type="url" placeholder="https://image-url.com/photo.jpg" value={form.imageUrl}
+                  onChange={(e) => { setForm({ ...form, imageUrl: e.target.value }); setPreviewImg(e.target.value); }}
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
-                <p className="text-xs text-slate-400">Paste an image URL above. Image upload via Cloudinary is connected to the backend API.</p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="Product Name *" k="name"          placeholder="iPhone 15 Pro Max" form={form} setForm={setForm} />
-            <Field label="SKU"            k="sku"           placeholder="APL-IP15PM-256" half form={form} setForm={setForm} />
             <Field label="Price *"        k="price"         placeholder="999.99"  type="number" half form={form} setForm={setForm} />
             <Field label="Original Price" k="originalPrice" placeholder="1099.99" type="number" half form={form} setForm={setForm} />
             <Field label="Stock *"        k="stock"         placeholder="100"     type="number" half form={form} setForm={setForm} />
@@ -122,7 +157,7 @@ function ProductModal({ initial, onSave, onClose }: {
               <select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
                 className="w-full appearance-none pl-4 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent cursor-pointer">
                 <option value="">Select category</option>
-                {mockCategories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
               <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             </div>
@@ -139,8 +174,8 @@ function ProductModal({ initial, onSave, onClose }: {
           {/* Toggles */}
           <div className="flex gap-4 flex-wrap">
             {([
-              { k: 'isPublished', label: 'Published' },
-              { k: 'featured',    label: 'Featured' },
+              { k: 'isActive',  label: 'Published' },
+              { k: 'featured',  label: 'Featured' },
             ] as { k: keyof ProductForm; label: string }[]).map(({ k, label }) => (
               <label key={k} className="flex items-center gap-2.5 cursor-pointer">
                 <div onClick={() => setForm((f) => ({ ...f, [k]: !f[k] }))}
@@ -172,60 +207,99 @@ function ProductModal({ initial, onSave, onClose }: {
 
 // ─── Main component ───────────────────────────────────────────
 export default function VendorProductsClient() {
-  const vendorProducts = mockProducts.filter((p) => p.vendorId === 'vendor-1');
-  const [products,    setProducts]    = useState<Product[]>(vendorProducts);
-  const [search,      setSearch]      = useState('');
-  const [catFilter,   setCatFilter]   = useState('');
-  const [modalOpen,   setModalOpen]   = useState(false);
-  const [editTarget,  setEditTarget]  = useState<Product | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+  const [products,     setProducts]     = useState<ProductListItemDto[]>([]);
+  const [categories,   setCategories]   = useState<{ id: string; name: string }[]>([]);
+  const [loading,      setLoading]      = useState(true);
+  const [search,       setSearch]       = useState('');
+  const [catFilter,    setCatFilter]    = useState('');
+  const [modalOpen,    setModalOpen]    = useState(false);
+  const [editTarget,   setEditTarget]   = useState<ProductListItemDto | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ProductListItemDto | null>(null);
+
+  useEffect(() => {
+    Promise.all([getMyProducts(), getCategories()])
+      .then(([prodRes, catRes]) => {
+        setProducts(prodRes.data.data ?? []);
+        setCategories(mapCategoriesToListItems(catRes.data.data).map((c) => ({ id: c.id, name: c.name })));
+      })
+      .catch((err) => toast.error(getApiErrorMessage(err, 'Failed to load products')))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = products.filter((p) => {
-    const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
     const matchCat    = !catFilter || p.categoryId === catFilter;
     return matchSearch && matchCat;
   });
 
-  const handleSave = (data: ProductForm) => {
+  const handleSave = async (data: ProductForm, imageFile?: File) => {
+    const payload: CreateProductDto = {
+      name:          data.name.trim(),
+      price:         parseFloat(data.price),
+      originalPrice: data.originalPrice ? parseFloat(data.originalPrice) : undefined,
+      stock:         parseInt(data.stock),
+      categoryId:    data.categoryId,
+      description:   data.description || undefined,
+      featured:      data.featured,
+      isActive:      data.isActive,
+    };
+
+    const images = imageFile ? [imageFile] : undefined;
+
     if (editTarget) {
-      setProducts((prev) => prev.map((p) => p.id === editTarget.id ? {
-        ...p, name: data.name, price: parseFloat(data.price),
-        originalPrice: data.originalPrice ? parseFloat(data.originalPrice) : undefined,
-        stock: parseInt(data.stock), sku: data.sku, categoryId: data.categoryId,
-        description: data.description, featured: data.featured, isPublished: data.isPublished,
-        image: data.image || p.image,
-      } : p));
+      const res = await updateProduct(editTarget.id, payload, images);
+      setProducts((prev) => prev.map((p) => p.id === editTarget.id ? res.data.data as any : p));
+      toast.success('Product updated');
       setEditTarget(null);
     } else {
-      const newP: Product = {
-        id: `prod-new-${Date.now()}`, vendorId: 'vendor-1', vendorName: 'TechStore Pro',
-        categoryId: data.categoryId, categoryName: mockCategories.find(c => c.id === data.categoryId)?.name ?? '',
-        brandId: '', brandName: '', name: data.name,
-        slug: data.name.toLowerCase().replace(/\s+/g, '-'),
-        description: data.description, price: parseFloat(data.price),
-        originalPrice: data.originalPrice ? parseFloat(data.originalPrice) : undefined,
-        image: data.image || 'https://images.unsplash.com/photo-1491933382434-500287f9b54b?w=400',
-        images: [], stock: parseInt(data.stock), sku: data.sku,
-        specifications: [], variants: [], rating: 0, reviewCount: 0,
-        featured: data.featured, bestseller: false, isPublished: data.isPublished,
-        tags: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-      } as unknown as Product;
-      setProducts((prev) => [newP, ...prev]);
+      const res = await createProduct(payload, images);
+      setProducts((prev) => [res.data.data as any, ...prev]);
+      toast.success('Product created');
     }
   };
 
-  const handleTogglePublish = (id: string) => {
-    setProducts((prev) => prev.map((p) => p.id === id ? { ...p, isPublished: !p.isPublished } : p));
+  const handleToggleVisibility = async (p: ProductListItemDto) => {
+    try {
+      await toggleProductVisibility(p.id, !p.isActive);
+      setProducts((prev) => prev.map((item) => item.id === p.id ? { ...item, isActive: !p.isActive } : item));
+      toast.success(p.isActive ? 'Product hidden' : 'Product published');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to update visibility'));
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTarget) return;
-    setProducts((prev) => prev.filter((p) => p.id !== deleteTarget.id));
-    setDeleteTarget(null);
+    try {
+      await deleteProduct(deleteTarget.id);
+      setProducts((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+      toast.success('Product deleted');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to delete product'));
+    } finally {
+      setDeleteTarget(null);
+    }
   };
 
-  const categories = [...new Set(products.map((p) => p.categoryId))];
-  const disc = (p: Product) => p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
+  const disc = (p: ProductListItemDto) => {
+    if (!p.originalPrice) return 0;
+    const orig = toNumber(p.originalPrice);
+    const curr = toNumber(p.price);
+    return orig > curr ? Math.round(((orig - curr) / orig) * 100) : 0;
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>My Products</h1>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="bg-slate-100 animate-pulse rounded-2xl h-64" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -235,7 +309,9 @@ export default function VendorProductsClient() {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>My Products</h1>
-            <p className="text-sm text-slate-400 mt-0.5">{products.length} products · {products.filter(p => !p.isPublished).length} hidden</p>
+            <p className="text-sm text-slate-400 mt-0.5">
+              {products.length} products · {products.filter((p) => !p.isActive).length} hidden
+            </p>
           </div>
           <button onClick={() => { setEditTarget(null); setModalOpen(true); }}
             className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm px-4 py-2.5 rounded-xl transition-colors shadow-sm shadow-amber-200">
@@ -247,7 +323,7 @@ export default function VendorProductsClient() {
         <div className="flex gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[200px]">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <input type="text" placeholder="Search by name or SKU..." value={search}
+            <input type="text" placeholder="Search by name..." value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
           </div>
@@ -255,9 +331,7 @@ export default function VendorProductsClient() {
             <select value={catFilter} onChange={(e) => setCatFilter(e.target.value)}
               className="appearance-none pl-3 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer">
               <option value="">All Categories</option>
-              {mockCategories.filter(c => categories.includes(c.id)).map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
+              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
@@ -267,63 +341,82 @@ export default function VendorProductsClient() {
         {/* Product grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <AnimatePresence mode="popLayout">
-            {filtered.map((p, i) => (
-              <motion.div key={p.id} layout initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ delay: i * 0.03 }}
-                className="group bg-white rounded-2xl border border-slate-100 hover:border-amber-200 hover:shadow-md transition-all overflow-hidden"
-              >
-                {/* Image */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
-                  <Image src={p.image} alt={p.name} fill className="object-cover group-hover:scale-105 transition-transform duration-400" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
-                  {disc(p) > 0 && (
-                    <span className="absolute top-2.5 left-2.5 bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
-                      -{disc(p)}%
+            {filtered.map((p, i) => {
+              const discount = disc(p);
+              const image = p.images?.[0]?.url ?? '';
+              return (
+                <motion.div key={p.id} layout
+                  initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }} transition={{ delay: i * 0.03 }}
+                  className="group bg-white rounded-2xl border border-slate-100 hover:border-amber-200 hover:shadow-md transition-all overflow-hidden"
+                >
+                  {/* Image */}
+                  <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
+                    {image ? (
+                      <Image src={image} alt={p.name} fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-400"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon size={32} className="text-slate-200" />
+                      </div>
+                    )}
+                    {discount > 0 && (
+                      <span className="absolute top-2.5 left-2.5 bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                        -{discount}%
+                      </span>
+                    )}
+                    <span className={`absolute top-2.5 right-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full ${p.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                      {p.isActive ? 'Live' : 'Hidden'}
                     </span>
-                  )}
-                  <span className={`absolute top-2.5 right-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full ${p.isPublished ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-                    {p.isPublished ? 'Live' : 'Hidden'}
-                  </span>
-                </div>
-
-                {/* Info */}
-                <div className="p-4">
-                  <p className="text-[10px] font-semibold text-amber-600 mb-1">{p.categoryName}</p>
-                  <h3 className="text-sm font-bold text-slate-900 line-clamp-2 leading-snug mb-2">{p.name}</h3>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-base font-black text-slate-900">${p.price.toLocaleString()}</span>
-                    {p.originalPrice && <span className="text-xs text-slate-400 line-through">${p.originalPrice.toLocaleString()}</span>}
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
-                    <span className="flex items-center gap-1"><Star size={10} className="fill-amber-400 text-amber-400" />{p.rating}</span>
-                    <span className={`font-bold ${p.stock <= 10 ? 'text-red-600' : 'text-green-700'}`}>{p.stock} in stock</span>
-                    <span className="font-mono text-slate-400">{p.sku}</span>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    <button onClick={() => handleTogglePublish(p.id)}
-                      className={`flex-1 flex items-center justify-center gap-1 text-xs font-bold py-2 rounded-xl transition-colors ${
-                        p.isPublished ? 'bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600' : 'bg-green-100 hover:bg-green-200 text-green-700'
-                      }`}>
-                      {p.isPublished ? <><EyeOff size={12} /> Hide</> : <><Eye size={12} /> Publish</>}
-                    </button>
-                    <button onClick={() => { setEditTarget(p); setModalOpen(true); }}
-                      className="w-8 h-8 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 flex items-center justify-center transition-colors">
-                      <Pencil size={13} />
-                    </button>
-                    <button onClick={() => setDeleteTarget(p)}
-                      className="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition-colors">
-                      <Trash2 size={13} />
-                    </button>
+                  {/* Info */}
+                  <div className="p-4">
+                    <p className="text-[10px] font-semibold text-amber-600 mb-1">{p.category?.name}</p>
+                    <h3 className="text-sm font-bold text-slate-900 line-clamp-2 leading-snug mb-2">{p.name}</h3>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-base font-black text-slate-900">${toNumber(p.price).toLocaleString()}</span>
+                      {p.originalPrice && (
+                        <span className="text-xs text-slate-400 line-through">${toNumber(p.originalPrice).toLocaleString()}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
+                      <span className="flex items-center gap-1">
+                        <Star size={10} className="fill-amber-400 text-amber-400" />{p.rating ?? 0}
+                      </span>
+                      <span className={`font-bold ${p.stock <= 10 ? 'text-red-600' : 'text-green-700'}`}>
+                        {p.stock} in stock
+                      </span>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <button onClick={() => handleToggleVisibility(p)}
+                        className={`flex-1 flex items-center justify-center gap-1 text-xs font-bold py-2 rounded-xl transition-colors ${
+                          p.isActive
+                            ? 'bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600'
+                            : 'bg-green-100 hover:bg-green-200 text-green-700'
+                        }`}>
+                        {p.isActive ? <><EyeOff size={12} /> Hide</> : <><Eye size={12} /> Publish</>}
+                      </button>
+                      <button onClick={() => { setEditTarget(p); setModalOpen(true); }}
+                        className="w-8 h-8 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 flex items-center justify-center transition-colors">
+                        <Pencil size={13} />
+                      </button>
+                      <button onClick={() => setDeleteTarget(p)}
+                        className="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition-colors">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         </div>
 
-        {filtered.length === 0 && (
+        {filtered.length === 0 && !loading && (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
             <Package size={36} className="mx-auto mb-3 text-slate-300" />
             <p className="text-slate-500 font-semibold">No products found</p>
@@ -331,9 +424,15 @@ export default function VendorProductsClient() {
         )}
       </div>
 
-      {/* Modals */}
       <AnimatePresence>
-        {modalOpen && <ProductModal initial={editTarget} onSave={handleSave} onClose={() => { setModalOpen(false); setEditTarget(null); }} />}
+        {modalOpen && (
+          <ProductModal
+            initial={editTarget}
+            categories={categories}
+            onSave={handleSave}
+            onClose={() => { setModalOpen(false); setEditTarget(null); }}
+          />
+        )}
       </AnimatePresence>
 
       <ConfirmModal
