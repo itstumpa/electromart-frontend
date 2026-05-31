@@ -271,7 +271,7 @@ export default function HeroBentoGrid() {
               <motion.div
                 key={cell.id}
                 variants={fadeUp}
-                className="col-span-2 relative overflow-hidden rounded-2xl sm:rounded-3xl group cursor-pointer"
+                className="hidden md:flex col-span-2 relative overflow-hidden rounded-2xl sm:rounded-3xl group cursor-pointer"
                 style={{ minHeight: 170 }}
               >
                 <Image
