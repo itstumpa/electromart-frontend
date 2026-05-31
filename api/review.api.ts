@@ -10,6 +10,11 @@ export interface ReviewDto {
   createdAt: string;
   updatedAt?: string;
   customer?: { id: string; name: string; avatar?: string | null };
+  product?: {
+    id: string;
+    name: string;
+    images: { url: string }[];
+  };
 }
 
 export interface ProductReviewsResponse {
@@ -44,4 +49,8 @@ export const updateReview = (
   data: { rating?: number; comment?: string },
 ) => {
   return api.patch<ApiResponse<ReviewDto>>(`/reviews/${reviewId}`, data);
+};
+
+export const deleteReview = (reviewId: string) => {
+  return api.delete<ApiResponse<null>>(`/reviews/${reviewId}`);
 };

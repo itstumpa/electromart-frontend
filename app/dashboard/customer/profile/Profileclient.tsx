@@ -47,7 +47,8 @@ export default function CustomerProfileClient() {
         if (!me) return;
 
         const authUser = authStorage.getAuthUser();
-        const cachedProfileRaw = localStorage.getItem('customerProfileDraft');
+
+const cachedProfileRaw = localStorage.getItem(`customerProfileDraft_${me.id}`);
         const cachedProfile = cachedProfileRaw
           ? (JSON.parse(cachedProfileRaw) as { phone?: string; location?: string; bio?: string; avatar?: string })
           : null;
@@ -129,15 +130,15 @@ export default function CustomerProfileClient() {
         avatar: form.avatar.trim() || undefined,
       });
     }
-    localStorage.setItem(
-      'customerProfileDraft',
-      JSON.stringify({
-        phone: form.phone,
-        location: form.location,
-        bio: form.bio,
-        avatar: form.avatar,
-      }),
-    );
+localStorage.setItem(
+  `customerProfileDraft_${userId}`,
+  JSON.stringify({
+    phone: form.phone,
+    location: form.location,
+    bio: form.bio,
+    avatar: form.avatar,
+  }),
+);
     setSaving(false);
     setSaved(true);
     toast.success('Profile updated');
