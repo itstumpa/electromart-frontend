@@ -9,7 +9,7 @@ import {
   Star, Package, ShoppingBag, Link as LinkIcon,
   MapPin, FileText, Shield,
 } from 'lucide-react';
-import { getMyStore, updateStore, type MyStoreDto } from '@/api/store.api';
+import { closeStore, deleteAllProducts, getMyStore, pauseStore, updateStore, updateStorePolicies, type MyStoreDto } from '@/api/store.api';
 import { getMe } from '@/api/auth.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
@@ -42,6 +42,8 @@ export default function VendorStoreClient() {
   const [activeTab, setActiveTab] = useState<'general' | 'policies' | 'danger'>('general');
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [logoPreview, setLogoPreview] = useState('');
+const [logoFile, setLogoFile] = useState<File | null>(null);
+
 
   const [form, setForm] = useState({
     storeName:      '',
@@ -79,13 +81,27 @@ export default function VendorStoreClient() {
 
   const handleSave = async () => {
     if (!store) return;
+
+    if (activeTab === 'policies') {
+      await updateStorePolicies(store.id, {
+        returnPolicy: form.returnPolicy,
+        shippingPolicy: form.shippingPolicy,
+      });
+
+      toast.success('Policies updated');
+      return;
+    }
+
     setSaveState('saving');
     try {
-      await updateStore(store.id, {
-        name:        form.storeName.trim(),
-        description: form.bio.trim() || undefined,
-        logo:        form.logo.trim() || undefined,
-      });
+      await updateStore(
+        store.id,
+        logoFile ?? undefined,
+        {
+          name: form.storeName.trim(),
+          description: form.bio.trim() || undefined,
+        }
+      );
       setStore((prev) => prev ? { ...prev, name: form.storeName, description: form.bio, logo: form.logo } : prev);
       setSaveState('saved');
       toast.success('Store updated');
@@ -95,6 +111,46 @@ export default function VendorStoreClient() {
       setSaveState('idle');
     }
   };
+
+const handlePauseStore = async () => {
+  if (!store) return;
+
+  try {
+    const res = await pauseStore(store.id);
+
+    setStore(res.data.data);
+
+    toast.success(
+      res.data.data.isActive
+        ? 'Store activated'
+        : 'Store paused'
+    );
+  } catch (err) {
+    toast.error(getApiErrorMessage(err));
+  }
+};
+
+const handleDeleteProducts = async () => {
+  if (!store) return;
+
+  try {
+    await deleteAllProducts(store.id);
+    toast.success('All products deleted');
+  } catch (err) {
+    toast.error(getApiErrorMessage(err));
+  }
+};
+
+const handleCloseStore = async () => {
+  if (!store) return;
+
+  try {
+    await closeStore(store.id);
+    toast.success('Store closed');
+  } catch (err) {
+    toast.error(getApiErrorMessage(err));
+  }
+};
 
   const TABS = [
     { key: 'general',  label: 'General',  icon: Store },
@@ -150,7 +206,19 @@ export default function VendorStoreClient() {
               </div>
               <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-amber-600 hover:bg-amber-700 text-white rounded-xl flex items-center justify-center cursor-pointer transition-colors shadow-md">
                 <Camera size={13} />
-                <input type="file" className="sr-only" accept="image/*" />
+                <input
+  type="file"
+  className="sr-only"
+  accept="image/*"
+  onChange={(e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  }}
+/>
               </label>
             </div>
 
@@ -264,31 +332,37 @@ export default function VendorStoreClient() {
               <p className="text-sm text-slate-500 mb-4">Actions here are permanent and may affect your store and orders.</p>
 
               {[
-                {
-                  title: 'Pause Store',
-                  desc: 'Temporarily hide your store from the marketplace. Existing orders will still be processed.',
-                  btnLabel: 'Pause Store',
-                  btnColor: 'border-yellow-400 text-yellow-700 hover:bg-yellow-50',
-                },
-                {
-                  title: 'Delete All Products',
-                  desc: 'Permanently delete all your products. This cannot be undone and will affect live orders.',
-                  btnLabel: 'Delete Products',
-                  btnColor: 'border-red-400 text-red-700 hover:bg-red-50',
-                },
-                {
-                  title: 'Close Store',
-                  desc: 'Permanently close your store. You will lose all product listings and store data.',
-                  btnLabel: 'Close Store',
-                  btnColor: 'border-red-600 text-red-700 hover:bg-red-50',
-                },
-              ].map(({ title, desc, btnLabel, btnColor }) => (
+{
+    title: 'Pause Store',
+    desc: 'Temporarily hide your store from the marketplace. Existing orders will still be processed.',
+    btnLabel: 'Pause Store',
+    btnColor: 'border-yellow-400 text-yellow-700 hover:bg-yellow-50',
+    onClick: handlePauseStore,
+  },
+  {
+    title: 'Delete All Products',
+    desc: 'Permanently delete all your products. This cannot be undone and will affect live orders.',
+    btnLabel: 'Delete Products',
+    btnColor: 'border-red-400 text-red-700 hover:bg-red-50',
+    onClick: handleDeleteProducts,
+  },
+  {
+    title: 'Close Store',
+    desc: 'Permanently close your store. You will lose all product listings and store data.',
+    btnLabel: 'Close Store',
+    btnColor: 'border-red-600 text-red-700 hover:bg-red-50',
+    onClick: handleCloseStore,
+  },
+              ].map(({ title, desc, btnLabel, btnColor, onClick }) => (
                 <div key={title} className="flex items-center justify-between gap-4 p-4 border border-red-100 rounded-2xl flex-wrap">
                   <div>
                     <p className="text-sm font-black text-slate-900">{title}</p>
                     <p className="text-xs text-slate-500 mt-0.5 max-w-sm">{desc}</p>
                   </div>
-                  <button className={`px-4 py-2 border-2 ${btnColor} text-sm font-bold rounded-xl transition-colors shrink-0`}>
+                  <button
+  onClick={onClick}
+  className={`px-4 py-2 border-2 ${btnColor} text-sm font-bold rounded-xl transition-colors shrink-0`}
+>
                     {btnLabel}
                   </button>
                 </div>

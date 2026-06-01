@@ -19,6 +19,8 @@ import { getMyAnalytics, type VendorAnalyticsDto } from '@/api/vendor-analytics.
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
 
+type Period = '1mo' | '3m' | '6m' | '1y';
+
 const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string; icon: React.ElementType }> = {
   PENDING:   { label: 'Pending',   color: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-500', icon: Clock },
   COMPLETED: { label: 'Completed', color: 'bg-green-100 text-green-700',   dot: 'bg-green-500',  icon: CheckCircle2 },
@@ -44,7 +46,7 @@ export default function VendorEarningsClient() {
   const [transactions, setTransactions] = useState<TransactionDto[]>([]);
   const [analytics,    setAnalytics]    = useState<VendorAnalyticsDto | null>(null);
   const [loading,      setLoading]      = useState(true);
-  const [period,       setPeriod]       = useState<'3m' | '6m' | '1y'>('6m');
+  const [period,       setPeriod]       = useState<Period>('6m');
   const [showModal,    setShowModal]    = useState(false);
   const [payoutAmount, setPayoutAmount] = useState('');
   const [requesting,   setRequesting]  = useState(false);
@@ -60,18 +62,35 @@ export default function VendorEarningsClient() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Build chart data from analytics monthlyRevenue
-  const chartData = (analytics?.monthlyRevenue ?? []).map((r) => {
-    const gross      = r.revenue;
-    const commission = gross * 0.1;
-    const net        = gross - commission;
-    return {
-      month:      r.month.slice(5), // "2024-03" → "03"
-      gross,
-      net,
-      commission,
-    };
-  });
+  const chartData = (() => {
+    const monthCount = period === '1mo' ? 1 : period === '3m' ? 3 : period === '1y' ? 12 : 6;
+
+    const raw = (analytics?.monthlyRevenue ?? []).map((r) => ({
+      _key:  r.month, // "2026-05"
+      month: new Date(r.month + '-01').toLocaleDateString('en-US', { month: 'short' }),
+      gross:      r.revenue,
+      net:        r.revenue * 0.9,
+      commission: r.revenue * 0.1,
+    }));
+
+    // build last N months grid
+    const grid = Array.from({ length: monthCount }, (_, i) => {
+      const d = new Date();
+      d.setDate(1);
+      d.setMonth(d.getMonth() - (monthCount - 1 - i));
+      const key   = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString('en-US', { month: 'short' });
+      const found = raw.find((r) => r._key === key);
+      return found ?? { _key: key, month: label, gross: 0, net: 0, commission: 0 };
+    });
+
+    // recharts needs ≥2 points to draw area
+    if (grid.length < 2) {
+      return [...grid, { _key: '', month: '', gross: 0, net: 0, commission: 0 }];
+    }
+
+    return grid;
+  })();
 
   const totalGross      = chartData.reduce((s, d) => s + d.gross, 0);
   const totalNet        = chartData.reduce((s, d) => s + d.net, 0);
@@ -155,9 +174,11 @@ export default function VendorEarningsClient() {
             iconColor: 'text-yellow-600',
           },
           {
-            label: `Total Earned (${chartData.length}mo)`,
+            label: `Total Earned (${period})`,
             value: `$${totalNet.toLocaleString()}`,
-            sub: totalGross > 0 ? `After ${((totalCommission / totalGross) * 100).toFixed(0)}% platform commission` : 'No revenue yet',
+            sub: totalGross > 0
+              ? `After ${((totalCommission / totalGross) * 100).toFixed(0)}% platform commission`
+              : 'No revenue yet',
             icon: TrendingUp,
             bg: 'bg-white border border-slate-100',
             text: 'text-slate-900',
@@ -187,7 +208,7 @@ export default function VendorEarningsClient() {
             <p className="text-xs text-slate-400 mt-0.5">Gross vs Net after commission</p>
           </div>
           <div className="flex bg-slate-100 rounded-xl p-1">
-            {(['3m', '6m', '1y'] as const).map((p) => (
+            {(['1mo', '3m', '6m', '1y'] as Period[]).map((p) => (
               <button key={p} onClick={() => setPeriod(p)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${period === p ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>
                 {p}
@@ -209,33 +230,27 @@ export default function VendorEarningsClient() {
           ))}
         </div>
 
-        {chartData.length === 0 ? (
-          <div className="h-60 flex items-center justify-center text-slate-400 text-sm">
-            No revenue data yet
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
-              <defs>
-                <linearGradient id="grossGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#D97706" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#D97706" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="netGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#10B981" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false}
-                tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
-              <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#FCD34D', strokeWidth: 1.5, strokeDasharray: '4 4' }} />
-              <Area type="monotone" dataKey="gross" name="Gross" stroke="#D97706" strokeWidth={2} fill="url(#grossGrad)" dot={false} />
-              <Area type="monotone" dataKey="net"   name="Net"   stroke="#10B981" strokeWidth={2} fill="url(#netGrad)"   dot={false} />
-            </AreaChart>
-          </ResponsiveContainer>
-        )}
+        <ResponsiveContainer width="100%" height={240}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
+            <defs>
+              <linearGradient id="grossGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%"  stopColor="#D97706" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#D97706" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="netGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%"  stopColor="#10B981" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false}
+              tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#FCD34D', strokeWidth: 1.5, strokeDasharray: '4 4' }} />
+            <Area type="monotone" dataKey="gross" name="Gross" stroke="#D97706" strokeWidth={2} fill="url(#grossGrad)" dot={false} />
+            <Area type="monotone" dataKey="net"   name="Net"   stroke="#10B981" strokeWidth={2} fill="url(#netGrad)"   dot={false} />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
 
       {/* Bottom: transactions + payouts */}
@@ -251,11 +266,10 @@ export default function VendorEarningsClient() {
           ) : (
             <div className="divide-y divide-slate-50">
               {transactions.map((tx) => {
-                const amount = Number(tx.priceAtTime) * tx.quantity;
+                const amount     = Number(tx.priceAtTime) * tx.quantity;
                 const commission = amount * 0.1;
                 return (
                   <div key={tx.id}>
-                    {/* Sale credit */}
                     <div className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 transition-colors">
                       <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
                         <DollarSign size={16} className="text-green-700" />
@@ -270,7 +284,6 @@ export default function VendorEarningsClient() {
                       </div>
                       <p className="text-sm font-black text-green-700 shrink-0">+${amount.toFixed(2)}</p>
                     </div>
-                    {/* Commission debit */}
                     <div className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 transition-colors">
                       <div className="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
                         <CreditCard size={16} className="text-red-600" />
@@ -300,7 +313,7 @@ export default function VendorEarningsClient() {
           ) : (
             <div className="divide-y divide-slate-50">
               {payouts.map((p) => {
-                const s = STATUS_CONFIG[p.status] ?? STATUS_CONFIG.PENDING;
+                const s    = STATUS_CONFIG[p.status] ?? STATUS_CONFIG.PENDING;
                 const Icon = s.icon;
                 return (
                   <div key={p.id} className="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 transition-colors">
