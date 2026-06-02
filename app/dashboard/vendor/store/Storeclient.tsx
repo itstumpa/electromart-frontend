@@ -69,13 +69,13 @@ setForm((prev) => ({
   ...prev,
   storeName: s.name,
   bio: s.description ?? '',
-  logo: s.logo ?? '',
+  logo:      typeof s.logo === 'string' ? s.logo : '',
   email: me?.email ?? '',
   phone: me?.phone ?? '',
   returnPolicy: s.returnPolicy ?? '',
   shippingPolicy: s.shippingPolicy ?? '',
 }));
-        setLogoPreview(s.logo ?? '');
+        setLogoPreview(typeof s.logo === 'string' ? s.logo : '');
       })
       .catch((err) => toast.error(getApiErrorMessage(err, 'Failed to load store')))
       .finally(() => setLoading(false));
@@ -204,13 +204,14 @@ const handleCloseStore = async () => {
           <div className="flex items-end gap-4 mb-4 flex-wrap">
             <div className="relative shrink-0">
               <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-lg bg-slate-100">
-                {logoPreview ? (
-                  <Image src={logoPreview} alt={form.storeName} fill className="object-cover" sizes="80px" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Store size={28} className="text-slate-400" />
-                  </div>
-                )}
+{logoPreview && typeof logoPreview === 'string' && logoPreview.startsWith('http') ? (
+  <Image src={logoPreview} alt={form.storeName} fill className="object-cover" sizes="80px" />
+) : (
+  <div className="w-full h-full flex items-center justify-center">
+    <Store size={28} className="text-slate-400" />
+  </div>
+)}
+               
               </div>
               <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-amber-600 hover:bg-amber-700 text-white rounded-xl flex items-center justify-center cursor-pointer transition-colors shadow-md">
                 <Camera size={13} />

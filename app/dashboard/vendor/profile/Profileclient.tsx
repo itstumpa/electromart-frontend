@@ -12,7 +12,7 @@ import { authStorage } from '@/utils/auth-storage';
 import { getMe } from '@/api/auth.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
-import { getMyStore, type MyStoreDto } from '@/api/store.api';
+import { getMyStore, updateStore, type MyStoreDto } from '@/api/store.api';
 import { updateUserProfile, uploadAvatar } from '@/api/user.api';
 
 export default function VendorProfileClient() {
@@ -39,8 +39,10 @@ export default function VendorProfileClient() {
     const loadMe = async () => {
       try {
         const [meRes, storeRes] = await Promise.all([getMe(), getMyStore()]);
+        
         const me    = meRes.data?.data;
         const store = storeRes.data?.data;
+        
         if (!me) return;
 
         setStore(store);
@@ -48,14 +50,18 @@ export default function VendorProfileClient() {
         setJoinedAt(me.createdAt ?? '');
 
         const authUser = authStorage.getAuthUser();
-        const avatar   = authUser?.avatar ?? '';
+        const avatar   = (me as any).avatar ?? authUser?.avatar ?? '';
 
         setForm((prev) => ({
           ...prev,
           name:   me.name,
           email:  me.email,
-          phone:  me.phone ?? '',
-          avatar,
+  phone:  (me as any).phone ?? '',
+   website:  me.website  ?? '', 
+   location: me.location ?? '',
+
+  avatar,
+  bio:    store?.description ?? '', 
         }));
         setAvatarPreview(avatar);
 
@@ -86,8 +92,17 @@ export default function VendorProfileClient() {
           name:  form.name.trim(),
           email: form.email.trim(),
           phone: form.phone.trim() || undefined,
+          website:  form.website.trim()  || undefined,  
+  location: form.location.trim() || undefined, 
         });
       }
+
+      if (store?.id) {
+      await updateStore(store.id, {
+        description: form.bio.trim() || undefined,
+      });
+    }
+    
       const currentAuthUser = authStorage.getAuthUser();
       if (currentAuthUser) {
         authStorage.setAuthUser({
@@ -121,6 +136,7 @@ export default function VendorProfileClient() {
     try {
       const res = await uploadAvatar(file);
       const url = res.data.data.avatar;
+      console.log('avatar url:', url);
       setForm((prev) => ({ ...prev, avatar: url }));
       setAvatarPreview(url);
       toast.success('Avatar uploaded');
@@ -166,13 +182,13 @@ export default function VendorProfileClient() {
             <div className="flex items-center gap-5 mb-5">
               <div className="relative shrink-0">
                 <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-slate-200 bg-slate-100">
-                  {avatarPreview ? (
-                    <Image src={avatarPreview} alt={form.name} fill className="object-cover" sizes="80px" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <User size={28} className="text-slate-300" />
-                    </div>
-                  )}
+              {avatarPreview && typeof avatarPreview === 'string' && avatarPreview.startsWith('http') ? (
+  <Image src={avatarPreview} alt={form.name} fill className="object-cover" sizes="80px" />
+) : (
+  <div className="w-full h-full flex items-center justify-center">
+    <User size={28} className="text-slate-300" />
+  </div>
+)}
                 </div>
                 <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-amber-600 hover:bg-amber-700 text-white rounded-xl flex items-center justify-center cursor-pointer transition-colors shadow-md">
                   {uploading ? (
