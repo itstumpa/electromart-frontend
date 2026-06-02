@@ -14,6 +14,8 @@ export interface MyStoreDto {
   totalRevenue: number;
   rating: number;
   createdAt: string;
+  returnPolicy: string | null;
+shippingPolicy: string | null;
   products: {
     id: string;
     name: string;

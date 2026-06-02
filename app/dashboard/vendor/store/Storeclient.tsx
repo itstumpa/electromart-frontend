@@ -54,8 +54,8 @@ const [logoFile, setLogoFile] = useState<File | null>(null);
     instagram:      '',
     twitter:        '',
     logo:           '',
-    returnPolicy:   '30-day hassle-free returns on all unused products. Items must be in original packaging.',
-    shippingPolicy: 'Orders ship within 1–2 business days. Standard delivery 3–5 days. Free shipping on orders over $99.',
+    returnPolicy:  '',
+    shippingPolicy: '',
     address:        '',
   });
 
@@ -65,23 +65,28 @@ const [logoFile, setLogoFile] = useState<File | null>(null);
         const s  = storeRes.data.data;
         const me = meRes.data?.data;
         setStore(s);
-        setForm((prev) => ({
-          ...prev,
-          storeName: s.name,
-          bio:       s.description ?? '',
-          logo:      s.logo ?? '',
-          email:     me?.email ?? '',
-          phone:     me?.phone ?? '',
-        }));
+setForm((prev) => ({
+  ...prev,
+  storeName: s.name,
+  bio: s.description ?? '',
+  logo: s.logo ?? '',
+  email: me?.email ?? '',
+  phone: me?.phone ?? '',
+  returnPolicy: s.returnPolicy ?? '',
+  shippingPolicy: s.shippingPolicy ?? '',
+}));
         setLogoPreview(s.logo ?? '');
       })
       .catch((err) => toast.error(getApiErrorMessage(err, 'Failed to load store')))
       .finally(() => setLoading(false));
   }, []);
 
-  const handleSave = async () => {
-    if (!store) return;
+const handleSave = async () => {
+  if (!store) return;
 
+  setSaveState('saving');
+
+  try {
     if (activeTab === 'policies') {
       await updateStorePolicies(store.id, {
         returnPolicy: form.returnPolicy,
@@ -89,28 +94,31 @@ const [logoFile, setLogoFile] = useState<File | null>(null);
       });
 
       toast.success('Policies updated');
+
+      setSaveState('saved');
+      setTimeout(() => setSaveState('idle'), 2500);
+
       return;
     }
 
-    setSaveState('saving');
-    try {
-      await updateStore(
-        store.id,
-        logoFile ?? undefined,
-        {
-          name: form.storeName.trim(),
-          description: form.bio.trim() || undefined,
-        }
-      );
-      setStore((prev) => prev ? { ...prev, name: form.storeName, description: form.bio, logo: form.logo } : prev);
-      setSaveState('saved');
-      toast.success('Store updated');
-      setTimeout(() => setSaveState('idle'), 2500);
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to update store'));
-      setSaveState('idle');
-    }
-  };
+    await updateStore(
+      store.id,
+      logoFile ?? undefined,
+      {
+        name: form.storeName,
+        description: form.bio,
+      }
+    );
+
+    toast.success('Store updated');
+
+    setSaveState('saved');
+    setTimeout(() => setSaveState('idle'), 2500);
+  } catch (err) {
+    toast.error(getApiErrorMessage(err));
+    setSaveState('idle');
+  }
+};
 
 const handlePauseStore = async () => {
   if (!store) return;

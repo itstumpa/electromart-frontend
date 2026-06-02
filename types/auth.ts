@@ -40,6 +40,7 @@ export interface MeResponseData {
   role: AuthRole | "ADMIN";
   isEmailVerified: boolean;
   createdAt: string;
+  avatar: string | null;
 }
 
 export interface RefreshTokenRequest {
