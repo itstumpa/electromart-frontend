@@ -36,8 +36,8 @@ const DEMO_CREDENTIALS = [
   },
   {
     label: 'Vendor',
-    email: 'vendor1@electromart.com',
-    password: 'Vendor@1234',
+    email: 'marcus.chen@techstore.com',
+    password: 'Demo@1234',
     color: 'bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-200',
     dot: 'bg-blue-500',
   },

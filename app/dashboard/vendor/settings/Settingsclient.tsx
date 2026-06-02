@@ -1,36 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Bell, Shield, Save, CheckCircle2,
   Eye, EyeOff, Lock, Smartphone, Mail,
   Store, DollarSign, Package,
 } from 'lucide-react';
+import { changePassword, getMe, logoutUser } from '@/api/auth.api';
+import { getMyStore, updateStoreSettings } from '@/api/store.api';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+
 
 type Tab = 'account' | 'notifications' | 'security';
 
-function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
+export function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
   return (
     <motion.button onClick={onClick} whileTap={{ scale: 0.97 }}
-      className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${
-        saved ? 'bg-green-600 text-white shadow-md shadow-green-200' : 'bg-amber-600 hover:bg-amber-700 text-white shadow-md shadow-amber-200'
-      }`}>
+      className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${saved ? 'bg-green-600 text-white' : 'bg-amber-600 hover:bg-amber-700 text-white shadow-md shadow-amber-200'}`}>
       <AnimatePresence mode="wait">
         {saving ? (
-          <motion.span key="s" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+          <motion.span key="s" className="flex items-center gap-2">
             <motion.span animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.7, ease: 'linear' }}
-              className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full block" />
-            Saving...
+              className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full block" /> Saving...
           </motion.span>
         ) : saved ? (
-          <motion.span key="d" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-            <CheckCircle2 size={15} /> Saved!
-          </motion.span>
+          <motion.span key="d" className="flex items-center gap-2"><CheckCircle2 size={15} /> Saved!</motion.span>
         ) : (
-          <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
-            <Save size={15} /> Save Changes
-          </motion.span>
+          <motion.span key="i" className="flex items-center gap-2"><Save size={15} /> Save Changes</motion.span>
         )}
       </AnimatePresence>
     </motion.button>
@@ -57,6 +56,8 @@ export default function VendorSettingsClient() {
   const [tab, setTab] = useState<Tab>('account');
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
+  const [storeId, setStoreId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Account state
   const [account, setAccount] = useState({
@@ -86,11 +87,85 @@ export default function VendorSettingsClient() {
   const [showPw,    setShowPw]    = useState({ current: false, new: false, confirm: false });
   const [twoFA,     setTwoFA]     = useState(false);
 
+  useEffect(() => {
+    getMyStore()
+      .then((res) => {
+        const store = res.data.data;
+        setStoreId(store.id);
+        setAccount({
+          businessName: store.name || '',
+          taxId: store.taxId || '',
+          currency: store.currency || 'USD',
+          payoutCycle: store.payoutCycle || 'monthly',
+          minPayout: store.minPayout || '100',
+          autoAcceptOrders: store.autoAcceptOrders ?? true,
+          autoUpdateStock: store.autoUpdateStock ?? true,
+        });
+        setNotifs({
+          newOrder: store.notifNewOrder ?? true,
+          orderCancelled: store.notifOrderCancelled ?? true,
+          lowStock: store.notifLowStock ?? true,
+          newReview: store.notifNewReview ?? true,
+          payoutSent: store.notifPayoutSent ?? true,
+          returnRequest: store.notifReturnRequest ?? true,
+          weeklyReport: store.notifWeeklyReport ?? false,
+          marketingTips: store.notifMarketingTips ?? false,
+        });
+      })
+      .catch((err) => {
+        toast.error(getApiErrorMessage(err, 'Failed to load settings'));
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
   const save = async () => {
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setSaving(false); setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    try {
+      if (tab === 'account') {
+        if (!storeId) throw new Error('Store profile not found');
+        await updateStoreSettings(storeId, {
+          name: account.businessName,
+          taxId: account.taxId,
+          currency: account.currency,
+          payoutCycle: account.payoutCycle,
+          minPayout: account.minPayout,
+          autoAcceptOrders: account.autoAcceptOrders,
+          autoUpdateStock: account.autoUpdateStock,
+        });
+        toast.success('Account settings saved');
+      } else if (tab === 'notifications') {
+        if (!storeId) throw new Error('Store profile not found');
+        await updateStoreSettings(storeId, {
+          notifNewOrder: notifs.newOrder,
+          notifOrderCancelled: notifs.orderCancelled,
+          notifLowStock: notifs.lowStock,
+          notifNewReview: notifs.newReview,
+          notifPayoutSent: notifs.payoutSent,
+          notifReturnRequest: notifs.returnRequest,
+          notifWeeklyReport: notifs.weeklyReport,
+          notifMarketingTips: notifs.marketingTips,
+        });
+        toast.success('Notification preferences saved');
+      } else if (tab === 'security') {
+        if (!passwords.current || !passwords.newPass || !passwords.confirm) {
+          throw new Error('Please fill all password fields');
+        }
+        if (passwords.newPass !== passwords.confirm) {
+          throw new Error('Passwords do not match');
+        }
+        await changePassword(passwords.current, passwords.newPass);
+        setPasswords({ current: '', newPass: '', confirm: '' });
+        toast.success('Password changed successfully');
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err: any) {
+      toast.error(getApiErrorMessage(err) || err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
@@ -98,6 +173,16 @@ export default function VendorSettingsClient() {
     { key: 'notifications', label: 'Notifications',  icon: Bell },
     { key: 'security',      label: 'Security',       icon: Shield },
   ];
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>Settings</h1>
+        <div className="bg-slate-100 animate-pulse rounded-2xl h-48" />
+        <div className="bg-slate-100 animate-pulse rounded-2xl h-64" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -230,7 +315,7 @@ export default function VendorSettingsClient() {
                   <h2 className="font-black text-slate-900">Security</h2>
 
                   {/* Change password */}
-                  <div className="space-y-4">
+                     <div className="space-y-4">
                     <h3 className="text-sm font-black text-slate-700">Change Password</h3>
                     {[
                       { key: 'current' as const, label: 'Current Password' },
@@ -241,10 +326,13 @@ export default function VendorSettingsClient() {
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">{label}</label>
                         <div className="relative">
                           <Lock size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                          <input type={showPw[key] ? 'text' : 'password'} placeholder="••••••••"
-                            value={key === 'new' ? passwords.newPass : key === 'confirm' ? passwords.confirm : passwords.current}
-                            onChange={(e) => setPasswords({ ...passwords, [key === 'new' ? 'newPass' : key === 'confirm' ? 'confirm' : 'current']: e.target.value })}
-                            className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
+                          <input
+                            type={showPw[key] ? 'text' : 'password'}
+                            placeholder="••••••••"
+                            value={passwords[key === 'new' ? 'newPass' : key]}
+                            onChange={(e) => setPasswords({ ...passwords, [key === 'new' ? 'newPass' : key]: e.target.value })}
+                            className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
+                          />
                           <button type="button" onClick={() => setShowPw({ ...showPw, [key]: !showPw[key] })}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
                             {showPw[key] ? <EyeOff size={14} /> : <Eye size={14} />}

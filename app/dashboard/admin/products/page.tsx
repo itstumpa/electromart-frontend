@@ -1,4 +1,4 @@
-// SERVER COMPONENT
+// SERVER COMPONENT — stats are computed client-side inside ProductsClient
 import { Metadata } from 'next';
 import { Package } from 'lucide-react';
 import { mockProducts } from '@/data/mock-data';
@@ -7,7 +7,7 @@ import ProductsClient from '@/components/dashboard/admin/products/ProductsClient
 export const metadata: Metadata = { title: 'Product Moderation — Admin' };
 
 export default async function AdminProductsPage() {
-  const products = mockProducts; // swap: await prisma.product.findMany()
+  // mockProducts is kept as offline-fallback initial state; real data is fetched by ProductsClient
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -18,12 +18,10 @@ export default async function AdminProductsPage() {
           <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>
             Product Moderation
           </h1>
-          <p className="text-sm text-slate-500">
-            {products.length} products · {products.filter((p) => !p.isPublished).length} hidden
-          </p>
+          <p className="text-sm text-slate-500">Review, publish and manage all products</p>
         </div>
       </div>
-      <ProductsClient initialProducts={products} />
+      <ProductsClient initialProducts={mockProducts} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import api from "./axios";
 import type { ApiResponse } from "@/types/api";
 import type { OrderDto } from "@/types/order";
+export type { OrderDto };
 import type { ProductsMeta } from "@/types/product";
 
 export interface PaginatedOrdersResponse {

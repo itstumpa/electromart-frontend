@@ -1,31 +1,62 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff, ExternalLink, Star, X, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-// import type { Product } from '@/types';
 import AdminDataTable, { Column } from '../Admindatatable';
 import ConfirmModal from '../Confirmmodal';
 import { Product } from '@/data/types';
-// import AdminDataTable, { Column } from '@/components/dashboard/admin/AdminDataTable';
-// import ConfirmModal from '@/components/dashboard/admin/ConfirmModal';
+import { getProducts, toggleProductVisibility } from '@/api/product.api';
+import { mapProductToUiCard } from '@/types/product';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { toast } from 'sonner';
 
 export default function ProductsClient({ initialProducts }: { initialProducts: Product[] }) {
-  const [products,     setProducts]     = useState(initialProducts);
-  const [viewTarget,   setViewTarget]   = useState<Product | null>(null);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [loading, setLoading] = useState(true);
+  const [viewTarget, setViewTarget] = useState<Product | null>(null);
   const [toggleTarget, setToggleTarget] = useState<Product | null>(null);
-  const [catFilter,    setCatFilter]    = useState('');
+  const [catFilter, setCatFilter] = useState('');
+
+  useEffect(() => {
+    getProducts()
+      .then((res) => {
+        if (res.data?.data) {
+          const mapped = res.data.data.map((p) => {
+            const card = mapProductToUiCard(p);
+            return {
+              ...card,
+              sku: (p as any).sku || `EM-${p.id.slice(0, 8).toUpperCase()}`,
+              isPublished: p.isActive,
+              specifications: (p as any).specifications || [],
+            } as any;
+          });
+          setProducts(mapped);
+        }
+      })
+      .catch((err) => {
+        toast.error(getApiErrorMessage(err, 'Failed to load products, using offline data.'));
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const categories = [...new Set(products.map((p) => p.categoryName))];
-  const filtered   = catFilter ? products.filter((p) => p.categoryName === catFilter) : products;
+  const filtered = catFilter ? products.filter((p) => p.categoryName === catFilter) : products;
 
-  const handleTogglePublish = () => {
+  const handleTogglePublish = async () => {
     if (!toggleTarget) return;
-    setProducts((prev) =>
-      prev.map((p) => p.id === toggleTarget.id ? { ...p, isPublished: !p.isPublished } : p)
-    );
-    setToggleTarget(null);
+    try {
+      await toggleProductVisibility(toggleTarget.id, !toggleTarget.isPublished);
+      setProducts((prev) =>
+        prev.map((p) => p.id === toggleTarget.id ? { ...p, isPublished: !p.isPublished } : p)
+      );
+      toast.success(toggleTarget.isPublished ? 'Product hidden' : 'Product published');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to update product status'));
+    } finally {
+      setToggleTarget(null);
+    }
   };
 
   const columns: Column<Product>[] = [
@@ -135,6 +166,16 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
       </button>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="bg-slate-100 animate-pulse rounded-2xl h-14" />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <>

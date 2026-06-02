@@ -20,7 +20,7 @@ export const getAllUsers = (params?: { page?: number; limit?: number }) => {
 
 export const updateUserProfile = (
   id: string,
-  data: { name?: string; email?: string },
+  data: { name?: string; email?: string; phone?: string; website?: string; location?: string },
 ) => {
   return api.patch<ApiResponse<UserListItemDto>>(`/users/${id}`, data);
 };

@@ -1,43 +1,84 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   UserCheck, UserX, Eye, Shield,
-  Users, UserCog, Truck, Store, X, ChevronDown,
+  Store, UserCog, X, ChevronDown,
 } from 'lucide-react';
-// import type { User, UserRole } from '@/types';
-import { mockUsers } from '@/data/mock-data';
 import AdminDataTable, { Column } from '../Admindatatable';
 import ConfirmModal from '../Confirmmodal';
-import { User, UserRole } from '@/data/types';
-// import AdminDataTable, { Column } from '@/components/dashboard/admin/AdminDataTable';
-// import ConfirmModal from '@/components/dashboard/admin/ConfirmModal';
+import { getAllUsers, UserListItemDto } from '@/api/user.api';
+import api from '@/api/axios';
+import type { ApiResponse } from '@/types/api';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { toast } from 'sonner';
 
-const roleConfig: Record<UserRole, { label: string; color: string; icon: React.ElementType }> = {
+type UserRole = 'SUPER_ADMIN' | 'VENDOR' | 'CUSTOMER' | 'ADMIN';
+
+interface AdminUserDto extends UserListItemDto {
+  phone?: string | null;
+  avatar?: string | null;
+  isBanned?: boolean;
+}
+
+const roleConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   SUPER_ADMIN: { label: 'Admin',    color: 'bg-purple-100 text-purple-700', icon: Shield },
+  ADMIN:       { label: 'Admin',    color: 'bg-purple-100 text-purple-700', icon: Shield },
   VENDOR:      { label: 'Vendor',   color: 'bg-blue-100 text-blue-700',     icon: Store },
   CUSTOMER:    { label: 'Customer', color: 'bg-green-100 text-green-700',   icon: UserCog },
-  DELIVERY:    { label: 'Delivery', color: 'bg-orange-100 text-orange-700', icon: Truck },
 };
 
-export default function UsersClient({ initialUsers }: { initialUsers: User[] }) {
-  const [users,      setUsers]      = useState(initialUsers);
+const mapMockUserToAdminUser = (u: any): AdminUserDto => ({
+  id: u.id,
+  name: u.name,
+  email: u.email,
+  role: u.role,
+  isEmailVerified: u.isVerified,
+  isBanned: u.isBanned,
+  phone: u.phone,
+  avatar: u.avatar,
+  createdAt: u.createdAt,
+});
+
+export default function UsersClient({ initialUsers }: { initialUsers?: any[] }) {
+  const [users,      setUsers]      = useState<AdminUserDto[]>(() => (initialUsers || []).map(mapMockUserToAdminUser));
+  const [loading,    setLoading]    = useState(true);
   const [roleFilter, setRoleFilter] = useState<UserRole | ''>('');
-  const [banTarget,  setBanTarget]  = useState<User | null>(null);
-  const [viewUser,   setViewUser]   = useState<User | null>(null);
+  const [banTarget,  setBanTarget]  = useState<AdminUserDto | null>(null);
+  const [banning,    setBanning]    = useState(false);
+  const [viewUser,   setViewUser]   = useState<AdminUserDto | null>(null);
+
+  useEffect(() => {
+    getAllUsers()
+      .then((res) => {
+        if (res.data?.data) {
+          setUsers((res.data.data ?? []) as AdminUserDto[]);
+        }
+      })
+      .catch((err) => toast.error(getApiErrorMessage(err, 'Failed to load users, using offline data.')))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = roleFilter ? users.filter((u) => u.role === roleFilter) : users;
 
-  const handleToggleBan = () => {
+  const handleToggleBan = async () => {
     if (!banTarget) return;
-    setUsers((prev) =>
-      prev.map((u) => u.id === banTarget.id ? { ...u, isBanned: !u.isBanned } : u)
-    );
-    setBanTarget(null);
+    setBanning(true);
+    try {
+      const res = await api.patch<ApiResponse<AdminUserDto>>(`/users/${banTarget.id}/ban`);
+      const updated = res.data.data;
+      setUsers((prev) => prev.map((u) => u.id === banTarget.id ? { ...u, isBanned: updated.isBanned } : u));
+      toast.success(updated.isBanned ? 'User banned' : 'User unbanned');
+      setBanTarget(null);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to update user'));
+    } finally {
+      setBanning(false);
+    }
   };
 
-  const columns: Column<User>[] = [
+  const columns: Column<AdminUserDto>[] = [
     {
       key: 'name',
       label: 'User',
@@ -63,7 +104,7 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
       label: 'Role',
       sortable: true,
       render: (u) => {
-        const cfg = roleConfig[u.role];
+        const cfg = roleConfig[u.role] ?? roleConfig.CUSTOMER;
         const Icon = cfg.icon;
         return (
           <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ${cfg.color}`}>
@@ -74,16 +115,16 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
       },
     },
     {
-      key: 'isVerified',
+      key: 'isEmailVerified',
       label: 'Verified',
       render: (u) => (
-        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${u.isVerified ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-          {u.isVerified ? '✓ Verified' : 'Unverified'}
+        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${u.isEmailVerified ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+          {u.isEmailVerified ? '✓ Verified' : 'Unverified'}
         </span>
       ),
     },
     {
-      key: 'isBanned',
+      key: 'isBanned' as any,
       label: 'Status',
       render: (u) => (
         <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${u.isBanned ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-700'}`}>
@@ -93,7 +134,7 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
       ),
     },
     {
-      key: 'phone',
+      key: 'phone' as any,
       label: 'Phone',
       render: (u) => <span className="text-xs text-slate-500">{u.phone ?? '—'}</span>,
     },
@@ -120,13 +161,12 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
         <option value="SUPER_ADMIN">Admin</option>
         <option value="VENDOR">Vendor</option>
         <option value="CUSTOMER">Customer</option>
-        <option value="DELIVERY">Delivery</option>
       </select>
       <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
     </div>
   );
 
-  const actions = (u: User) => (
+  const actions = (u: AdminUserDto) => (
     <div className="flex items-center justify-end gap-2">
       <button
         onClick={() => setViewUser(u)}
@@ -135,7 +175,7 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
       >
         <Eye size={14} />
       </button>
-      {u.role !== 'SUPER_ADMIN' && (
+      {u.role !== 'SUPER_ADMIN' && u.role !== 'ADMIN' && (
         <button
           onClick={() => setBanTarget(u)}
           className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
@@ -151,11 +191,21 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
     </div>
   );
 
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="bg-slate-100 animate-pulse rounded-2xl h-14" />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Stats strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        {Object.entries(roleConfig).map(([role, cfg]) => {
+        {Object.entries(roleConfig).filter(([k]) => k !== 'ADMIN').map(([role, cfg]) => {
           const Icon = cfg.icon;
           const count = users.filter((u) => u.role === role).length;
           return (
@@ -189,8 +239,8 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
         title={banTarget?.isBanned ? `Unban ${banTarget?.name}?` : `Ban ${banTarget?.name}?`}
         description={
           banTarget?.isBanned
-            ? 'This will restore the user\'s access to ElectroMart. They will be able to log in immediately.'
-            : 'This will immediately revoke the user\'s access. They will not be able to log in until unbanned.'
+            ? "This will restore the user's access to ElectroMart. They will be able to log in immediately."
+            : "This will immediately revoke the user's access. They will not be able to log in until unbanned."
         }
         confirmLabel={banTarget?.isBanned ? 'Yes, Unban' : 'Yes, Ban User'}
         danger={!banTarget?.isBanned}
@@ -226,21 +276,21 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
                 <div>
                   <h3 className="font-black text-slate-900">{viewUser.name}</h3>
                   <p className="text-sm text-slate-500">{viewUser.email}</p>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 inline-block ${roleConfig[viewUser.role].color}`}>
-                    {roleConfig[viewUser.role].label}
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 inline-block ${(roleConfig[viewUser.role] ?? roleConfig.CUSTOMER).color}`}>
+                    {(roleConfig[viewUser.role] ?? roleConfig.CUSTOMER).label}
                   </span>
                 </div>
               </div>
               <div className="space-y-2.5">
                 {[
                   { label: 'Phone',    value: viewUser.phone ?? 'N/A' },
-                  { label: 'Verified', value: viewUser.isVerified ? 'Yes' : 'No' },
+                  { label: 'Verified', value: viewUser.isEmailVerified ? 'Yes' : 'No' },
                   { label: 'Status',   value: viewUser.isBanned ? 'Banned' : 'Active' },
                   { label: 'Joined',   value: new Date(viewUser.createdAt).toLocaleDateString('en-US', { dateStyle: 'long' }) },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">{label}</span>
-                    <span className="text-sm font-semibold text-slate-900">{value}</span>
+                    <span className="text-sm font-semibold text-slate-900">{String(value)}</span>
                   </div>
                 ))}
               </div>

@@ -30,6 +30,14 @@ const ROLE_CONFIG: Record<UserRole, {
     roleLabel: 'Super Admin',
     accentColor: 'text-purple-600 bg-purple-50',
   },
+  ADMIN: {
+    searchPlaceholder: 'Search users, orders, products...',
+    showSearch: true,
+    settingsHref: '/dashboard/admin/settings',
+    profileHref:  '/dashboard/admin/profile',
+    roleLabel: 'Admin',
+    accentColor: 'text-purple-600 bg-purple-50',
+  },
   VENDOR: {
     searchPlaceholder: 'Search products, orders...',
     showSearch: true,

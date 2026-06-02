@@ -9,7 +9,6 @@ export function useWishlistCount() {
   const refresh = useCallback(async () => {
     try {
       const res = await getWishlist();
-      console.log('wishlist res:', res.data);
       setCount(res.data.data?.length ?? 0);
     } catch {
       setCount(0);

@@ -98,10 +98,10 @@ export default function VendorProfileClient() {
       }
 
       if (store?.id) {
-      await updateStore(store.id, {
-        description: form.bio.trim() || undefined,
-      });
-    }
+        await updateStore(store.id, undefined, {
+          description: form.bio.trim() || undefined,
+        });
+      }
     
       const currentAuthUser = authStorage.getAuthUser();
       if (currentAuthUser) {

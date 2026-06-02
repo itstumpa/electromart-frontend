@@ -95,7 +95,7 @@ export default function MainNavbar() {
     // 2. Perform double check with backend to verify session validity
     try {
       const res = await getMe();
-      const apiUser = res.data?.data?.user || res.data?.data;
+      const apiUser = res.data?.data;
       if (apiUser) {
         const role = apiUser.role === 'ADMIN' ? 'SUPER_ADMIN' : apiUser.role;
         const mappedUser = {
@@ -157,7 +157,7 @@ export default function MainNavbar() {
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [searchOpen, setSearchOpen]   = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<Array<{ id: string; name: string; slug: string; images?: Array<{ url: string }> }>>([]);
+  const [suggestions, setSuggestions] = useState<Array<{ id: string; name: string; slug?: string; images?: Array<{ url: string }> }>>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileCatOpen, setMobileCatOpen] = useState(false);

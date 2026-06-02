@@ -34,6 +34,14 @@ const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: 'Orders',     href: '/dashboard/admin/orders',     icon: ShoppingBag },
     { label: 'Categories', href: '/dashboard/admin/categories', icon: Tag },
   ],
+  ADMIN: [
+    { label: 'Overview',   href: '/dashboard/admin',            icon: LayoutDashboard },
+    { label: 'Users',      href: '/dashboard/admin/users',      icon: Users },
+    { label: 'Vendors',    href: '/dashboard/admin/vendors',    icon: Store,      badge: 2 },
+    { label: 'Products',   href: '/dashboard/admin/products',   icon: Package },
+    { label: 'Orders',     href: '/dashboard/admin/orders',     icon: ShoppingBag },
+    { label: 'Categories', href: '/dashboard/admin/categories', icon: Tag },
+  ],
   VENDOR: [
     { label: 'Overview',   href: '/dashboard/vendor',           icon: LayoutDashboard },
     { label: 'Products',   href: '/dashboard/vendor/products',  icon: Package },
@@ -59,6 +67,7 @@ const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
 
 const ROLE_LABEL: Record<UserRole, string> = {
   SUPER_ADMIN: 'Super Admin',
+  ADMIN:       'Admin',
   VENDOR:      'Vendor',
   CUSTOMER:    'Customer',
   DELIVERY:    'Delivery Agent',
@@ -67,6 +76,7 @@ const ROLE_LABEL: Record<UserRole, string> = {
 // ─── Root href per role (for exact-match check) ────────────
 const ROLE_ROOT: Record<UserRole, string> = {
   SUPER_ADMIN: '/dashboard/admin',
+  ADMIN:       '/dashboard/admin',
   VENDOR:      '/dashboard/vendor',
   CUSTOMER:    '/dashboard/customer',
   DELIVERY:    '/dashboard/delivery',

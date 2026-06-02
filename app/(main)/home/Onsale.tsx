@@ -9,6 +9,8 @@ import {
   Star, BadgePercent, Heart, Package,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getProducts } from '@/api/product.api';
+import { mapProductToUiCard } from '@/types/product';
 
 /* ── Data ─────────────────────────────────────── */
 const saleProducts = [
@@ -55,6 +57,28 @@ const saleProducts = [
     category: 'Wearables', badge: '20% OFF', featured: false,
   },
 ];
+
+const mapListItemToSaleProduct = (dto: any) => {
+  const card = mapProductToUiCard(dto);
+  const price = card.price;
+  const originalPrice = card.originalPrice || Math.round(price * 1.25);
+  const discountPct = Math.round(((originalPrice - price) / originalPrice) * 100);
+  return {
+    id: card.id,
+    name: card.name,
+    slug: card.slug,
+    price,
+    originalPrice,
+    image: card.image,
+    rating: card.rating || 4.5,
+    reviews: card.reviewCount || 10,
+    sold: (dto as any).sold || Math.floor((card.rating || 4.5) * 15),
+    stock: card.stock || 100,
+    category: card.categoryName || 'Electronics',
+    badge: discountPct > 0 ? `${discountPct}% OFF` : 'HOT DEAL',
+    featured: card.featured || false,
+  };
+};
 
 /* ── Helpers ──────────────────────────────────── */
 const getDiscount = (p: number, o: number) => Math.round(((o - p) / o) * 100);
@@ -162,21 +186,41 @@ function StockBar({ sold, stock }: { sold: number; stock: number }) {
 
 /* ══════════════════════════════════════════════
    MAIN
-══════════════════════════════════════════════ */
+   ══════════════════════════════════════════════ */
 export default function FlashSaleSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: '-60px' });
   const countdown = useCountdown(5);
   const [wished, setWished] = useState<Set<string>>(new Set());
+  const [products, setProducts] = useState<any[]>(saleProducts);
+
+  useEffect(() => {
+    getProducts({ onSale: true, limit: 6 })
+      .then((res) => {
+        if (res.data?.data && res.data.data.length > 0) {
+          setProducts(res.data.data.map(mapListItemToSaleProduct));
+        }
+      })
+      .catch(() => {
+        // Fallback to static saleProducts already in state
+      });
+  }, []);
 
   const toggleWish = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    setWished((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    setWished((prev) => {
+      const n = new Set(prev);
+      if (n.has(id)) {
+        n.delete(id);
+      } else {
+        n.add(id);
+      }
+      return n;
+    });
   };
 
-  const featured = saleProducts[0];
-  const rest = saleProducts.slice(1);
+  const featured = products[0] || saleProducts[0];
+  const rest = products.slice(1);
 
   return (
     <section
@@ -355,14 +399,16 @@ export default function FlashSaleSection() {
                   <StockBar sold={featured.sold} stock={featured.stock} />
 
                   {/* CTA */}
-                  <button
+                  <Link href={`/products/${featured.slug}`}
+                  
                     onClick={(e) => e.preventDefault()}
+
                     className="group/btn w-full flex items-center justify-center gap-2 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 transition-all duration-300 mt-1"
                   >
                     <ShoppingBag size={14} />
                     Grab This Deal
                     <ArrowRight size={13} className="group-hover/btn:translate-x-0.5 transition-transform" />
-                  </button>
+                  </Link>
                 </div>
               </div>
             </Link>

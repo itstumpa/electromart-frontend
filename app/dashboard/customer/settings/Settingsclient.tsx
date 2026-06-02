@@ -15,7 +15,7 @@ import { deleteAccount, getNotificationPrefs, updateNotificationPrefs } from '@/
 
 type Tab = 'account' | 'notifications' | 'security';
 
-function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
+export function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
   return (
     <motion.button onClick={onClick} whileTap={{ scale: 0.97 }}
       className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${saved ? 'bg-green-600 text-white' : 'bg-amber-600 hover:bg-amber-700 text-white shadow-md shadow-amber-200'}`}>

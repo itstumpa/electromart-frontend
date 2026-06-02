@@ -8,8 +8,8 @@ export const mapMeToUser = (me: MeResponseData): User => ({
   role: normalizeUserRole(me.role),
   isVerified: me.isEmailVerified,
   isBanned: false,
-  avatar:     me.avatar,     
-  phone:      me.phone,
+  avatar:     me.avatar || undefined,     
+  phone:      me.phone || undefined,
   createdAt: me.createdAt,
   updatedAt: me.createdAt,
 });

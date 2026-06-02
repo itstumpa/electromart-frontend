@@ -1,4 +1,4 @@
-// SERVER COMPONENT
+// SERVER COMPONENT — stats are computed client-side inside OrdersClient
 import { Metadata } from 'next';
 import { ShoppingBag } from 'lucide-react';
 import { mockOrders } from '@/data/mock-data';
@@ -7,8 +7,7 @@ import OrdersClient from '@/components/dashboard/admin/orders/OrdersClient';
 export const metadata: Metadata = { title: 'Order Management — Admin' };
 
 export default async function AdminOrdersPage() {
-  const orders = mockOrders;
-  const revenue = orders.reduce((sum, o) => sum + o.total, 0);
+  // mockOrders is kept as offline-fallback initial state; real data is fetched by OrdersClient
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -19,12 +18,10 @@ export default async function AdminOrdersPage() {
           <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>
             Order Management
           </h1>
-          <p className="text-sm text-slate-500">
-            {orders.length} orders · ${Math.round(revenue).toLocaleString()} total revenue
-          </p>
+          <p className="text-sm text-slate-500">View and manage all customer orders</p>
         </div>
       </div>
-      <OrdersClient initialOrders={orders} />
+      <OrdersClient initialOrders={mockOrders} />
     </div>
   );
 }
