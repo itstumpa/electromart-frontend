@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Store, Shield, Bell,
@@ -10,6 +10,11 @@ import {
   ToggleLeft, ToggleRight,
 } from 'lucide-react';
 import { mockUsers } from '@/data/mock-data';
+import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { getMe, changePassword } from '@/api/auth.api';
+import { updateUserProfile, getNotificationPrefs, updateNotificationPrefs } from '@/api/user.api';
+import { authStorage } from '@/utils/auth-storage';
 
 // ─── Types ────────────────────────────────────────────────
 type Tab = 'profile' | 'store' | 'security' | 'notifications';
@@ -135,40 +140,89 @@ function SaveButton({ state, onClick }: { state: SaveState; onClick: () => void 
 
 // ─── Tab: Profile ─────────────────────────────────────────
 function ProfileTab() {
-  const admin = mockUsers.find((u) => u.role === 'SUPER_ADMIN')!;
+  const [userId, setUserId] = useState('');
   const [form, setForm] = useState({
-    name:   admin.name,
-    email:  admin.email,
-    phone:  admin.phone ?? '',
-    bio:    'Platform administrator at ElectroMart. Managing operations since 2023.',
+    name:   '',
+    email:  '',
+    phone:  '',
+    bio:    'Platform administrator at ElectroMart. Managing operations since 2026.',
     website: 'https://electromart.com',
   });
+  const [loading, setLoading] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>({ saving: false, saved: false });
 
+  useEffect(() => {
+    getMe()
+      .then((res) => {
+        const me = res.data?.data;
+        if (me) {
+          setUserId(me.id);
+          const cachedRaw = localStorage.getItem('adminProfileDraft');
+          const cached = cachedRaw ? JSON.parse(cachedRaw) : null;
+          setForm({
+            name: me.name,
+            email: me.email,
+            phone: me.phone ?? '',
+            bio: cached?.bio ?? 'Platform administrator account.',
+            website: cached?.website ?? 'https://electromart.com',
+          });
+        }
+      })
+      .catch((err) => toast.error(getApiErrorMessage(err, 'Failed to load profile details')))
+      .finally(() => setLoading(false));
+  }, []);
+
   const handleSave = async () => {
+    if (!userId) return;
     setSaveState({ saving: true, saved: false });
-    await new Promise((r) => setTimeout(r, 1200));
-    setSaveState({ saving: false, saved: true });
-    setTimeout(() => setSaveState({ saving: false, saved: false }), 2500);
+    try {
+      await updateUserProfile(userId, {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+      });
+      localStorage.setItem('adminProfileDraft', JSON.stringify({
+        bio: form.bio,
+        website: form.website,
+      }));
+      const existing = authStorage.getAuthUser();
+      if (existing) {
+        authStorage.setAuthUser({
+          ...existing,
+          name: form.name.trim(),
+          email: form.email.trim(),
+        });
+      }
+      setSaveState({ saving: false, saved: true });
+      toast.success('Profile saved successfully');
+      setTimeout(() => setSaveState({ saving: false, saved: false }), 2500);
+    } catch (err) {
+      setSaveState({ saving: false, saved: false });
+      toast.error(getApiErrorMessage(err, 'Failed to update settings profile'));
+    }
   };
+
+  if (loading) {
+    return <p className="text-sm text-slate-400">Loading settings...</p>;
+  }
 
   return (
     <div className="space-y-8">
       {/* Avatar */}
       <div className="flex items-center gap-5">
         <div className="relative">
-          <img
-            src={admin.avatar}
-            alt={admin.name}
-            className="w-20 h-20 rounded-2xl object-cover border-2 border-slate-200"
-          />
+          <div className="w-20 h-20 rounded-2xl bg-amber-100 border-2 border-slate-200 flex items-center justify-center shrink-0">
+            <span className="text-2xl font-black text-amber-700">
+              {form.name ? form.name.charAt(0).toUpperCase() : 'A'}
+            </span>
+          </div>
           <button className="absolute -bottom-2 -right-2 w-8 h-8 bg-amber-600 hover:bg-amber-700 text-white rounded-xl flex items-center justify-center shadow-md transition-colors">
             <Camera size={14} />
           </button>
         </div>
         <div>
-          <p className="font-bold text-slate-900">{admin.name}</p>
-          <p className="text-sm text-slate-400 mt-0.5">{admin.email}</p>
+          <p className="font-bold text-slate-900">{form.name || 'Admin'}</p>
+          <p className="text-sm text-slate-400 mt-0.5">{form.email}</p>
           <p className="text-xs text-amber-600 font-semibold mt-1 uppercase tracking-widest">Super Admin</p>
         </div>
       </div>
@@ -216,10 +270,21 @@ function StoreTab() {
   });
   const [saveState, setSaveState] = useState<SaveState>({ saving: false, saved: false });
 
+  useEffect(() => {
+    const cached = localStorage.getItem('adminStoreSettings');
+    if (cached) {
+      try {
+        setForm(JSON.parse(cached));
+      } catch (e) {}
+    }
+  }, []);
+
   const handleSave = async () => {
     setSaveState({ saving: true, saved: false });
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, 900));
+    localStorage.setItem('adminStoreSettings', JSON.stringify(form));
     setSaveState({ saving: false, saved: true });
+    toast.success('Store configuration updated');
     setTimeout(() => setSaveState({ saving: false, saved: false }), 2500);
   };
 
@@ -329,12 +394,21 @@ function SecurityTab() {
   const strengthColor = ['bg-red-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500'];
 
   const handleSave = async () => {
-    if (passwords.newPass !== passwords.confirm) return;
+    if (passwords.newPass !== passwords.confirm) {
+      toast.error("Passwords do not match");
+      return;
+    }
     setSaveState({ saving: true, saved: false });
-    await new Promise((r) => setTimeout(r, 1200));
-    setSaveState({ saving: false, saved: true });
-    setPasswords({ current: '', newPass: '', confirm: '' });
-    setTimeout(() => setSaveState({ saving: false, saved: false }), 2500);
+    try {
+      await changePassword(passwords.current, passwords.newPass);
+      setSaveState({ saving: false, saved: true });
+      toast.success('Password changed successfully');
+      setPasswords({ current: '', newPass: '', confirm: '' });
+      setTimeout(() => setSaveState({ saving: false, saved: false }), 2500);
+    } catch (err) {
+      setSaveState({ saving: false, saved: false });
+      toast.error(getApiErrorMessage(err, 'Failed to change password'));
+    }
   };
 
   return (
@@ -461,14 +535,50 @@ function NotificationsTab() {
     urgentAlerts:  true,
     vendorApproval: true,
   });
+  const [loading, setLoading] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>({ saving: false, saved: false });
+
+  useEffect(() => {
+    getNotificationPrefs()
+      .then((res) => {
+        const prefs = res.data?.data;
+        if (prefs) {
+          setEmail((prev) => ({
+            ...prev,
+            orderStatus: prefs.notifOrderUpdates,
+            weeklyReport: prefs.notifWeeklyDigest,
+          }));
+          setPush((prev) => ({
+            ...prev,
+            urgentAlerts: prefs.notifDeliveryAlerts,
+            newOrder: prefs.notifOrderUpdates,
+          }));
+        }
+      })
+      .catch((err) => toast.error(getApiErrorMessage(err, 'Failed to load notifications preferences')))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleSave = async () => {
     setSaveState({ saving: true, saved: false });
-    await new Promise((r) => setTimeout(r, 1000));
-    setSaveState({ saving: false, saved: true });
-    setTimeout(() => setSaveState({ saving: false, saved: false }), 2500);
+    try {
+      await updateNotificationPrefs({
+        notifOrderUpdates: email.orderStatus,
+        notifWeeklyDigest: email.weeklyReport,
+        notifDeliveryAlerts: push.urgentAlerts,
+      });
+      setSaveState({ saving: false, saved: true });
+      toast.success('Notification preferences updated');
+      setTimeout(() => setSaveState({ saving: false, saved: false }), 2500);
+    } catch (err) {
+      setSaveState({ saving: false, saved: false });
+      toast.error(getApiErrorMessage(err, 'Failed to update preferences'));
+    }
   };
+
+  if (loading) {
+    return <p className="text-sm text-slate-400">Loading notifications config...</p>;
+  }
 
   return (
     <div className="space-y-8">

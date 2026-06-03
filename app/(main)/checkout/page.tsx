@@ -9,6 +9,7 @@ import {
   ChevronRight, ChevronLeft, CheckCircle2,
   MapPin, CreditCard, ShoppingBag,
   Home, Briefcase, Plus, Shield, Lock,
+  Globe,
 } from 'lucide-react';
 import { getCart } from '@/api/cart.api';
 import { getMyAddresses, createAddress } from '@/api/address.api';
@@ -32,7 +33,7 @@ interface ShippingForm {
 }
 
 interface PaymentForm {
-  method: 'card' | 'cod';
+  method: 'card' | 'cod' | 'sslcommerz';
   cardNumber: string; cardName: string;
   expiry: string; cvv: string;
 }
@@ -77,7 +78,37 @@ function StepIndicator({ current }: { current: Step }) {
   );
 }
 
-// ─── Step 1: Address ─────────────────────────────────────────
+// ─── Field outside AddressStep (fixes remount/typing bug) ────────────────────
+function Field({
+  label,
+  value,
+  onChange,
+  placeholder,
+  half,
+}: {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+  half?: boolean;
+}) {
+  return (
+    <div className={half ? 'col-span-1' : 'col-span-2'}>
+      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">
+        {label}
+      </label>
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
+      />
+    </div>
+  );
+}
+
+// ─── Step 1: Address ──────────────────────────────────────────────────────────
 function AddressStep({
   addresses,
   onNext,
@@ -88,8 +119,8 @@ function AddressStep({
   onAddressCreated: () => Promise<void>;
 }) {
   const defaultId = addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id ?? '';
-  const [useExisting,  setUseExisting]  = useState<string>(defaultId);
-  const [showNewForm,  setShowNewForm]  = useState(addresses.length === 0);
+  const [useExisting, setUseExisting] = useState<string>(defaultId);
+  const [showNewForm, setShowNewForm] = useState(addresses.length === 0);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<ShippingForm>({
     fullName: '', phone: '', street: '',
@@ -132,18 +163,6 @@ function AddressStep({
       }
     }
   };
-
-  const Field = ({ label, k, placeholder, half }: { label: string; k: keyof ShippingForm; placeholder?: string; half?: boolean }) => (
-    <div className={half ? 'col-span-1' : 'col-span-2'}>
-      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">{label}</label>
-      <input
-        type="text" placeholder={placeholder}
-        value={form[k]}
-        onChange={(e) => setForm({ ...form, [k]: e.target.value })}
-        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
-      />
-    </div>
-  );
 
   return (
     <div className="space-y-5">
@@ -196,18 +215,18 @@ function AddressStep({
       {showNewForm && (
         <motion.div className="space-y-4">
           {addresses.length > 0 && (
-          <button onClick={() => setShowNewForm(false)} className="text-sm text-amber-600 font-semibold hover:text-amber-700 flex items-center gap-1">
-            ← Back to saved addresses
-          </button>
+            <button onClick={() => setShowNewForm(false)} className="text-sm text-amber-600 font-semibold hover:text-amber-700 flex items-center gap-1">
+              ← Back to saved addresses
+            </button>
           )}
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Full Name"   k="fullName"  placeholder="John Smith"   />
-            <Field label="Phone"       k="phone"     placeholder="+1 (555) 000-0000" />
-            <Field label="Street Address" k="street" placeholder="123 Main Street, Apt 4B" />
-            <Field label="City"        k="city"      placeholder="New York"     half />
-            <Field label="State"       k="state"     placeholder="NY"           half />
-            <Field label="ZIP Code"    k="zipCode"   placeholder="10001"        half />
-            <Field label="Country"     k="country"   placeholder="USA"          half />
+            <Field label="Full Name"       value={form.fullName} onChange={(v) => setForm({ ...form, fullName: v })}  placeholder="John Smith" />
+            <Field label="Phone"           value={form.phone}    onChange={(v) => setForm({ ...form, phone: v })}     placeholder="+1 (555) 000-0000" />
+            <Field label="Street Address"  value={form.street}   onChange={(v) => setForm({ ...form, street: v })}    placeholder="123 Main Street, Apt 4B" />
+            <Field label="City"            value={form.city}     onChange={(v) => setForm({ ...form, city: v })}      placeholder="New York"  half />
+            <Field label="State"           value={form.state}    onChange={(v) => setForm({ ...form, state: v })}     placeholder="NY"        half />
+            <Field label="ZIP Code"        value={form.zipCode}  onChange={(v) => setForm({ ...form, zipCode: v })}   placeholder="10001"     half />
+            <Field label="Country"         value={form.country}  onChange={(v) => setForm({ ...form, country: v })}   placeholder="USA"       half />
           </div>
         </motion.div>
       )}
@@ -222,7 +241,6 @@ function AddressStep({
     </div>
   );
 }
-
 // ─── Step 2: Payment ─────────────────────────────────────────
 function PaymentStep({
   onNext, onBack,
@@ -238,7 +256,7 @@ function PaymentStep({
   const formatExpiry = (v: string) => v.replace(/\D/g, '').slice(0, 4).replace(/^(\d{2})(\d)/, '$1/$2');
 
   const handleContinue = () => {
-    if (form.method === 'cod') { onNext(form); return; }
+    if (form.method === 'cod' || form.method === 'sslcommerz') { onNext(form); return; }
     if (!form.cardNumber || !form.cardName || !form.expiry || !form.cvv) return;
     onNext(form);
   };
@@ -251,10 +269,11 @@ function PaymentStep({
       </div>
 
       {/* Method selection */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         {[
-          { value: 'card', label: 'Credit / Debit Card', icon: CreditCard },
-          { value: 'cod',  label: 'Cash on Delivery',    icon: ShoppingBag },
+          { value: 'card',        label: 'Credit / Debit Card', icon: CreditCard },
+          { value: 'sslcommerz',  label: 'Online Payment',      icon: Globe },
+          { value: 'cod',         label: 'Cash on Delivery',    icon: ShoppingBag },
         ].map(({ value, label, icon: Icon }) => (
           <label
             key={value}
@@ -265,9 +284,9 @@ function PaymentStep({
             }`}
           >
             <input type="radio" name="method" value={value} checked={form.method === value}
-              onChange={() => setForm({ ...form, method: value as 'card' | 'cod' })} className="sr-only" />
+              onChange={() => setForm({ ...form, method: value as 'card' | 'cod' | 'sslcommerz' })} className="sr-only" />
             <Icon size={22} className={form.method === value ? 'text-amber-600' : 'text-slate-400'} />
-            <span className="text-sm font-bold">{label}</span>
+            <span className="text-xs font-bold">{label}</span>
           </label>
         ))}
       </div>
@@ -344,6 +363,33 @@ function PaymentStep({
         )}
       </AnimatePresence>
 
+      {/* SSLCommerz info */}
+      <AnimatePresence>
+        {form.method === 'sslcommerz' && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.22 }}
+            className="overflow-hidden"
+          >
+            <div className="p-4 bg-blue-50 rounded-2xl border border-blue-200 space-y-2">
+              <div className="flex items-center gap-2">
+                <Globe size={16} className="text-blue-600" />
+                <span className="text-sm font-bold text-blue-800">Pay via SSLCommerz</span>
+              </div>
+              <p className="text-sm text-blue-700">
+                You&apos;ll be redirected to SSLCommerz&apos;s secure payment page. Supports bKash, Nagad, Rocket, cards, and more.
+              </p>
+              <div className="flex items-center gap-1.5 text-xs text-blue-500 pt-1">
+                <Lock size={11} /> Secured by SSLCommerz
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* COD info */}
       {form.method === 'cod' && (
         <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-sm text-amber-800 font-medium">
           💵 Pay in cash when your order arrives. Have the exact amount ready.

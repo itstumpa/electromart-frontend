@@ -7,7 +7,28 @@ import CategoriesClient from '@/components/dashboard/admin/categories/Categories
 export const metadata: Metadata = { title: 'Categories & Brands — Admin' };
 
 export default async function AdminCategoriesPage() {
-  const categories = mockCategories;
+  let categories = mockCategories;
+  try {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api/v1";
+    const res = await fetch(`${API_BASE}/categories`, { next: { revalidate: 0 } });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.data) {
+        categories = json.data.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          description: c.description || '',
+          image: c.image || '',
+          productCount: c._count?.products ?? 0,
+          createdAt: c.createdAt || new Date().toISOString(),
+          updatedAt: c.updatedAt || new Date().toISOString(),
+        }));
+      }
+    }
+  } catch (error) {
+    console.error("Failed to fetch categories, using mock data", error);
+  }
   const brands     = mockBrands;
   return (
     <div className="space-y-6">

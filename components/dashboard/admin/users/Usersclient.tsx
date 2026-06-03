@@ -50,7 +50,7 @@ export default function UsersClient({ initialUsers }: { initialUsers?: any[] }) 
   const [viewUser,   setViewUser]   = useState<AdminUserDto | null>(null);
 
   useEffect(() => {
-    getAllUsers()
+    getAllUsers({ limit: 1000 })
       .then((res) => {
         if (res.data?.data) {
           setUsers((res.data.data ?? []) as AdminUserDto[]);

@@ -7,6 +7,7 @@ export interface CategoryDto {
   id: string;
   name: string;
   slug: string;
+  image?: string;        // optional — backend returns & accepts this
   createdAt?: string;
   updatedAt?: string;
   _count: CategoryCount;

@@ -71,7 +71,7 @@ export default function VendorsClient({ initialVendors }: { initialVendors?: any
     if (!approveTarget) return;
     setProcessing(true);
     try {
-      const res = await api.patch<ApiResponse<VendorDto>>(`/stores/${approveTarget.id}/approve`);
+      const res = await api.patch<ApiResponse<VendorDto>>(`/stores/${approveTarget.id}/approve`, { isApproved: true });
       const updated = res.data.data;
       setVendors((prev) => prev.map((v) => (v.id === approveTarget.id ? updated : v)));
       toast.success("Store approved");
