@@ -370,7 +370,6 @@ const isCategoryActive = categoryItems.some(
               className="p-2 rounded-lg text-slate-600 hover:text-amber-600 hover:bg-amber-50 transition-colors"
             >
               <Search size={20} />
-              <search />
             </button>
 
             {/* Wishlist */}

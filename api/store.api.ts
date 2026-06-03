@@ -77,10 +77,6 @@ export const deleteStore = (id: string) => {
   return api.delete<ApiResponse<null>>(`/stores/${id}`);
 };
 
-export const toggleStoreActive = (id: string, isActive: boolean) => {
-  return api.patch<ApiResponse<MyStoreDto>>(`/stores/${id}/pause`, { isActive });
-};
-
 export const updateStorePolicies = (
   id: string,
   data: {
