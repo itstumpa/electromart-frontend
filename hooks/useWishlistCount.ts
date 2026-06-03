@@ -1,17 +1,18 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { getWishlist } from '@/api/wishlist.api';
+import { getWishlist, addToWishlist, removeFromWishlist } from '@/api/wishlist.api';
 
-export function useWishlistCount() {
-  const [count, setCount] = useState(0);
+export function useWishlist() {
+  const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
 
   const refresh = useCallback(async () => {
     try {
       const res = await getWishlist();
-      setCount(res.data.data?.length ?? 0);
+      const ids = res.data.data?.map((item) => item.productId) ?? [];
+      setWishlistIds(new Set(ids));
     } catch {
-      setCount(0);
+      setWishlistIds(new Set());
     }
   }, []);
 
@@ -22,7 +23,34 @@ export function useWishlistCount() {
     return () => window.removeEventListener('wishlist-updated', onUpdate);
   }, [refresh]);
 
-  return { count, refresh };
+  const toggle = useCallback(async (productId: string) => {
+    const isInWishlist = wishlistIds.has(productId);
+
+    // optimistic update
+    setWishlistIds((prev) => {
+      const next = new Set(prev);
+      isInWishlist ? next.delete(productId) : next.add(productId);
+      return next;
+    });
+
+    try {
+      if (isInWishlist) {
+        await removeFromWishlist(productId);
+      } else {
+        await addToWishlist(productId);
+      }
+      notifyWishlistUpdated();
+    } catch {
+      // revert on failure
+      setWishlistIds((prev) => {
+        const next = new Set(prev);
+        isInWishlist ? next.add(productId) : next.delete(productId);
+        return next;
+      });
+    }
+  }, [wishlistIds]);
+
+  return { wishlistIds, toggle, refresh };
 }
 
 export const notifyWishlistUpdated = () => {
@@ -30,3 +58,8 @@ export const notifyWishlistUpdated = () => {
     window.dispatchEvent(new Event('wishlist-updated'));
   }
 };
+
+export function useWishlistCount() {
+  const { wishlistIds } = useWishlist();
+  return { count: wishlistIds.size };
+}
