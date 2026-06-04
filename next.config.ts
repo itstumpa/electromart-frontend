@@ -1,8 +1,6 @@
 /** @type {import('next').NextConfig} */
 const backendUrl =
-  process.env.NODE_ENV === "production"
-    ? process.env.BACKEND_URL_PROD
-    : process.env.BACKEND_URL;
+  process.env.BACKEND_URL || "http://localhost:5000";
 
 const nextConfig: import("next").NextConfig = {
   images: {

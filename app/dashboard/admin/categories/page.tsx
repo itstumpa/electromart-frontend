@@ -9,7 +9,9 @@ export const metadata: Metadata = { title: 'Categories & Brands — Admin' };
 export default async function AdminCategoriesPage() {
   let categories = mockCategories;
   try {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api/v1";
+    const API_BASE = process.env.BACKEND_URL
+      ? `${process.env.BACKEND_URL.replace(/\/$/, "")}/api/v1`
+      : (process.env.NEXT_PUBLIC_API_URL || "/api/v1");
     const res = await fetch(`${API_BASE}/categories`, { next: { revalidate: 0 } });
     if (res.ok) {
       const json = await res.json();

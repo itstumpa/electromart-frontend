@@ -1,7 +1,7 @@
 // app/api/v1/[...path]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND = process.env.BACKEND_URL ?? 'http://localhost:5000';
+const BACKEND = process.env.BACKEND_URL || '';
 
 async function handler(req: NextRequest, { params }: { params: { path: string[] } }) {
   const path = params.path.join('/');

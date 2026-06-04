@@ -1,4 +1,12 @@
-export const API_BASE = "https://electromart-backend-three.vercel.app/api/v1";
+const getApiBase = (): string => {
+  if (typeof window === "undefined") {
+    const backend = process.env.BACKEND_URL || "";
+    return backend ? `${backend.replace(/\/$/, "")}/api/v1` : "/api/v1";
+  }
+  return process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+};
+
+export const API_BASE = getApiBase();
 
 export const ROUTES = {
   // Auth

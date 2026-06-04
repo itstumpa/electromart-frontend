@@ -6,8 +6,8 @@ import type { ApiResponse } from "@/types/api";
 import type { DashboardOverview } from "@/types/admin-dashboard";
 
 const API_BASE = process.env.BACKEND_URL
-  ? `${process.env.BACKEND_URL}/api/v1`
-  : "http://localhost:5000/api/v1";
+  ? `${process.env.BACKEND_URL.replace(/\/$/, "")}/api/v1`
+  : (process.env.NEXT_PUBLIC_API_URL || "/api/v1");
 
 export async function fetchDashboardOverview(): Promise<DashboardOverview> {
   const cookieStore = await cookies();
