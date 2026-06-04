@@ -33,19 +33,19 @@ export const mockUsers: User[] = [
     isVerified: true,
     isBanned: false,
     phone: '+1 (555) 000-0001',
-    createdAt: '2023-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'user-vendor-1',
     name: 'Marcus Chen',
-    email: 'marcus.chen@techstore.com',
+    email: 'tumpa@techstore.com',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
     role: 'VENDOR',
     isVerified: true,
     isBanned: false,
     phone: '+1 (555) 000-0002',
-    createdAt: '2023-03-15T00:00:00Z',
+    createdAt: '2026-03-15T00:00:00Z',
     updatedAt: '2024-01-10T00:00:00Z',
   },
   {
@@ -57,7 +57,7 @@ export const mockUsers: User[] = [
     isVerified: true,
     isBanned: false,
     phone: '+1 (555) 000-0003',
-    createdAt: '2023-04-20T00:00:00Z',
+    createdAt: '2026-04-20T00:00:00Z',
     updatedAt: '2024-01-12T00:00:00Z',
   },
   {
@@ -69,7 +69,7 @@ export const mockUsers: User[] = [
     isVerified: true,
     isBanned: false,
     phone: '+1 (555) 100-0001',
-    createdAt: '2023-06-10T00:00:00Z',
+    createdAt: '2026-06-10T00:00:00Z',
     updatedAt: '2024-01-14T00:00:00Z',
   },
   {
@@ -81,7 +81,7 @@ export const mockUsers: User[] = [
     isVerified: true,
     isBanned: false,
     phone: '+1 (555) 100-0002',
-    createdAt: '2023-07-22T00:00:00Z',
+    createdAt: '2026-07-22T00:00:00Z',
     updatedAt: '2024-01-13T00:00:00Z',
   },
   {
@@ -93,7 +93,7 @@ export const mockUsers: User[] = [
     isVerified: true,
     isBanned: false,
     phone: '+1 (555) 200-0001',
-    createdAt: '2023-05-05T00:00:00Z',
+    createdAt: '2026-05-05T00:00:00Z',
     updatedAt: '2024-01-15T00:00:00Z',
   },
 ];
@@ -108,24 +108,32 @@ export const mockVendorProfiles: VendorProfile[] = [
     userId: 'user-vendor-1',
     storeName: 'TechStore Pro',
     logo: 'https://images.unsplash.com/photo-1612838320302-4b3b3996e01e?w=100',
-    bio: 'Premium electronics and gadgets since 2015. Authorized reseller for major brands.',
+    coverImage: 'https://images.unsplash.com/photo-1491933382434-500287f9b54b?w=600&q=80',
+    specialty: 'Apple · Samsung · Sony',
+    badge: 'Top Seller',
+    offers: 'Free shipping on all orders',
+    bio: 'Premium electronics and gadgets since 2015.',
     isApproved: true,
     totalProducts: 48,
-    totalSales: 1240,
+    totalSales: 12,
     rating: 4.8,
-    createdAt: '2023-03-15T00:00:00Z',
+    createdAt: '2026-03-15T00:00:00Z',
   },
   {
     id: 'vendor-2',
     userId: 'user-vendor-2',
     storeName: 'GadgetZone',
-    logo: 'https://images.unsplash.com/photo-1491933382434-500287f9b54b?w=100',
-    bio: 'Your one-stop shop for the latest gadgets, accessories, and smart home devices.',
+    logo: 'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=100',
+    coverImage: 'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=600&q=80',
+    specialty: 'Smart Home · Audio · Wearables',
+    badge: 'Trending',
+    offers: 'Up to 30% off this week',
+    bio: 'Your one-stop shop for the latest gadgets.',
     isApproved: true,
     totalProducts: 32,
     totalSales: 870,
     rating: 4.6,
-    createdAt: '2023-04-20T00:00:00Z',
+    createdAt: '2026-04-20T00:00:00Z',
   },
 ];
 
@@ -140,7 +148,7 @@ export const mockDeliveryProfiles: DeliveryProfile[] = [
     vehicleType: 'bike',
     isAvailable: true,
     totalDeliveries: 312,
-    createdAt: '2023-05-05T00:00:00Z',
+    createdAt: '2026-05-05T00:00:00Z',
   },
 ];
 
@@ -203,7 +211,7 @@ export const mockCategories: Category[] = [
     image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400',
     parentId: null,
     productCount: 32,
-    createdAt: '2023-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   },
   {
@@ -214,7 +222,7 @@ export const mockCategories: Category[] = [
     image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400',
     parentId: null,
     productCount: 28,
-    createdAt: '2023-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   },
   {
@@ -225,7 +233,7 @@ export const mockCategories: Category[] = [
     image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
     parentId: null,
     productCount: 24,
-    createdAt: '2023-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   },
   {
@@ -236,7 +244,7 @@ export const mockCategories: Category[] = [
     image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400',
     parentId: null,
     productCount: 18,
-    createdAt: '2023-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   },
   {
@@ -247,7 +255,7 @@ export const mockCategories: Category[] = [
     image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
     parentId: null,
     productCount: 16,
-    createdAt: '2023-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   },
   {
@@ -258,7 +266,7 @@ export const mockCategories: Category[] = [
     image: 'https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400',
     parentId: null,
     productCount: 22,
-    createdAt: '2023-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   },
   {
@@ -269,7 +277,7 @@ export const mockCategories: Category[] = [
     image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
     parentId: null,
     productCount: 20,
-    createdAt: '2023-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   },
   {
@@ -280,7 +288,7 @@ export const mockCategories: Category[] = [
     image: 'https://images.unsplash.com/photo-1625895197185-efcec01cffe0?w=400',
     parentId: null,
     productCount: 56,
-    createdAt: '2023-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   },
 ];
@@ -297,7 +305,7 @@ export const mockBrands: Brand[] = [
     logo: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=100',
     description: 'Think Different',
     productCount: 24,
-    createdAt: '2023-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
   },
   {
     id: 'brand-2',
@@ -306,7 +314,7 @@ export const mockBrands: Brand[] = [
     logo: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=100',
     description: 'Inspire the World, Create the Future',
     productCount: 31,
-    createdAt: '2023-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
   },
   {
     id: 'brand-3',
@@ -315,7 +323,7 @@ export const mockBrands: Brand[] = [
     logo: 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=100',
     description: 'Be Moved',
     productCount: 18,
-    createdAt: '2023-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
   },
   {
     id: 'brand-4',
@@ -324,7 +332,7 @@ export const mockBrands: Brand[] = [
     logo: 'https://images.unsplash.com/photo-1587614382346-4ec70e388b28?w=100',
     description: 'The Power to Do More',
     productCount: 14,
-    createdAt: '2023-01-01T00:00:00Z',
+    createdAt: '2026-01-01T00:00:00Z',
   },
 ];
 

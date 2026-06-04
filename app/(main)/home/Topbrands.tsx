@@ -50,6 +50,13 @@ const ALL_BRANDS = [
     productCount: 11, tagline: 'Better Sound Through Research',
     accentBg: 'bg-amber-900', accentText: 'text-white',
   },
+  {
+    id: 'brand-7', name: 'Bose', slug: 'bose',
+    logo: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&q=80',
+    cover: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&q=80',
+    productCount: 11, tagline: 'Better Sound Through Research',
+    accentBg: 'bg-amber-900', accentText: 'text-white',
+  },
 ];
 
 // Marquee brand name list (duplicated for seamless loop)

@@ -174,6 +174,8 @@ const sortOptions = [
   const [productList, setProductList] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
+  const urlVendor = searchParams.get('vendor') ?? '';
+const [vendor, setVendor] = useState(urlVendor);
 
   useEffect(() => {
     getCategories()
@@ -199,6 +201,10 @@ const sortOptions = [
   }, []);
 
   useEffect(() => {
+  setVendor(urlVendor);
+}, [urlVendor]);
+
+  useEffect(() => {
     const categoryId = category
       ? categories.find((c) => c.slug === category)?.id
       : undefined;
@@ -217,6 +223,7 @@ const sortOptions = [
       ? {
           q: search.trim(),
           categoryId,
+          storeId: vendor || undefined,
           minPrice: minPrice > 0 ? minPrice : undefined,
           maxPrice: maxPrice < 4000 ? maxPrice : undefined,
           limit: 100,
@@ -225,6 +232,7 @@ const sortOptions = [
         }
       : {
           categoryId,
+          storeId: vendor || undefined,
           search: search.trim() || undefined,
           minPrice: minPrice > 0 ? minPrice : undefined,
           maxPrice: maxPrice < 4000 ? maxPrice : undefined,
@@ -262,7 +270,7 @@ const sortOptions = [
         setBrands((prev) => (prev.length ? prev : Array.from(storeMap.values())));
       })
       .catch(() => setProductList([]));
-  }, [search, category, brand, minPrice, maxPrice, minRating, sort, categories]);
+  }, [search, category, vendor, brand, minPrice, maxPrice, minRating, sort, categories]);
 
   const filtered = productList;
 

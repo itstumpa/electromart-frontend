@@ -30,6 +30,14 @@ const ROLE_CONFIG: Record<UserRole, {
     roleLabel: 'Super Admin',
     accentColor: 'text-purple-600 bg-purple-50',
   },
+  ADMIN: {
+    searchPlaceholder: 'Search users, orders, products...',
+    showSearch: true,
+    settingsHref: '/dashboard/admin/settings',
+    profileHref:  '/dashboard/admin/profile',
+    roleLabel: 'Admin',
+    accentColor: 'text-purple-600 bg-purple-50',
+  },
   VENDOR: {
     searchPlaceholder: 'Search products, orders...',
     showSearch: true,
@@ -94,6 +102,7 @@ export default function DashboardTopbar({ user }: Props) {
       // even if API fails, clear stale session client-side
     } finally {
       authStorage.clearSession();
+      window.dispatchEvent(new Event('auth-updated'));
       toast.success('You are logged out');
       setProfileOpen(false);
     }

@@ -6,7 +6,7 @@
 // ENUMS
 // ---------------------------
 
-export type UserRole = 'SUPER_ADMIN' | 'VENDOR' | 'CUSTOMER' | 'DELIVERY';
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'VENDOR' | 'CUSTOMER' | 'DELIVERY';
 
 // lib/constants.ts
 export const APP_NAME = "ElectroMart";
@@ -133,6 +133,7 @@ export const FOOTER_LINKS = {
 
 export const ROLES = {
   SUPER_ADMIN: "SUPER_ADMIN",
+  ADMIN: "ADMIN",
   VENDOR: "VENDOR",
   CUSTOMER: "CUSTOMER",
   DELIVERY: "DELIVERY",
@@ -178,6 +179,10 @@ export interface VendorProfile {
   userId: string;
   storeName: string;
   logo?: string;
+  coverImage?: string;
+  specialty?: string;
+  badge?: string;
+  offers?: string;
   bio?: string;
   isApproved: boolean;
   totalProducts: number;

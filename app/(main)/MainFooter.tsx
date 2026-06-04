@@ -29,17 +29,17 @@ const footerLinks = {
   ],
   Company: [
     { label: 'About Us', href: '/about' },
-    { label: 'Careers', href: '/careers' },
-    { label: 'Press', href: '/press' },
-    { label: 'Blog', href: '/blog' },
+    // { label: 'Careers', href: '/careers' },
+    // { label: 'Press', href: '/press' },
+    // { label: 'Blog', href: '/blog' },
     { label: 'Contact Us', href: '/contact' },
   ],
   Support: [
-    { label: 'Help Center', href: '/help' },
-    { label: 'Track Your Order', href: '/customer/orders' },
-    { label: 'Returns & Refunds', href: '/returns' },
-    { label: 'Warranty Info', href: '/warranty' },
-    { label: 'Become a Vendor', href: '/vendor/apply' },
+    { label: 'Help Center', href: '/contact' },
+    { label: 'Track Your Order', href: '/dashboard/customer/orders' },
+    { label: 'Returns & Refunds', href: '/dashboard/customer/orders' },
+    // { label: 'Warranty Info', href: '/warranty' },
+    { label: 'Become a Vendor', href: '/register' },
   ],
 };
 

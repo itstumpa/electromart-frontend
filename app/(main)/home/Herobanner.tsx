@@ -79,10 +79,10 @@ const CELLS = [
   {
     id: 'v5',
     label: 'PixelHub',
-    title: 'Cameras & Drones',
+    title: 'Headphones & Speakers',
     href: '/products?vendor=pixelhub',
     // Rich cobalt-blue mirrorless camera
-    image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=90',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80',
     gradientFrom: 'from-rose-950/90',
     gradientVia: 'via-rose-800/30',
     badgeBg: 'bg-blue-500',
@@ -271,7 +271,7 @@ export default function HeroBentoGrid() {
               <motion.div
                 key={cell.id}
                 variants={fadeUp}
-                className="col-span-2 relative overflow-hidden rounded-2xl sm:rounded-3xl group cursor-pointer"
+                className="hidden md:flex col-span-2 relative overflow-hidden rounded-2xl sm:rounded-3xl group cursor-pointer"
                 style={{ minHeight: 170 }}
               >
                 <Image

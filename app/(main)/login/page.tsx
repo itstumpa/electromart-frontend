@@ -36,8 +36,8 @@ const DEMO_CREDENTIALS = [
   },
   {
     label: 'Vendor',
-    email: 'vendor1@electromart.com',
-    password: 'Vendor@1234',
+    email: 'tumpa@techstore.com',
+    password: 'Demo@1234',
     color: 'bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-200',
     dot: 'bg-blue-500',
   },
@@ -112,6 +112,7 @@ export default function LoginPage() {
         role,
         avatar: (currentUser as { avatar?: string }).avatar,
       });
+      window.dispatchEvent(new Event('auth-updated'));
       toast.success('Login successful');
       router.push(getRedirectPathByRole(role));
     } catch (apiError) {

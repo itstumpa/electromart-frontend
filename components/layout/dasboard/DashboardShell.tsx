@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { getMe } from '@/api/auth.api';
 import type { User, UserRole } from '@/data/types';
@@ -15,43 +15,45 @@ interface Props {
 }
 
 export default function DashboardShell({ children, allowedRoles }: Props) {
-  const router = useRouter();
+  const router          = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const allowedRolesRef = useRef(allowedRoles);
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
       try {
-        const res = await getMe();
+        const res    = await getMe();
         const mapped = mapMeToUser(res.data.data);
+
         if (cancelled) return;
 
-        if (!allowedRoles.includes(mapped.role)) {
+        if (!allowedRolesRef.current.includes(mapped.role)) {
           router.replace('/login');
           return;
         }
 
         authStorage.setAuthUser({
-          id: mapped.id,
-          name: mapped.name,
-          email: mapped.email,
-          role: mapped.role,
+          id:     mapped.id,
+          name:   mapped.name,
+          email:  mapped.email,
+          role:   mapped.role,
+          avatar: mapped.avatar,
         });
         setUser(mapped);
-      } catch {
+      } catch (err) {
+        console.error('DashboardShell error:', err);
         if (!cancelled) router.replace('/login');
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setLoading(false); // 👈 this was missing
       }
     };
 
     load();
-    return () => {
-      cancelled = true;
-    };
-  }, [allowedRoles, router]);
+    return () => { cancelled = true; };
+  }, []); // 👈 empty deps — only run once
 
   if (loading || !user) {
     return (

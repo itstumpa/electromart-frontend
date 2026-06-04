@@ -8,6 +8,7 @@ import { Star, BadgeCheck, ShoppingBag, ArrowRight, Quote } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Marquee from 'react-fast-marquee';
+import Link from 'next/link';
 
 /* ── Data ─────────────────────────────────────── */
 const testimonials = [
@@ -403,10 +404,12 @@ export default function TestimonialsSection() {
               <p className="text-sm font-semibold text-foreground">
                 Ready to join them?
               </p>
-              <Button size="sm" className="rounded-xl group py-4 px-3">
+              <Button className="inline-flex items-center gap-2 rounded-xl group py-4 px-3">
+                <Link href="/products" className="flex items-center gap-2">
                 <ShoppingBag className="h-4 w-4" />
                 Start Shopping
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                </Link>
               </Button>
             </div>
           </div>

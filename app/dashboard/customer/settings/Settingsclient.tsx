@@ -1,20 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Bell, Shield, Save, CheckCircle2,
   Eye, EyeOff, Lock, Smartphone, ShoppingBag,
   Tag, Star, Trash2,
 } from 'lucide-react';
-import { changePassword } from '@/api/auth.api';
+import { changePassword, getMe, logoutUser } from '@/api/auth.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
-
+import { useRouter } from 'next/navigation';
+import { deleteAccount, getNotificationPrefs, updateNotificationPrefs } from '@/api/user.api';
 
 type Tab = 'account' | 'notifications' | 'security';
 
-function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
+export function SaveButton({ saving, saved, onClick }: { saving: boolean; saved: boolean; onClick: () => void }) {
   return (
     <motion.button onClick={onClick} whileTap={{ scale: 0.97 }}
       className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${saved ? 'bg-green-600 text-white' : 'bg-amber-600 hover:bg-amber-700 text-white shadow-md shadow-amber-200'}`}>
@@ -55,6 +56,11 @@ export default function CustomerSettingsClient() {
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
 
+  const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   const [prefs, setPrefs] = useState({
     language: 'en',
     currency: 'USD',
@@ -77,7 +83,71 @@ export default function CustomerSettingsClient() {
   const [showPw,    setShowPw]    = useState({ current: false, new: false, confirm: false });
   const [twoFA,     setTwoFA]     = useState(false);
 
+  // load user id
+  useEffect(() => {
+    getMe()
+      .then((res) => setUserId(res.data.data.id))
+      .catch(() => {});
+  }, []);
+
+  // load notification prefs
+  useEffect(() => {
+    getNotificationPrefs()
+      .then((res) => {
+        const d = res.data.data;
+        setNotifs({
+          orderUpdates:   d.notifOrderUpdates,
+          promotions:     d.notifPromotions,
+          wishlistSale:   d.notifWishlistSale,
+          reviewReminder: d.notifReviewReminder,
+          deliveryAlerts: d.notifDeliveryAlerts,
+          weeklyDigest:   d.notifWeeklyDigest,
+        });
+      })
+      .catch(() => {});
+  }, []);
+
+  // load prefs from localStorage on mount
+useEffect(() => {
+  const saved = localStorage.getItem('userPrefs');
+  if (saved) setPrefs(JSON.parse(saved));
+}, []);
+
   const save = async () => {
+    
+  if (tab === 'account') {
+    setSaving(true);
+    localStorage.setItem('userPrefs', JSON.stringify(prefs));
+    await new Promise((r) => setTimeout(r, 600));
+    setSaving(false);
+    setSaved(true);
+    toast.success('Preferences saved');
+    setTimeout(() => setSaved(false), 2500);
+    return;
+  }
+
+    if (tab === 'notifications') {
+      setSaving(true);
+      try {
+        await updateNotificationPrefs({
+          notifOrderUpdates:   notifs.orderUpdates,
+          notifPromotions:     notifs.promotions,
+          notifWishlistSale:   notifs.wishlistSale,
+          notifReviewReminder: notifs.reviewReminder,
+          notifDeliveryAlerts: notifs.deliveryAlerts,
+          notifWeeklyDigest:   notifs.weeklyDigest,
+        });
+        setSaved(true);
+        toast.success('Notification preferences saved');
+        setTimeout(() => setSaved(false), 2500);
+      } catch (err) {
+        toast.error(getApiErrorMessage(err, 'Failed to save preferences'));
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
     if (tab === 'security') {
       if (!passwords.current || !passwords.newPass || !passwords.confirm) {
         toast.error('Please fill in all password fields');
@@ -101,16 +171,34 @@ export default function CustomerSettingsClient() {
       }
       return;
     }
+
     setSaving(true);
     await new Promise((r) => setTimeout(r, 1200));
-    setSaving(false); setSaved(true);
+    setSaving(false);
+    setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
 
+  const handleDeleteAccount = async () => {
+    if (!userId) return;
+    setDeleting(true);
+    try {
+      await deleteAccount(userId);
+      await logoutUser();
+      toast.success('Account deleted successfully');
+      router.push('/');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to delete account'));
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: 'account',       label: 'Preferences',    icon: User },
-    { key: 'notifications', label: 'Notifications',  icon: Bell },
-    { key: 'security',      label: 'Security',       icon: Shield },
+    { key: 'account',       label: 'Preferences',   icon: User },
+    { key: 'notifications', label: 'Notifications', icon: Bell },
+    { key: 'security',      label: 'Security',      icon: Shield },
   ];
 
   return (
@@ -168,10 +256,10 @@ export default function CustomerSettingsClient() {
                   </div>
 
                   <div className="bg-slate-50 rounded-2xl px-5 divide-y divide-slate-100">
-                    <Toggle label="Newsletter"          sub="Receive weekly deals and product updates via email"     value={prefs.newsletter}         onChange={(v) => setPrefs({ ...prefs, newsletter: v })} />
-                    <Toggle label="SMS Alerts"          sub="Receive order and delivery updates via text message"    value={prefs.smsAlerts}          onChange={(v) => setPrefs({ ...prefs, smsAlerts: v })} />
-                    <Toggle label="Save Search History" sub="Let us remember your recent searches"                  value={prefs.saveSearchHistory}  onChange={(v) => setPrefs({ ...prefs, saveSearchHistory: v })} />
-                    <Toggle label="Personalised Ads"    sub="Allow us to show you ads based on your browsing"       value={prefs.personalisedAds}    onChange={(v) => setPrefs({ ...prefs, personalisedAds: v })} />
+                    <Toggle label="Newsletter"          sub="Receive weekly deals and product updates via email"  value={prefs.newsletter}        onChange={(v) => setPrefs({ ...prefs, newsletter: v })} />
+                    <Toggle label="SMS Alerts"          sub="Receive order and delivery updates via text message" value={prefs.smsAlerts}         onChange={(v) => setPrefs({ ...prefs, smsAlerts: v })} />
+                    <Toggle label="Save Search History" sub="Let us remember your recent searches"               value={prefs.saveSearchHistory} onChange={(v) => setPrefs({ ...prefs, saveSearchHistory: v })} />
+                    <Toggle label="Personalised Ads"    sub="Allow us to show you ads based on your browsing"    value={prefs.personalisedAds}   onChange={(v) => setPrefs({ ...prefs, personalisedAds: v })} />
                   </div>
 
                   {/* Danger zone */}
@@ -182,7 +270,10 @@ export default function CustomerSettingsClient() {
                         <p className="text-sm font-bold text-slate-900">Delete Account</p>
                         <p className="text-xs text-slate-500 mt-0.5">Permanently delete your account and all data. This cannot be undone.</p>
                       </div>
-                      <button className="flex items-center gap-2 px-4 py-2 border-2 border-red-400 text-red-600 hover:bg-red-50 text-sm font-bold rounded-xl transition-colors">
+                      <button
+                        onClick={() => setShowDeleteModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 border-2 border-red-400 text-red-600 hover:bg-red-50 text-sm font-bold rounded-xl transition-colors"
+                      >
                         <Trash2 size={14} /> Delete Account
                       </button>
                     </div>
@@ -207,9 +298,9 @@ export default function CustomerSettingsClient() {
                     {
                       title: 'Deals & Offers', icon: Tag,
                       items: [
-                        { k: 'promotions',    label: 'Promotions & Deals', sub: 'Exclusive discounts and flash sales' },
-                        { k: 'wishlistSale',  label: 'Wishlist Price Drop', sub: 'Alert when a wishlist item goes on sale' },
-                        { k: 'weeklyDigest',  label: 'Weekly Digest',       sub: 'A summary of top deals every Monday' },
+                        { k: 'promotions',   label: 'Promotions & Deals',  sub: 'Exclusive discounts and flash sales' },
+                        { k: 'wishlistSale', label: 'Wishlist Price Drop',  sub: 'Alert when a wishlist item goes on sale' },
+                        { k: 'weeklyDigest', label: 'Weekly Digest',        sub: 'A summary of top deals every Monday' },
                       ],
                     },
                     {
@@ -224,7 +315,7 @@ export default function CustomerSettingsClient() {
                         <Icon size={12} /> {title}
                       </p>
                       <div className="bg-white rounded-2xl border border-slate-100 px-5 divide-y divide-slate-50">
-                        {items.map(({ k, label, sub }) => (  
+                        {items.map(({ k, label, sub }) => (
                           <Toggle key={k} label={label} sub={sub} value={(notifs as any)[k]} onChange={(v) => setNotifs({ ...notifs, [k]: v })} />
                         ))}
                       </div>
@@ -253,12 +344,7 @@ export default function CustomerSettingsClient() {
                             type={showPw[key] ? 'text' : 'password'}
                             placeholder="••••••••"
                             value={passwords[key === 'new' ? 'newPass' : key]}
-                            onChange={(e) =>
-                              setPasswords({
-                                ...passwords,
-                                [key === 'new' ? 'newPass' : key]: e.target.value,
-                              })
-                            }
+                            onChange={(e) => setPasswords({ ...passwords, [key === 'new' ? 'newPass' : key]: e.target.value })}
                             className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
                           />
                           <button type="button" onClick={() => setShowPw({ ...showPw, [key]: !showPw[key] })}
@@ -294,10 +380,65 @@ export default function CustomerSettingsClient() {
                   </div>
                 </div>
               )}
+
             </motion.div>
           </AnimatePresence>
         </div>
       </div>
+
+      {/* ── Delete confirmation modal ── */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+            >
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={22} className="text-red-600" />
+              </div>
+              <h3 className="text-lg font-black text-slate-900 text-center mb-1">Delete Account?</h3>
+              <p className="text-sm text-slate-500 text-center mb-6">
+                This will permanently delete your account, orders, and all data.
+                This action <span className="font-bold text-red-600">cannot be undone</span>.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                  {deleting ? (
+                    <>
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 0.7, ease: 'linear' }}
+                        className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full block"
+                      />
+                      Deleting...
+                    </>
+                  ) : (
+                    <><Trash2 size={14} /> Yes, Delete</>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

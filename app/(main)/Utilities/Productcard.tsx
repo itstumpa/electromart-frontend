@@ -8,8 +8,8 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { addToCart } from '@/api/cart.api';
-import { addToWishlist } from '@/api/wishlist.api';
 import { notifyCartUpdated } from '@/hooks/useCartCount';
+import { useWishlist } from '@/hooks/useWishlistCount';
 import { getApiErrorMessage } from '@/utils/api-error';
 
 interface ProductCardProps {
@@ -17,9 +17,11 @@ interface ProductCardProps {
   index?: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const [addingToCart, setAddingToCart] = useState(false);
+  const { wishlistIds, toggle } = useWishlist();
+
+  const inWishlist = wishlistIds.has(product.id);
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -42,10 +44,10 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
     try {
-      await addToWishlist(product.id);
-      toast.success('Added to wishlist');
+      await toggle(product.id);
+      toast.success(inWishlist ? 'Removed from wishlist' : 'Added to wishlist');
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to add to wishlist'));
+      toast.error(getApiErrorMessage(err, 'Failed to update wishlist'));
     }
   };
 
@@ -60,7 +62,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
         {/* Image container */}
         <div className="relative overflow-hidden bg-slate-50 aspect-square">
           <Image
-          fill
+            fill
             src={product.image}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -89,10 +91,15 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           <motion.button
             whileTap={{ scale: 0.85 }}
             onClick={handleWishlist}
-            className="absolute top-3 right-3 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-white shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-200"
-            aria-label="Add to wishlist"
+            className={[
+              'absolute top-3 right-3 w-9 h-9 rounded-xl flex items-center justify-center shadow-sm transition-all duration-200',
+              inWishlist
+                ? 'bg-red-500 text-white opacity-100'
+                : 'bg-white/90 backdrop-blur-sm text-slate-400 hover:text-red-500 hover:bg-white opacity-0 group-hover:opacity-100',
+            ].join(' ')}
+            aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
           >
-            <Heart size={15} />
+            <Heart size={15} className={inWishlist ? 'fill-white' : ''} />
           </motion.button>
 
           {/* Quick add button */}
@@ -106,7 +113,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
               }`}
             >
               <ShoppingCart size={15} />
-              {product.stock === 0 ? 'Out of Stock' : (addingToCart ? 'Adding...' : 'Add to Cart')}
+              {product.stock === 0 ? 'Out of Stock' : addingToCart ? 'Adding...' : 'Add to Cart'}
             </motion.button>
           </div>
         </div>

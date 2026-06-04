@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart,
@@ -24,6 +24,10 @@ import {
 } from 'lucide-react';
 import { useCartCount } from '@/hooks/useCartCount';
 import { useWishlistCount } from '@/hooks/useWishlistCount';
+import { authStorage } from '@/utils/auth-storage';
+import { getMe, logoutUser } from '@/api/auth.api';
+import { getSearchSuggestions } from '@/api/product.api';
+import { toast } from 'sonner';
 
 
 /* ─────────────────────────────────────────────
@@ -76,37 +80,71 @@ function useIsActive(href: string, exact = false): boolean {
 ───────────────────────────────────────────── */
 
 export default function MainNavbar() {
+  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   // ── Auth state ──
-  const [user, setUser] = useState<{ role: string } | null>(null); 
-  useEffect(() => {
-  const fetchUser = async () => {
+  const [user, setUser] = useState<{ id: string; name: string; email: string; role: string; avatar?: string } | null>(null);
+
+  const syncAuth = useCallback(async () => {
+    // 1. Read from localStorage immediately for zero-latency UI load
+    const storedUser = authStorage.getAuthUser();
+    setUser(storedUser);
+
+    // 2. Perform double check with backend to verify session validity
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/me`, {
-        credentials: 'include',
-      });
-
-      const data = await res.json();
-
-      if (data?.user) {
-        setUser(data.user);
+      const res = await getMe();
+      const apiUser = res.data?.data;
+      if (apiUser) {
+        const role = apiUser.role === 'ADMIN' ? 'SUPER_ADMIN' : apiUser.role;
+        const mappedUser = {
+          id: apiUser.id,
+          name: apiUser.name,
+          email: apiUser.email,
+          role,
+          avatar: apiUser.avatar || undefined,
+        };
+        setUser(mappedUser);
+        authStorage.setAuthUser(mappedUser);
+      } else {
+        setUser(null);
+        authStorage.clearSession();
       }
-    } catch (err) {
+    } catch {
+      // If offline/error, default to storedUser if exists, otherwise null
+      if (!storedUser) {
+        setUser(null);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    syncAuth();
+    window.addEventListener('auth-updated', syncAuth);
+    return () => window.removeEventListener('auth-updated', syncAuth);
+  }, [syncAuth]);
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch {
+      // ignore
+    } finally {
+      authStorage.clearSession();
       setUser(null);
+      window.dispatchEvent(new Event('auth-updated'));
+      toast.success('Logged out successfully');
+      router.push('/');
     }
   };
 
-  fetchUser();
-}, []);
-
-const dashboardHref =
-  user?.role === 'SUPER_ADMIN'
-    ? '/dashboard/admin'
-    : user?.role === 'VENDOR'
-    ? '/dashboard/vendor'
-    : '/dashboard/customer';
+  const dashboardHref =
+    user?.role === 'SUPER_ADMIN'
+      ? '/dashboard/admin'
+      : user?.role === 'VENDOR'
+      ? '/dashboard/vendor'
+      : '/dashboard/customer';
 
   const navLinks = [
     ...baseNavLinks,
@@ -119,12 +157,40 @@ const dashboardHref =
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [searchOpen, setSearchOpen]   = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<Array<{ id: string; name: string; slug?: string; images?: Array<{ url: string }> }>>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileCatOpen, setMobileCatOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { count: cartCount } = useCartCount();
   const { count: wishlistCount } = useWishlistCount();
+
+  // Debounced search suggestions fetch
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    setSuggestionsLoading(true);
+    const delayDebounce = setTimeout(() => {
+      getSearchSuggestions(searchQuery)
+        .then((res) => {
+          setSuggestions(res.data.data ?? []);
+        })
+        .catch(() => setSuggestions([]))
+        .finally(() => setSuggestionsLoading(false));
+    }, 300);
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
+
+  const handleSearchSubmit = (q: string) => {
+    if (!q.trim()) return;
+    setSearchOpen(false);
+    setSearchQuery('');
+    router.push(`/search?q=${encodeURIComponent(q.trim())}`);
+  };
 
   // Close mobile menu on route change
 useEffect(() => {
@@ -304,7 +370,6 @@ const isCategoryActive = categoryItems.some(
               className="p-2 rounded-lg text-slate-600 hover:text-amber-600 hover:bg-amber-50 transition-colors"
             >
               <Search size={20} />
-              <search />
             </button>
 
             {/* Wishlist */}
@@ -343,14 +408,23 @@ const isCategoryActive = categoryItems.some(
               )}
             </Link>
 
-            {/* Sign In */}
-            <Link
-              href="/login"
-              className="hidden sm:flex items-center gap-1.5 ml-1 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm shadow-amber-200"
-            >
-              <User size={15} />
-              Sign In
-            </Link>
+            {/* Auth Button */}
+            {user ? (
+              <button
+                onClick={handleLogout}
+                className="hidden sm:flex items-center gap-1.5 ml-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-colors shadow-sm cursor-pointer"
+              >
+                Logout
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden sm:flex items-center gap-1.5 ml-1 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm shadow-amber-200"
+              >
+                <User size={15} />
+                Sign In
+              </Link>
+            )}
 
             {/* Mobile hamburger */}
             <button
@@ -395,12 +469,44 @@ const isCategoryActive = categoryItems.some(
                     placeholder="Search smartphones, laptops, headphones..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit(searchQuery)}
                     className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
                   />
+                  {/* Suggestions Dropdown */}
+                  <AnimatePresence>
+                    {(suggestions.length > 0 || suggestionsLoading) && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 4 }}
+                        className="absolute left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto"
+                      >
+                        {suggestionsLoading ? (
+                          <div className="p-4 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                            <span className="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
+                            Searching suggestions...
+                          </div>
+                        ) : (
+                          <div className="py-1">
+                            {suggestions.map((item) => (
+                              <button
+                                key={item.id}
+                                onClick={() => handleSearchSubmit(item.name)}
+                                className="w-full text-left px-4 py-2.5 hover:bg-amber-50/40 text-xs sm:text-sm font-semibold text-slate-700 hover:text-amber-800 flex items-center gap-3 transition-colors border-b border-slate-50 last:border-0 cursor-pointer"
+                              >
+                                <Search size={14} className="text-slate-400" />
+                                <span className="truncate">{item.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
                 <button
                   onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
-                  className="text-sm text-slate-500 hover:text-slate-800 font-semibold px-2 transition-colors"
+                  className="text-sm text-slate-500 hover:text-slate-800 font-semibold px-2 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -548,22 +654,23 @@ const isCategoryActive = categoryItems.some(
                     Wishlist
                   </Link> */}
 
-<Link
-  href="/customer/wishlist"
-  aria-label="Wishlist"
-  className={`relative p-2 rounded-lg transition-colors hidden sm:flex ${
-    pathname === '/customer/wishlist'
-      ? 'text-amber-600 bg-amber-50'
-      : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50'
-  }`}
->
-  <Heart size={20} />
-  {wishlistCount > 0 && (
-    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-amber-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-      {wishlistCount}
-    </span>
-  )}
-</Link>
+                  <Link
+                    href="/customer/wishlist"
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-semibold transition-colors relative ${
+                      pathname === '/customer/wishlist'
+                        ? 'border-amber-300 bg-amber-50 text-amber-700'
+                        : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                    }`}
+                  >
+                    <Heart size={15} />
+                    Wishlist
+                    {wishlistCount > 0 && (
+                      <span className="absolute top-2 right-6 w-4 h-4 bg-amber-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </Link>
                   
                   <Link
                     href="/cart"
@@ -584,15 +691,27 @@ const isCategoryActive = categoryItems.some(
                   </Link>
                 </div>
 
-                {/* Sign In */}
-                <Link
-                  href="/login"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm transition-colors shadow-sm shadow-amber-200"
-                >
-                  <User size={15} />
-                  Sign In
-                </Link>
+                {/* Auth Button */}
+                {user ? (
+                  <button
+                    onClick={() => {
+                      setMobileOpen(false);
+                      handleLogout();
+                    }}
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-colors cursor-pointer"
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm transition-colors shadow-sm shadow-amber-200"
+                  >
+                    <User size={15} />
+                    Sign In
+                  </Link>
+                )}
               </div>
             </nav>
           </motion.div>

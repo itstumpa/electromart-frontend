@@ -21,12 +21,34 @@ const BLANK: Omit<Address, 'id' | 'userId'> = {
   city: '', state: '', zipCode: '', country: 'USA', isDefault: false,
 };
 
+type AddressForm = Omit<Address, 'id' | 'userId'>;
+
+type FieldProps = {
+  label: string;
+  k: keyof AddressForm;
+  placeholder?: string;
+  half?: boolean;
+  value: string;
+  onChange: (value: string) => void;
+};
+
+function Field({ label, placeholder, half, value, onChange }: FieldProps) {
+  return (
+    <div className={half ? '' : 'col-span-2'}>
+      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">{label}</label>
+      <input type="text" placeholder={placeholder} value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
+    </div>
+  );
+}
+
 function AddressModal({ initial, onSave, onClose }: {
   initial?: Address | null;
-  onSave: (a: Omit<Address, 'id' | 'userId'>) => void;
+  onSave: (a: AddressForm) => void;
   onClose: () => void;
 }) {
-  const [form, setForm] = useState<Omit<Address, 'id' | 'userId'>>(
+  const [form, setForm] = useState<AddressForm>(
     initial ? { label: initial.label, fullName: initial.fullName, phone: initial.phone, street: initial.street, city: initial.city, state: initial.state, zipCode: initial.zipCode, country: initial.country, isDefault: initial.isDefault }
     : BLANK
   );
@@ -40,15 +62,6 @@ function AddressModal({ initial, onSave, onClose }: {
     setSaving(false);
     onClose();
   };
-
-  const Field = ({ label, k, placeholder, half }: { label: string; k: keyof typeof form; placeholder?: string; half?: boolean }) => (
-    <div className={half ? '' : 'col-span-2'}>
-      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">{label}</label>
-      <input type="text" placeholder={placeholder} value={form[k] as string}
-        onChange={(e) => setForm({ ...form, [k]: e.target.value })}
-        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
-    </div>
-  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -84,13 +97,13 @@ function AddressModal({ initial, onSave, onClose }: {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Full Name *"  k="fullName" placeholder="John Smith" />
-          <Field label="Phone"        k="phone"    placeholder="+1 555 000" />
-          <Field label="Street Address *" k="street" placeholder="123 Main St, Apt 4B" />
-          <Field label="City *"  k="city"    placeholder="New York"  half />
-          <Field label="State"   k="state"   placeholder="NY"        half />
-          <Field label="ZIP"     k="zipCode" placeholder="10001"     half />
-          <Field label="Country" k="country" placeholder="USA"       half />
+          <Field label="Full Name *" k="fullName" placeholder="John Smith" value={form.fullName} onChange={(value) => setForm({ ...form, fullName: value })} />
+          <Field label="Phone" k="phone" placeholder="+1 555 000" value={form.phone} onChange={(value) => setForm({ ...form, phone: value })} />
+          <Field label="Street Address *" k="street" placeholder="123 Main St, Apt 4B" value={form.street} onChange={(value) => setForm({ ...form, street: value })} />
+          <Field label="City *" k="city" placeholder="New York" half value={form.city} onChange={(value) => setForm({ ...form, city: value })} />
+          <Field label="State" k="state" placeholder="NY" half value={form.state} onChange={(value) => setForm({ ...form, state: value })} />
+          <Field label="ZIP" k="zipCode" placeholder="10001" half value={form.zipCode} onChange={(value) => setForm({ ...form, zipCode: value })} />
+          <Field label="Country" k="country" placeholder="USA" half value={form.country} onChange={(value) => setForm({ ...form, country: value })} />
         </div>
 
         <label className="flex items-center gap-2.5 cursor-pointer mt-4 mb-5">

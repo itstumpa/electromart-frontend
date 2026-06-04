@@ -8,56 +8,71 @@ import {
   Phone, Globe, User, Star, Package,
   ShoppingBag, MapPin, Calendar,
 } from 'lucide-react';
-import { mockUsers, mockVendorProfiles } from '@/data/mock-data';
 import { authStorage } from '@/utils/auth-storage';
 import { getMe } from '@/api/auth.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
+import { getMyStore, updateStore, type MyStoreDto } from '@/api/store.api';
+import { updateUserProfile, uploadAvatar } from '@/api/user.api';
 
 export default function VendorProfileClient() {
-  const vendor  = mockUsers.find((u) => u.role === 'VENDOR')!;
-  const profile = mockVendorProfiles[0];
-  const [loadingMe, setLoadingMe] = useState(true);
+  const [store,      setStore]      = useState<MyStoreDto | null>(null);
+  const [userId,     setUserId]     = useState('');
+  const [joinedAt,   setJoinedAt]   = useState('');
+  const [loadingMe,  setLoadingMe]  = useState(true);
+  const [uploading,  setUploading]  = useState(false);
 
   const [form, setForm] = useState({
-    name:     vendor.name,
-    email:    vendor.email,
-    phone:    vendor.phone ?? '',
-    website:  'https://techstorepro.com',
-    bio:      'Electronics enthusiast and authorized reseller. Bringing the best tech directly to your door since 2019.',
-    avatar:   vendor.avatar ?? '',
-    location: 'New York, NY, USA',
+    name:     '',
+    email:    '',
+    phone:    '',
+    website:  '',
+    bio:      '',
+    avatar:   '',
+    location: '',
   });
-  const [avatarPreview, setAvatarPreview] = useState(vendor.avatar ?? '');
+  const [avatarPreview, setAvatarPreview] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
 
   useEffect(() => {
     const loadMe = async () => {
       try {
-        const response = await getMe();
-        const me = response.data?.data;
+        const [meRes, storeRes] = await Promise.all([getMe(), getMyStore()]);
+        
+        const me    = meRes.data?.data;
+        const store = storeRes.data?.data;
+        
         if (!me) return;
 
+        setStore(store);
+        setUserId(me.id);
+        setJoinedAt(me.createdAt ?? '');
+
         const authUser = authStorage.getAuthUser();
-        const avatar = authUser?.avatar ?? '';
+        const avatar   = (me as any).avatar ?? authUser?.avatar ?? '';
 
         setForm((prev) => ({
           ...prev,
-          name: me.name,
-          email: me.email,
-          avatar,
+          name:   me.name,
+          email:  me.email,
+  phone:  (me as any).phone ?? '',
+   website:  me.website  ?? '', 
+   location: me.location ?? '',
+
+  avatar,
+  bio:    store?.description ?? '', 
         }));
         setAvatarPreview(avatar);
 
         if (authUser) {
           authStorage.setAuthUser({
             ...authUser,
-            id: me.id,
-            name: me.name,
+            id:    me.id,
+            name:  me.name,
             email: me.email,
-            role: me.role === 'ADMIN' ? 'SUPER_ADMIN' : me.role,
-            avatar: authUser.avatar,
+            role:  me.role === 'ADMIN' ? 'SUPER_ADMIN' : me.role,
+            avatar,
           });
         }
       } catch (error) {
@@ -66,40 +81,79 @@ export default function VendorProfileClient() {
         setLoadingMe(false);
       }
     };
-
     loadMe();
   }, []);
 
   const save = async () => {
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    const currentAuthUser = authStorage.getAuthUser();
-    if (currentAuthUser) {
-      authStorage.setAuthUser({
-        ...currentAuthUser,
-        name: form.name.trim(),
-        email: form.email.trim(),
-        avatar: form.avatar.trim() || undefined,
-      });
+    try {
+      if (userId) {
+        await updateUserProfile(userId, {
+          name:  form.name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim() || undefined,
+          website:  form.website.trim()  || undefined,  
+  location: form.location.trim() || undefined, 
+        });
+      }
+
+      if (store?.id) {
+        await updateStore(store.id, undefined, {
+          description: form.bio.trim() || undefined,
+        });
+      }
+    
+      const currentAuthUser = authStorage.getAuthUser();
+      if (currentAuthUser) {
+        authStorage.setAuthUser({
+          ...currentAuthUser,
+          name:  form.name.trim(),
+          email: form.email.trim(),
+        });
+      }
+      setSaved(true);
+      toast.success('Profile updated');
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to update profile'));
+    } finally {
+      setSaving(false);
     }
-    setSaving(false); setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
   };
 
-  const handleAvatarUpload = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = () => {
-      const imageDataUrl = typeof reader.result === 'string' ? reader.result : '';
-      setForm((prev) => ({ ...prev, avatar: imageDataUrl }));
-      setAvatarPreview(imageDataUrl);
+      const preview = typeof reader.result === 'string' ? reader.result : '';
+      setAvatarPreview(preview);
     };
     reader.readAsDataURL(file);
+
+    setUploading(true);
+    try {
+      const res = await uploadAvatar(file);
+      const url = res.data.data.avatar;
+      console.log('avatar url:', url);
+      setForm((prev) => ({ ...prev, avatar: url }));
+      setAvatarPreview(url);
+      toast.success('Avatar uploaded');
+      const currentAuthUser = authStorage.getAuthUser();
+      if (currentAuthUser) {
+        authStorage.setAuthUser({ ...currentAuthUser, avatar: url });
+      }
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to upload avatar'));
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const joined = new Date(vendor.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const joined = joinedAt
+    ? new Date(joinedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : '';
 
   if (loadingMe) {
     return (
@@ -121,24 +175,32 @@ export default function VendorProfileClient() {
 
         {/* ── Left: Edit form ── */}
         <div className="lg:col-span-2 space-y-5">
-
-          {/* Avatar */}
           <div className="bg-white rounded-2xl border border-slate-100 p-5 sm:p-6">
             <h2 className="font-black text-slate-900 mb-4">Personal Info</h2>
+
+            {/* Avatar */}
             <div className="flex items-center gap-5 mb-5">
               <div className="relative shrink-0">
                 <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-slate-200 bg-slate-100">
-                  {avatarPreview ? (
-                    <Image src={avatarPreview} alt={form.name} fill className="object-cover" sizes="80px" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <User size={28} className="text-slate-300" />
-                    </div>
-                  )}
+              {avatarPreview && typeof avatarPreview === 'string' && avatarPreview.startsWith('http') ? (
+  <Image src={avatarPreview} alt={form.name} fill className="object-cover" sizes="80px" />
+) : (
+  <div className="w-full h-full flex items-center justify-center">
+    <User size={28} className="text-slate-300" />
+  </div>
+)}
                 </div>
                 <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-amber-600 hover:bg-amber-700 text-white rounded-xl flex items-center justify-center cursor-pointer transition-colors shadow-md">
-                  <Camera size={13} />
-                  <input type="file" className="sr-only" accept="image/*" onChange={handleAvatarUpload} />
+                  {uploading ? (
+                    <motion.span
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 0.7, ease: 'linear' }}
+                      className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full block"
+                    />
+                  ) : (
+                    <Camera size={13} />
+                  )}
+                  <input type="file" className="sr-only" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} />
                 </label>
               </div>
               <div className="flex-1 min-w-0">
@@ -150,29 +212,20 @@ export default function VendorProfileClient() {
               </div>
             </div>
 
-            {/* Avatar URL */}
-            <div className="mb-4">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Avatar URL</label>
-              <input type="url" placeholder="https://..." value={form.avatar}
-                onChange={(e) => { setForm({ ...form, avatar: e.target.value }); setAvatarPreview(e.target.value); }}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
-            </div>
-
             <div className="grid sm:grid-cols-2 gap-4">
               {[
-                { label: 'Full Name *',  k: 'name',     icon: User,     placeholder: 'John Smith',         type: 'text'  },
-                { label: 'Email *',      k: 'email',    icon: Mail,     placeholder: 'john@example.com',   type: 'email' },
-                { label: 'Phone',        k: 'phone',    icon: Phone,    placeholder: '+1 555 000 0000',    type: 'tel'   },
-                { label: 'Website',      k: 'website',  icon: Globe,    placeholder: 'https://...',        type: 'url'   },
-                { label: 'Location',     k: 'location', icon: MapPin,   placeholder: 'City, State, Country', type: 'text' },
+                { label: 'Full Name *', k: 'name',     icon: User,  placeholder: 'John Smith',       type: 'text'  },
+                { label: 'Email *',     k: 'email',    icon: Mail,  placeholder: 'john@example.com', type: 'email' },
+                { label: 'Phone',       k: 'phone',    icon: Phone, placeholder: '+1 555 000 0000',  type: 'tel'   },
+                { label: 'Website',     k: 'website',  icon: Globe, placeholder: 'https://...',      type: 'url'   },
+                { label: 'Location',    k: 'location', icon: MapPin, placeholder: 'City, State, Country', type: 'text' },
               ].map(({ label, k, icon: Icon, placeholder, type }) => (
                 <div key={k} className={k === 'location' ? 'sm:col-span-2' : ''}>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">{label}</label>
                   <div className="relative">
                     <Icon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                     <input type={type} placeholder={placeholder}
-                     value={form[k as keyof typeof form]}
-
+                      value={form[k as keyof typeof form]}
                       onChange={(e) => setForm({ ...form, [k]: e.target.value })}
                       className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
                   </div>
@@ -210,8 +263,7 @@ export default function VendorProfileClient() {
         {/* ── Right: Public profile preview ── */}
         <div className="space-y-4">
           <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-            {/* Mini store card preview */}
-            <div className="h-20 bg-linear-to-br from-amber-600 to-amber-700 relative">
+            <div className="h-20 bg-gradient-to-br from-amber-600 to-amber-700 relative">
               <div className="absolute inset-0 opacity-10"
                 style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
             </div>
@@ -228,14 +280,16 @@ export default function VendorProfileClient() {
                 </div>
               </div>
               <h3 className="font-black text-slate-900 text-sm">{form.name}</h3>
-              <p className="text-xs text-slate-400 mt-0.5">{profile.storeName}</p>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed line-clamp-3">{form.bio}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{store?.name ?? ''}</p>
+              {form.bio && (
+                <p className="text-xs text-slate-500 mt-2 leading-relaxed line-clamp-3">{form.bio}</p>
+              )}
 
               <div className="mt-4 space-y-2">
                 {[
-                  { icon: Star,        label: `${profile.rating}★ rating` },
-                  { icon: Package,     label: `${profile.totalProducts} products` },
-                  { icon: ShoppingBag, label: `${profile.totalSales.toLocaleString()} sales` },
+                  { icon: Star,        label: `${store?.rating ?? 0}★ rating` },
+                  { icon: Package,     label: `${store?.products?.length ?? 0} products` },
+                  { icon: ShoppingBag, label: `${store?.totalSales?.toLocaleString() ?? 0} sales` },
                   { icon: Calendar,    label: `Member since ${joined}` },
                 ].map(({ icon: Icon, label }) => (
                   <div key={label} className="flex items-center gap-2 text-xs text-slate-500">

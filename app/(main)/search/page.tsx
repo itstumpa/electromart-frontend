@@ -1,12 +1,12 @@
 "use client";
 
 import { searchProducts } from "@/api/product.api";
-import { mapListItemDtoToProduct } from "@/lib/product-mappers";
 import type { Product } from "@/data/types";
+import { mapListItemDtoToProduct } from "@/lib/product-mappers";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import ProductCard from "../Utilities/Productcard";
 import Reveal from "../Utilities/Reveal";
 
@@ -28,7 +28,6 @@ export default function SearchPage() {
 
   useEffect(() => {
     if (!debouncedQuery.trim()) {
-      setResults([]);
       return;
     }
     searchProducts({ q: debouncedQuery, limit: 48 })
@@ -67,13 +66,22 @@ export default function SearchPage() {
                 autoFocus
                 type="text"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setQuery(value);
+                  if (!value.trim()) {
+                    setResults([]);
+                  }
+                }}
                 placeholder="Search for smartphones, laptops, headphones..."
                 className="w-full pl-12 pr-12 py-4 bg-slate-50 border-2 border-slate-200 focus:border-amber-400 rounded-2xl text-base text-slate-800 placeholder-slate-400 focus:outline-none transition"
               />
               {query && (
                 <button
-                  onClick={() => setQuery("")}
+                  onClick={() => {
+                    setQuery("");
+                    setResults([]);
+                  }}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
                 >
                   <X size={18} />
@@ -126,7 +134,7 @@ export default function SearchPage() {
               className="text-center py-20"
             >
               <p className="text-xl font-bold text-slate-700 mb-2">
-                No results for "{debouncedQuery}"
+                No results for &quot;{debouncedQuery}&quot;
               </p>
               <p className="text-slate-400 text-sm">
                 Try a different keyword or browse categories
@@ -143,10 +151,10 @@ export default function SearchPage() {
                 <span className="font-bold text-slate-900">
                   {results.length}
                 </span>{" "}
-                result{results.length !== 1 ? "s" : ""} for "
-                <span className="text-amber-700">{debouncedQuery}</span>"
+                result{results.length !== 1 ? "s" : ""} for &quot;
+                <span className="text-amber-700">{debouncedQuery}</span>&quot;
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-5">
                 {results.map((p, i) => (
                   <Reveal key={p.id} delay={i * 0.05}>
                     <ProductCard product={p} index={i} />

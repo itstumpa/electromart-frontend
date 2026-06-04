@@ -5,7 +5,9 @@ import { Plus, Pencil, Trash2, X, Tag, Bookmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConfirmModal from '../Confirmmodal';
 import { Brand, Category } from '@/data/types';
-// import ConfirmModal from '@/components/dashboard/admin/ConfirmModal';
+import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/utils/api-error';
+import { createCategory, updateCategory, deleteCategory } from '@/api/category.api';
 
 /* ── Category Form Modal ─────────────────────────── */
 function CategoryModal({
@@ -179,22 +181,60 @@ export default function CategoriesClient({
   const [deleteBrand, setDeleteBrand] = useState<Brand | null>(null);
 
   /* ── Category CRUD ── */
-  const handleSaveCategory = (data: Partial<Category>) => {
-    if (editCat) {
-      setCategories((prev) => prev.map((c) => c.id === editCat.id ? { ...c, ...data } : c));
-      setEditCat(null);
-    } else {
-      const newCat: Category = {
-        id:           `cat-${Date.now()}`,
-        name:         data.name!,
-        slug:         data.slug!,
-        description:  data.description ?? '',
-        image:        data.image ?? '',
-        productCount: 0,
-        createdAt:    new Date().toISOString(),
-        updatedAt:    new Date().toISOString(),
-      };
-      setCategories((prev) => [newCat, ...prev]);
+  const handleSaveCategory = async (data: Partial<Category>) => {
+    try {
+      if (editCat) {
+        const res = await updateCategory(editCat.id, {
+          name: data.name,
+          image: data.image,
+        });
+        const updatedCat = res.data.data;
+        const updatedUI: Category = {
+          id: updatedCat.id,
+          name: updatedCat.name,
+          slug: updatedCat.slug,
+          description: data.description ?? '',
+          image: updatedCat.image ?? '',
+          productCount: updatedCat._count?.products ?? 0,
+          createdAt: updatedCat.createdAt ?? new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        setCategories((prev) => prev.map((c) => c.id === editCat.id ? updatedUI : c));
+        toast.success("Category updated successfully");
+        setEditCat(null);
+      } else {
+        const res = await createCategory({
+          name: data.name!,
+          image: data.image,
+        });
+        const newCat = res.data.data;
+        const newUI: Category = {
+          id: newCat.id,
+          name: newCat.name,
+          slug: newCat.slug,
+          description: data.description ?? '',
+          image: newCat.image ?? '',
+          productCount: 0,
+          createdAt: newCat.createdAt ?? new Date().toISOString(),
+          updatedAt: newCat.createdAt ?? new Date().toISOString(),
+        };
+        setCategories((prev) => [newUI, ...prev]);
+        toast.success("Category created successfully");
+      }
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to save category"));
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!deleteCat) return;
+    try {
+      await deleteCategory(deleteCat.id);
+      setCategories((p) => p.filter((c) => c.id !== deleteCat.id));
+      toast.success("Category deleted successfully");
+      setDeleteCat(null);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to delete category"));
     }
   };
 
@@ -367,7 +407,7 @@ export default function CategoriesClient({
         description="This will permanently delete the category. Products in this category will not be deleted but will become uncategorized."
         confirmLabel="Delete Category"
         danger
-        onConfirm={() => { setCategories((p) => p.filter((c) => c.id !== deleteCat!.id)); setDeleteCat(null); }}
+        onConfirm={handleDeleteCategory}
         onCancel={() => setDeleteCat(null)}
       />
       <ConfirmModal

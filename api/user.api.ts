@@ -20,7 +20,36 @@ export const getAllUsers = (params?: { page?: number; limit?: number }) => {
 
 export const updateUserProfile = (
   id: string,
-  data: { name?: string; email?: string },
+  data: { name?: string; email?: string; phone?: string; website?: string; location?: string; avatar?: string },
 ) => {
   return api.patch<ApiResponse<UserListItemDto>>(`/users/${id}`, data);
+};
+
+export const deleteAccount = (userId: string) => {
+  return api.delete<ApiResponse<null>>(`/users/${userId}`);
+};
+
+export interface NotificationPrefs {
+  notifOrderUpdates: boolean;
+  notifPromotions: boolean;
+  notifWishlistSale: boolean;
+  notifReviewReminder: boolean;
+  notifDeliveryAlerts: boolean;
+  notifWeeklyDigest: boolean;
+}
+
+export const getNotificationPrefs = () => {
+  return api.get<ApiResponse<NotificationPrefs>>('/users/me/notification-prefs');
+};
+
+export const updateNotificationPrefs = (data: Partial<NotificationPrefs>) => {
+  return api.patch<ApiResponse<NotificationPrefs>>('/users/me/notification-prefs', data);
+};
+
+export const uploadAvatar = (file: File) => {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  return api.patch<ApiResponse<{ avatar: string }>>('/users/me/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
 };

@@ -8,14 +8,15 @@ export const mapMeToUser = (me: MeResponseData): User => ({
   role: normalizeUserRole(me.role),
   isVerified: me.isEmailVerified,
   isBanned: false,
+  avatar:     me.avatar || undefined,     
+  phone:      me.phone || undefined,
   createdAt: me.createdAt,
   updatedAt: me.createdAt,
 });
 
 export const normalizeUserRole = (role: string): UserRole => {
-  // if (role === "ADMIN") return "SUPER_ADMIN";
-  if (role === "SUPER_ADMIN" || role === "VENDOR" || role === "CUSTOMER" || role === "DELIVERY") {
-    return role;
+  if (role === "SUPER_ADMIN" || role === "ADMIN" || role === "VENDOR" || role === "CUSTOMER" || role === "DELIVERY") {
+    return role as UserRole;
   }
   return "CUSTOMER";
 };

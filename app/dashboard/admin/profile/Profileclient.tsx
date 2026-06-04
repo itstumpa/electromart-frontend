@@ -6,12 +6,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Save, CheckCircle2, Mail, Phone, User, Shield } from 'lucide-react';
 import { authStorage } from '@/utils/auth-storage';
 import { getMe } from '@/api/auth.api';
+import { updateUserProfile } from '@/api/user.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
 
 export default function AdminProfileClient() {
   const authUser = authStorage.getAuthUser();
 
+  const [userId, setUserId] = useState(authUser?.id ?? '');
   const [form, setForm] = useState({
     name: authUser?.name ?? '',
     email: authUser?.email ?? '',
@@ -30,6 +32,7 @@ export default function AdminProfileClient() {
         const response = await getMe();
         const me = response.data?.data;
         if (!me) return;
+        setUserId(me.id);
 
         const cachedRaw = localStorage.getItem('adminProfileDraft');
         const cached = cachedRaw
@@ -83,32 +86,46 @@ export default function AdminProfileClient() {
   };
 
   const save = async () => {
+    if (!userId) {
+      toast.error('User ID not loaded');
+      return;
+    }
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 900));
-
-    const existing = authStorage.getAuthUser();
-    if (existing) {
-      authStorage.setAuthUser({
-        ...existing,
+    try {
+      await updateUserProfile(userId, {
         name: form.name.trim(),
         email: form.email.trim(),
+        phone: form.phone.trim(),
         avatar: form.avatar.trim() || undefined,
       });
+
+      const existing = authStorage.getAuthUser();
+      if (existing) {
+        authStorage.setAuthUser({
+          ...existing,
+          name: form.name.trim(),
+          email: form.email.trim(),
+          avatar: form.avatar.trim() || undefined,
+        });
+      }
+
+      localStorage.setItem(
+        'adminProfileDraft',
+        JSON.stringify({
+          phone: form.phone,
+          bio: form.bio,
+          avatar: form.avatar,
+        }),
+      );
+
+      setSaved(true);
+      toast.success('Profile updated');
+      setTimeout(() => setSaved(false), 2500);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Failed to update profile'));
+    } finally {
+      setSaving(false);
     }
-
-    localStorage.setItem(
-      'adminProfileDraft',
-      JSON.stringify({
-        phone: form.phone,
-        bio: form.bio,
-        avatar: form.avatar,
-      }),
-    );
-
-    setSaving(false);
-    setSaved(true);
-    toast.success('Profile updated');
-    setTimeout(() => setSaved(false), 2500);
   };
 
   if (loadingMe) {
