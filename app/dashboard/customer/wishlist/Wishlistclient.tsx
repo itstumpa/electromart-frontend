@@ -1,23 +1,31 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, ShoppingCart, Trash2, Star, CheckCircle2, ArrowRight, Trash } from 'lucide-react';
-import { getWishlist, removeFromWishlist } from '@/api/wishlist.api';
-import { addToCart as addToCartApi } from '@/api/cart.api';
-import { mapWishlistItemsToUi } from '@/lib/wishlist-mappers';
-import { notifyCartUpdated } from '@/hooks/useCartCount';
-import { getApiErrorMessage } from '@/utils/api-error';
-import { toast } from 'sonner';
-import type { WishlistItem } from '@/data/types';
+import { addToCart as addToCartApi } from "@/api/cart.api";
+import { getWishlist, removeFromWishlist } from "@/api/wishlist.api";
+import type { WishlistItem } from "@/data/types";
+import { notifyCartUpdated } from "@/hooks/useCartCount";
+import { mapWishlistItemsToUi } from "@/lib/wishlist-mappers";
+import { getApiErrorMessage, isUnauthorized } from "@/utils/api-error";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Heart,
+  ShoppingCart,
+  Star,
+  Trash,
+  Trash2,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function WishlistClient() {
-  const [items,       setItems]       = useState<WishlistItem[]>([]);
-  const [added,       setAdded]       = useState<string | null>(null);
-  const [removing,    setRemoving]    = useState<string | null>(null);
-  const [loading,     setLoading]     = useState(true);
+  const [items, setItems] = useState<WishlistItem[]>([]);
+  const [added, setAdded] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [clearingAll, setClearingAll] = useState(false);
 
   const loadWishlist = useCallback(async () => {
@@ -25,14 +33,18 @@ export default function WishlistClient() {
       const res = await getWishlist();
       setItems(mapWishlistItemsToUi(res.data.data ?? []));
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to load wishlist'));
+      if (!isUnauthorized(err)) {
+        toast.error(getApiErrorMessage(err, "Failed to load wishlist"));
+      }
       setItems([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { loadWishlist(); }, [loadWishlist]);
+  useEffect(() => {
+    loadWishlist();
+  }, [loadWishlist]);
 
   const remove = async (productId: string, itemId: string) => {
     setRemoving(itemId);
@@ -40,21 +52,21 @@ export default function WishlistClient() {
       await removeFromWishlist(productId);
       await loadWishlist();
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to remove item'));
+      toast.error(getApiErrorMessage(err, "Failed to remove item"));
     } finally {
       setRemoving(null);
     }
   };
 
   const clearAll = async () => {
-    if (!window.confirm('Remove all items from your wishlist?')) return;
+    if (!window.confirm("Remove all items from your wishlist?")) return;
     setClearingAll(true);
     try {
       await Promise.all(items.map((i) => removeFromWishlist(i.productId)));
       await loadWishlist();
-      toast.success('Wishlist cleared');
+      toast.success("Wishlist cleared");
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to clear wishlist'));
+      toast.error(getApiErrorMessage(err, "Failed to clear wishlist"));
     } finally {
       setClearingAll(false);
     }
@@ -67,17 +79,19 @@ export default function WishlistClient() {
       setAdded(itemId);
       setTimeout(() => setAdded(null), 1800);
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to add to cart'));
+      toast.error(getApiErrorMessage(err, "Failed to add to cart"));
     }
   };
 
   const discount = (item: WishlistItem) =>
-    item.originalPrice ? Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100) : 0;
+    item.originalPrice
+      ? Math.round(
+          ((item.originalPrice - item.price) / item.originalPrice) * 100,
+        )
+      : 0;
 
   return (
-    
     <div className="max-w-4xl min-h-screen mx-auto pt-3 pb-1 md:pb-6 md:pt-6  space-y-6">
-
       {/* ── Header ── */}
       <div className="flex items-center justify-between flex-wrap gap-3 pb-5 border-b border-slate-200">
         <div className="flex items-center gap-3">
@@ -85,11 +99,14 @@ export default function WishlistClient() {
             <Heart size={16} className="text-amber-600 fill-amber-200" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>
+            <h1
+              className="text-xl font-black text-slate-900"
+              style={{ fontFamily: "'Georgia', serif" }}
+            >
               My Wishlist
             </h1>
             <p className="text-xs text-slate-400 font-medium">
-              {items.length} saved item{items.length !== 1 ? 's' : ''}
+              {items.length} saved item{items.length !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
@@ -102,7 +119,7 @@ export default function WishlistClient() {
               className="flex items-center gap-2 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 text-slate-500 hover:text-red-500 font-bold text-sm px-4 py-2.5 rounded-xl transition-all disabled:opacity-50"
             >
               <Trash size={14} />
-              {clearingAll ? 'Clearing…' : 'Clear All'}
+              {clearingAll ? "Clearing…" : "Clear All"}
             </button>
             <button
               onClick={() => items.forEach((i) => addToCart(i.productId, i.id))}
@@ -129,8 +146,12 @@ export default function WishlistClient() {
           <div className="w-20 h-20 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center mb-5">
             <Heart size={32} className="text-slate-300" />
           </div>
-          <p className="text-slate-700 font-bold text-base mb-1">Your wishlist is empty</p>
-          <p className="text-slate-400 text-sm mb-6">Save items you love to find them later.</p>
+          <p className="text-slate-700 font-bold text-base mb-1">
+            Your wishlist is empty
+          </p>
+          <p className="text-slate-400 text-sm mb-6">
+            Save items you love to find them later.
+          </p>
           <Link
             href="/products"
             className="inline-flex items-center gap-2 text-sm font-bold text-amber-600 hover:text-amber-700 transition-colors"
@@ -145,10 +166,10 @@ export default function WishlistClient() {
         <div className="rounded-2xl border border-slate-200 overflow-hidden divide-y divide-slate-100">
           <AnimatePresence initial={false}>
             {items.map((item) => {
-              const disc    = discount(item);
+              const disc = discount(item);
               const isAdded = added === item.id;
-              const isOut   = item.stock === 0;
-              const isLow   = item.stock > 0 && item.stock <= 10;
+              const isOut = item.stock === 0;
+              const isLow = item.stock > 0 && item.stock <= 10;
 
               return (
                 <motion.div
@@ -157,7 +178,7 @@ export default function WishlistClient() {
                   initial={{ opacity: 0 }}
                   animate={{
                     opacity: removing === item.id ? 0 : 1,
-                    x:       removing === item.id ? 40 : 0,
+                    x: removing === item.id ? 40 : 0,
                   }}
                   exit={{ opacity: 0, x: 40, transition: { duration: 0.22 } }}
                   transition={{ duration: 0.28 }}
@@ -177,7 +198,9 @@ export default function WishlistClient() {
                     />
                     {isOut && (
                       <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wide text-center px-1">Out of Stock</span>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wide text-center px-1">
+                          Out of Stock
+                        </span>
                       </div>
                     )}
                   </Link>
@@ -197,11 +220,17 @@ export default function WishlistClient() {
                           <Star
                             key={i}
                             size={10}
-                            className={i < Math.floor(item.rating) ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'}
+                            className={
+                              i < Math.floor(item.rating)
+                                ? "fill-amber-400 text-amber-400"
+                                : "fill-slate-200 text-slate-200"
+                            }
                           />
                         ))}
                       </div>
-                      <span className="text-[10px] text-slate-400 font-medium">{item.rating}</span>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        {item.rating}
+                      </span>
                     </div>
 
                     {/* Badges */}
@@ -245,16 +274,25 @@ export default function WishlistClient() {
                         disabled={isOut}
                         className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl transition-all duration-200 active:scale-95 ${
                           isAdded
-                            ? 'bg-emerald-500 text-white'
+                            ? "bg-emerald-500 text-white"
                             : isOut
-                              ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
-                              : 'bg-amber-600 hover:bg-amber-700 text-white'
+                              ? "bg-slate-100 text-slate-300 cursor-not-allowed"
+                              : "bg-amber-600 hover:bg-amber-700 text-white"
                         }`}
                       >
-                        {isAdded
-                          ? <><CheckCircle2 size={12} /> Added</>
-                          : <><ShoppingCart size={12} /><span className="hidden sm:inline ml-1">Add to Cart</span><span className="sm:hidden ml-1">Add</span></>
-                        }
+                        {isAdded ? (
+                          <>
+                            <CheckCircle2 size={12} /> Added
+                          </>
+                        ) : (
+                          <>
+                            <ShoppingCart size={12} />
+                            <span className="hidden sm:inline ml-1">
+                              Add to Cart
+                            </span>
+                            <span className="sm:hidden ml-1">Add</span>
+                          </>
+                        )}
                       </button>
 
                       <button

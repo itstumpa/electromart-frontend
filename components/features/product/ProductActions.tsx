@@ -1,17 +1,27 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  ShoppingCart, Heart, Minus, Plus,
-  CheckCircle2, Shield, Truck, RotateCcw,
-} from 'lucide-react';
+  CheckCircle2,
+  Heart,
+  Minus,
+  Plus,
+  RotateCcw,
+  Shield,
+  ShoppingCart,
+  Truck,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { addToCart } from '@/api/cart.api';
-import { addToWishlist, checkWishlistItem, removeFromWishlist } from '@/api/wishlist.api';
-import { notifyCartUpdated } from '@/hooks/useCartCount';
-import { getApiErrorMessage } from '@/utils/api-error';
-import { toast } from 'sonner';
+import { addToCart } from "@/api/cart.api";
+import {
+  addToWishlist,
+  checkWishlistItem,
+  removeFromWishlist,
+} from "@/api/wishlist.api";
+import { notifyCartUpdated } from "@/hooks/useCartCount";
+import { getApiErrorMessage, isUnauthorized } from "@/utils/api-error";
+import { toast } from "sonner";
 
 interface Props {
   productId: string;
@@ -20,11 +30,16 @@ interface Props {
   originalPrice?: number;
 }
 
-export default function ProductActions({ productId, stock, price, originalPrice }: Props) {
-  const [qty,          setQty]          = useState(1);
-  const [wishlisted,   setWishlisted]   = useState(false);
-  const [addedToCart,  setAddedToCart]  = useState(false);
-  const [adding,       setAdding]       = useState(false);
+export default function ProductActions({
+  productId,
+  stock,
+  price,
+  originalPrice,
+}: Props) {
+  const [qty, setQty] = useState(1);
+  const [wishlisted, setWishlisted] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     checkWishlistItem(productId)
@@ -37,14 +52,16 @@ export default function ProductActions({ productId, stock, price, originalPrice 
       if (wishlisted) {
         await removeFromWishlist(productId);
         setWishlisted(false);
-        toast.success('Removed from wishlist');
+        toast.success("Removed from wishlist");
       } else {
         await addToWishlist(productId);
         setWishlisted(true);
-        toast.success('Added to wishlist');
+        toast.success("Added to wishlist");
       }
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Wishlist update failed'));
+      if (!isUnauthorized(err)) {
+        toast.error(getApiErrorMessage(err, "Wishlist update failed"));
+      }
     }
   };
 
@@ -64,10 +81,8 @@ export default function ProductActions({ productId, stock, price, originalPrice 
 
   return (
     <div className="flex flex-col gap-5">
-
       {/* Quantity + CTA row */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-
         {/* Qty stepper */}
         <div className="flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden w-fit">
           <button
@@ -96,10 +111,10 @@ export default function ProductActions({ productId, stock, price, originalPrice 
           disabled={stock === 0 || adding}
           className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all duration-300 ${
             stock === 0
-              ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              ? "bg-slate-200 text-slate-400 cursor-not-allowed"
               : addedToCart
-              ? 'bg-green-600 text-white shadow-md shadow-green-200'
-              : 'bg-amber-600 hover:bg-amber-700 text-white shadow-md shadow-amber-200 hover:shadow-lg hover:shadow-amber-300'
+                ? "bg-green-600 text-white shadow-md shadow-green-200"
+                : "bg-amber-600 hover:bg-amber-700 text-white shadow-md shadow-amber-200 hover:shadow-lg hover:shadow-amber-300"
           }`}
         >
           <AnimatePresence mode="wait">
@@ -122,7 +137,7 @@ export default function ProductActions({ productId, stock, price, originalPrice 
                 className="flex items-center gap-2"
               >
                 <ShoppingCart size={16} />
-                {stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                {stock === 0 ? "Out of Stock" : "Add to Cart"}
               </motion.span>
             )}
           </AnimatePresence>
@@ -132,14 +147,14 @@ export default function ProductActions({ productId, stock, price, originalPrice 
         <motion.button
           onClick={toggleWishlist}
           whileTap={{ scale: 0.88 }}
-          aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
           className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${
             wishlisted
-              ? 'bg-red-50 border-red-300 text-red-500'
-              : 'border-slate-200 text-slate-400 hover:border-red-300 hover:text-red-400'
+              ? "bg-red-50 border-red-300 text-red-500"
+              : "border-slate-200 text-slate-400 hover:border-red-300 hover:text-red-400"
           }`}
         >
-          <Heart size={18} className={wishlisted ? 'fill-red-500' : ''} />
+          <Heart size={18} className={wishlisted ? "fill-red-500" : ""} />
         </motion.button>
       </div>
 
@@ -153,7 +168,7 @@ export default function ProductActions({ productId, stock, price, originalPrice 
       {/* Total for qty > 1 */}
       {qty > 1 && (
         <p className="text-xs text-slate-500">
-          Total:{' '}
+          Total:{" "}
           <span className="font-bold text-slate-900">
             ${(price * qty).toLocaleString()}
           </span>
@@ -168,16 +183,18 @@ export default function ProductActions({ productId, stock, price, originalPrice 
       {/* Trust badges */}
       <div className="grid grid-cols-3 gap-3 border-t border-slate-100 pt-4">
         {[
-          { icon: Truck,     label: 'Free Shipping', sub: 'Orders over $99' },
-          { icon: Shield,    label: '2yr Warranty',  sub: 'Genuine product' },
-          { icon: RotateCcw, label: '30-Day Return', sub: 'No questions' },
+          { icon: Truck, label: "Free Shipping", sub: "Orders over $99" },
+          { icon: Shield, label: "2yr Warranty", sub: "Genuine product" },
+          { icon: RotateCcw, label: "30-Day Return", sub: "No questions" },
         ].map(({ icon: Icon, label, sub }) => (
           <div
             key={label}
             className="flex flex-col items-center text-center gap-1 p-3 bg-amber-50 rounded-xl"
           >
             <Icon size={17} className="text-amber-700" />
-            <p className="text-xs font-bold text-slate-900 leading-tight">{label}</p>
+            <p className="text-xs font-bold text-slate-900 leading-tight">
+              {label}
+            </p>
             <p className="text-[10px] text-slate-500">{sub}</p>
           </div>
         ))}

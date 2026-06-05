@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { addToCart } from '@/api/cart.api';
 import { notifyCartUpdated } from '@/hooks/useCartCount';
 import { useWishlist } from '@/hooks/useWishlistCount';
-import { getApiErrorMessage } from '@/utils/api-error';
+import { getApiErrorMessage, isUnauthorized } from '@/utils/api-error';
 
 interface ProductCardProps {
   product: Product;
@@ -40,16 +40,20 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
     }
   };
 
-  const handleWishlist = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    try {
-      await toggle(product.id);
-      toast.success(inWishlist ? 'Removed from wishlist' : 'Added to wishlist');
-    } catch (err) {
+const handleWishlist = async (e: React.MouseEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+  try {
+    await toggle(product.id);
+    toast.success(inWishlist ? 'Removed from wishlist' : 'Added to wishlist');
+  } catch (err) {
+    if (isUnauthorized(err)) {
+      toast.error('Please log in to continue.');
+    } else {
       toast.error(getApiErrorMessage(err, 'Failed to update wishlist'));
     }
-  };
+  }
+};
 
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)

@@ -311,7 +311,7 @@ export default function FlashSaleSection() {
             variants={cardVariant} custom={2}
             className="lg:row-span-4"
           >
-            <Link href={`/products/${featured.slug}`} className="group block h-full">
+            <div  className="group block h-full">
               <div className="relative h-full bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden hover:border-amber-500/40 transition-all duration-400">
                 <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/3 transition-all duration-500 pointer-events-none" />
 
@@ -400,8 +400,6 @@ export default function FlashSaleSection() {
 
                   {/* CTA */}
                   <Link href={`/products/${featured.slug}`}
-                  
-                    onClick={(e) => e.preventDefault()}
 
                     className="group/btn w-full flex items-center justify-center gap-2 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 transition-all duration-300 mt-1"
                   >
@@ -411,7 +409,7 @@ export default function FlashSaleSection() {
                   </Link>
                 </div>
               </div>
-            </Link>
+            </div>
           </motion.div>
 
           {/* ── 5 compact horizontal cards ── */}
