@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import type { ProductSpecification, Review } from '@/data/types';
 import Image from 'next/image';
 import ProductReviewForm from './ProductReviewForm';
+import { getProductReviews } from '@/api/review.api';
 
 interface Props {
   specifications: ProductSpecification[];
@@ -13,8 +14,46 @@ interface Props {
   productId?: string;
 }
 
-export default function ProductTabs({ specifications, reviews, productId }: Props) {
+export default function ProductTabs({ specifications, reviews: initialReviews, productId }: Props) {
   const [activeTab, setActiveTab] = useState<'specs' | 'reviews'>('specs');
+  // Own the review list in state — seeded from SSR, refreshed after submit
+  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const refreshReviews = useCallback(async () => {
+    if (!productId) return;
+    setRefreshing(true);
+    try {
+      const res = await getProductReviews(productId, { limit: 20 });
+      const fetched = (res.data?.data as { reviews?: Array<{
+        id: string; productId: string; customerId: string;
+        rating: number; comment: string; createdAt: string;
+        customer?: { name: string; avatar?: string | null };
+      }> })?.reviews ?? [];
+      setReviews(
+        fetched.map((r) => ({
+          id: r.id,
+          productId: r.productId,
+          customerId: r.customerId,
+          customerName: r.customer?.name ?? 'Customer',
+          customerAvatar: r.customer?.avatar ?? undefined,
+          rating: r.rating,
+          comment: r.comment,
+          createdAt: r.createdAt,
+          updatedAt: r.createdAt,
+        }))
+      );
+    } catch {
+      // silently keep existing reviews if refresh fails
+    } finally {
+      setRefreshing(false);
+    }
+  }, [productId]);
+
+  const avgRating =
+    reviews.length > 0
+      ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+      : 0;
 
   return (
     <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden">
@@ -73,7 +112,7 @@ export default function ProductTabs({ specifications, reviews, productId }: Prop
             <div className="flex items-center gap-4 p-4 bg-amber-50 rounded-2xl mb-2">
               <div className="text-center">
                 <p className="text-4xl font-black text-slate-900">
-                  {(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)}
+                  {avgRating.toFixed(1)}
                 </p>
                 <div className="flex gap-0.5 justify-center mt-1">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -81,7 +120,7 @@ export default function ProductTabs({ specifications, reviews, productId }: Prop
                       key={i}
                       size={13}
                       className={
-                        i < Math.round(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length)
+                        i < Math.round(avgRating)
                           ? 'fill-amber-400 text-amber-400'
                           : 'fill-slate-200 text-slate-200'
                       }
@@ -90,6 +129,9 @@ export default function ProductTabs({ specifications, reviews, productId }: Prop
                 </div>
                 <p className="text-xs text-slate-500 mt-1">{reviews.length} reviews</p>
               </div>
+              {refreshing && (
+                <span className="text-xs text-amber-600 animate-pulse ml-4">Updating…</span>
+              )}
             </div>
 
             {/* Review list */}
@@ -102,6 +144,8 @@ export default function ProductTabs({ specifications, reviews, productId }: Prop
                   <Image
                     src={review.customerAvatar}
                     alt={review.customerName}
+                    width={40}
+                    height={40}
                     className="w-10 h-10 rounded-full object-cover shrink-0"
                   />
                 )}
@@ -141,7 +185,11 @@ export default function ProductTabs({ specifications, reviews, productId }: Prop
             No reviews yet. Be the first to review this product.
           </p>
         )}
-        {productId && <ProductReviewForm productId={productId} />}
+
+        {/* Review form — always shown in reviews tab if productId is set */}
+        {productId && activeTab === 'reviews' && (
+          <ProductReviewForm productId={productId} onSubmitted={refreshReviews} />
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 // components/features/testimonials/testimonials-section.tsx
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion, useInView } from 'framer-motion';
 import { Star, BadgeCheck, ShoppingBag, ArrowRight, Quote } from 'lucide-react';
@@ -9,16 +9,16 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Marquee from 'react-fast-marquee';
 import Link from 'next/link';
+import { getLatestReviews, type ReviewDto } from '@/api/review.api';
 
-/* ── Data ─────────────────────────────────────── */
-const testimonials = [
+/* ── Static fallback data ──────────────────── */
+const STATIC_TESTIMONIALS = [
   {
-    id: 1,
+    id: 's1',
     name: 'James Harrington',
     role: 'Software Engineer',
     location: 'Dhaka, BD',
-    avatar:
-      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80',
     rating: 5,
     product: 'MacBook Pro M3',
     comment:
@@ -27,12 +27,11 @@ const testimonials = [
     date: '2 weeks ago',
   },
   {
-    id: 2,
+    id: 's2',
     name: 'Sophia Nakamura',
     role: 'Photographer',
     location: 'Chittagong, BD',
-    avatar:
-      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80',
+    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80',
     rating: 5,
     product: 'Sony Alpha A7R V',
     comment:
@@ -41,12 +40,11 @@ const testimonials = [
     date: '1 month ago',
   },
   {
-    id: 3,
+    id: 's3',
     name: 'Marcus Webb',
     role: 'Music Producer',
     location: 'Sylhet, BD',
-    avatar:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80',
     rating: 5,
     product: 'Sony WH-1000XM5',
     comment:
@@ -55,12 +53,11 @@ const testimonials = [
     date: '3 weeks ago',
   },
   {
-    id: 4,
+    id: 's4',
     name: 'Priya Mehta',
     role: 'Student',
     location: 'Rajshahi, BD',
-    avatar:
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80',
     rating: 5,
     product: 'Samsung Galaxy S24 Ultra',
     comment:
@@ -69,82 +66,11 @@ const testimonials = [
     date: '5 days ago',
   },
   {
-    id: 5,
+    id: 's5',
     name: 'Daniel Torres',
     role: 'Game Developer',
     location: 'Dhaka, BD',
-    avatar:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',
-    rating: 5,
-    product: 'PlayStation 5 Slim',
-    comment:
-      'Got the PS5 Slim within 2 days, controllers included. ElectroMart stock is always up to date unlike other stores. The unboxing condition was pristine.',
-    verified: true,
-    date: '1 week ago',
-  },
-  {
-    id: 6,
-    name: 'Aisha Okafor',
-    role: 'UX Designer',
-    location: 'Khulna, BD',
-    avatar:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80',
-    rating: 4,
-    product: 'Apple Watch Ultra 2',
-    comment:
-      'Great service overall. The watch came with full Apple warranty. The product and price made it all worth it. Would definitely recommend to friends and family.',
-    verified: true,
-    date: '2 months ago',
-  },
-  {
-    id: 7,
-    name: 'Rahim Uddin',
-    role: 'Entrepreneur',
-    location: 'Comilla, BD',
-    avatar:
-      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80',
-    rating: 5,
-    product: 'iPad Pro M4',
-    comment:
-      'ElectroMart delivers what they promise. The iPad Pro arrived in perfect condition with all accessories. Their return policy gave me confidence to buy online.',
-    verified: true,
-    date: '4 days ago',
-  },
-  {
-    id: 8,
-    name: 'Fatima Khan',
-    role: 'Content Creator',
-    location: 'Rangpur, BD',
-    avatar:
-      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80',
-    rating: 5,
-    product: 'DJI Mini 4 Pro',
-    comment:
-      'Amazing shopping experience! The drone was packed securely and arrived a day early. Customer support was responsive when I had questions about the warranty.',
-    verified: true,
-    date: '1 week ago',
-  },
-    {
-    id: 9,
-    name: 'Sophia Nakamura',
-    role: 'Photographer',
-    location: 'Chittagong, BD',
-    avatar:
-      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80',
-    rating: 5,
-    product: 'Sony Alpha A7R V',
-    comment:
-      'I was nervous spending ৳350,000 online but the customer service team was incredible. They walked me through the purchase, confirmed authenticity, and even helped with setup.',
-    verified: true,
-    date: '1 month ago',
-  },
-    {
-    id: 10,
-    name: 'Daniel Torres',
-    role: 'Game Developer',
-    location: 'Dhaka, BD',
-    avatar:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',
     rating: 5,
     product: 'PlayStation 5 Slim',
     comment:
@@ -154,8 +80,37 @@ const testimonials = [
   },
 ];
 
-const firstRow = testimonials.slice(0, 10);
-// const secondRow = testimonials.slice(4, 8);
+/* ── Map a real DB review into the testimonial shape ── */
+function mapReviewToTestimonial(r: ReviewDto) {
+  const daysAgo = Math.floor(
+    (Date.now() - new Date(r.createdAt).getTime()) / 86_400_000,
+  );
+  const dateLabel =
+    daysAgo === 0
+      ? 'Today'
+      : daysAgo === 1
+        ? 'Yesterday'
+        : daysAgo < 7
+          ? `${daysAgo} days ago`
+          : daysAgo < 30
+            ? `${Math.floor(daysAgo / 7)} week${Math.floor(daysAgo / 7) > 1 ? 's' : ''} ago`
+            : `${Math.floor(daysAgo / 30)} month${Math.floor(daysAgo / 30) > 1 ? 's' : ''} ago`;
+
+  return {
+    id: r.id,
+    name: r.customer?.name ?? 'Verified Customer',
+    role: 'Verified Buyer',
+    location: 'Bangladesh',
+    avatar: '',
+    rating: r.rating,
+    product: r.product?.name ?? 'ElectroMart Product',
+    comment: r.comment,
+    verified: true,
+    date: dateLabel,
+  };
+}
+
+type Testimonial = (typeof STATIC_TESTIMONIALS)[0];
 
 /* ── Animations ───────────────────────────────── */
 const fadeUp = {
@@ -163,7 +118,7 @@ const fadeUp = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] as const},
+    transition: { delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
@@ -178,7 +133,7 @@ function StarRating({ rating, size = 13 }: { rating: number; size?: number }) {
           className={cn(
             i < rating
               ? 'fill-amber-400 text-amber-400'
-              : 'fill-gray-200 text-gray-200'
+              : 'fill-gray-200 text-gray-200',
           )}
         />
       ))}
@@ -187,24 +142,26 @@ function StarRating({ rating, size = 13 }: { rating: number; size?: number }) {
 }
 
 /* ── Review Card ──────────────────────────────── */
-function ReviewCard({
-  testimonial,
-}: {
-  testimonial: (typeof testimonials)[0];
-}) {
+function ReviewCard({ testimonial }: { testimonial: Testimonial }) {
   return (
     <div className="w-85 sm:w-95 mx-2.5 shrink-0">
-      <div className="h-full  bg-white rounded-2xl border border-border-primary/60 p-6 flex flex-col gap-4 hover:border-primary/30 hover:shadow-md hover:shadow-amber-900/4 transition-all duration-300">
+      <div className="h-full bg-white rounded-2xl border border-border-primary/60 p-6 flex flex-col gap-4 hover:border-primary/30 hover:shadow-md hover:shadow-amber-900/4 transition-all duration-300">
         {/* Header — Avatar + Info */}
         <div className="flex items-center gap-3.5">
-          <div className="relative w-11 h-11 rounded-full overflow-hidden ring-2 ring-amber-100 ring-offset-1 shrink-0">
-            <Image
-              src={testimonial.avatar}
-              alt={testimonial.name}
-              fill
-              className="object-cover"
-              sizes="44px"
-            />
+          <div className="relative w-11 h-11 rounded-full overflow-hidden ring-2 ring-amber-100 ring-offset-1 shrink-0 bg-amber-100 flex items-center justify-center">
+            {testimonial.avatar ? (
+              <Image
+                src={testimonial.avatar}
+                alt={testimonial.name}
+                fill
+                className="object-cover"
+                sizes="44px"
+              />
+            ) : (
+              <span className="text-amber-700 font-black text-lg">
+                {testimonial.name.charAt(0).toUpperCase()}
+              </span>
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
@@ -265,6 +222,28 @@ export default function TestimonialsSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: '-60px' });
 
+  const [displayList, setDisplayList] = useState<Testimonial[]>(STATIC_TESTIMONIALS);
+
+  // Fetch real reviews on mount and replace static fallbacks if enough exist
+  useEffect(() => {
+    getLatestReviews(10)
+      .then((res) => {
+        const real = (res.data?.data ?? []).filter((r) => r.comment?.trim());
+        if (real.length >= 3) {
+          setDisplayList(real.map(mapReviewToTestimonial));
+        } else if (real.length > 0) {
+          // Blend: real reviews first, fill remainder with static
+          const mapped = real.map(mapReviewToTestimonial);
+          const fill = STATIC_TESTIMONIALS.slice(0, 5 - mapped.length);
+          setDisplayList([...mapped, ...fill]);
+        }
+        // < 1 real review → keep static fallback as-is
+      })
+      .catch(() => {
+        // Network error or backend unavailable → keep static
+      });
+  }, []);
+
   return (
     <section
       ref={sectionRef}
@@ -316,14 +295,13 @@ export default function TestimonialsSection() {
         </motion.div>
       </div>
 
-      {/* ═══ MARQUEE ROWS ═══ */}
+      {/* ═══ MARQUEE ROW ═══ */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6, delay: 0.3 }}
         className="space-y-5 overflow-hidden"
       >
-        {/* Row 1 — Left to Right */}
         <Marquee
           speed={30}
           gradient
@@ -332,30 +310,14 @@ export default function TestimonialsSection() {
           pauseOnHover
           className="py-1 overflow-hidden"
         >
-          {firstRow.map((t) => (
+          {displayList.map((t) => (
             <ReviewCard key={t.id} testimonial={t} />
           ))}
         </Marquee>
-
-        {/* Row 2 — Right to Left */}
-        {/* <Marquee
-          speed={25}
-          gradient
-          gradientColor="white"
-          gradientWidth={80}
-          pauseOnHover
-          direction="right"
-          className="py-1"
-        >
-          {secondRow.map((t) => (
-            <ReviewCard key={t.id} testimonial={t} />
-          ))}
-        </Marquee> */}
       </motion.div>
 
       {/* ═══ BOTTOM CTA ═══ */}
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
-{/* ═══ BOTTOM CTA ═══ */}
         <motion.div
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
@@ -365,20 +327,20 @@ export default function TestimonialsSection() {
         >
           <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-linear-to-r from-amber-50 via-white to-amber-50 rounded-2xl border border-amber-100/80 px-8 py-6 shadow-sm">
             <div className="flex items-center gap-3">
-              {/* Stacked avatars */}
+              {/* Stacked avatars — initials from display list */}
               <div className="flex -space-x-2.5">
-                {testimonials.slice(0, 4).map((t) => (
+                {displayList.slice(0, 4).map((t) => (
                   <div
                     key={t.id}
-                    className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-white"
+                    className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-white bg-amber-100 flex items-center justify-center"
                   >
-                    <Image
-                      src={t.avatar}
-                      alt={t.name}
-                      fill
-                      className="object-cover"
-                      sizes="36px"
-                    />
+                    {t.avatar ? (
+                      <Image src={t.avatar} alt={t.name} fill className="object-cover" sizes="36px" />
+                    ) : (
+                      <span className="text-amber-700 font-black text-sm">
+                        {t.name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </div>
                 ))}
                 <div className="w-9 h-9 rounded-full ring-2 ring-white bg-primary flex items-center justify-center text-[10px] font-bold text-white">
@@ -388,27 +350,21 @@ export default function TestimonialsSection() {
               <div className="text-left">
                 <div className="flex items-center gap-1">
                   <StarRating rating={5} size={12} />
-                  <span className="text-xs font-bold text-foreground ml-1">
-                    4.9
-                  </span>
+                  <span className="text-xs font-bold text-foreground ml-1">4.9</span>
                 </div>
-                <p className="text-xs text-foreground-muted">
-                  Trusted by 50,000+ customers
-                </p>
+                <p className="text-xs text-foreground-muted">Trusted by 50,000+ customers</p>
               </div>
             </div>
 
             <div className="h-px w-full sm:h-10 sm:w-px bg-amber-200/60" />
 
             <div className="flex items-center gap-3">
-              <p className="text-sm font-semibold text-foreground">
-                Ready to join them?
-              </p>
+              <p className="text-sm font-semibold text-foreground">Ready to join them?</p>
               <Button className="inline-flex items-center gap-2 rounded-xl group py-4 px-3">
                 <Link href="/products" className="flex items-center gap-2">
-                <ShoppingBag className="h-4 w-4" />
-                Start Shopping
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                  <ShoppingBag className="h-4 w-4" />
+                  Start Shopping
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
             </div>

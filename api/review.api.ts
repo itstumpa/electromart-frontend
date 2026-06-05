@@ -54,3 +54,7 @@ export const updateReview = (
 export const deleteReview = (reviewId: string) => {
   return api.delete<ApiResponse<null>>(`/reviews/${reviewId}`);
 };
+
+export const getLatestReviews = (limit = 10) => {
+  return api.get<ApiResponse<ReviewDto[]>>(`/reviews/latest`, { params: { limit } });
+};
