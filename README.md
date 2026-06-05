@@ -139,6 +139,8 @@ cp .env.example .env.local
 
 # Start development server
 npm run dev
+
+npx tsc --noEmit
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
