@@ -338,6 +338,7 @@ export interface CartItem {
   total: number;
   stock: number;
   variant?: string;
+  variantId?: string;
 }
 
 export interface Cart {

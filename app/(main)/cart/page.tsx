@@ -1,32 +1,41 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { getCart, removeCartItem, updateCartItem } from "@/api/cart.api";
+import { applyCoupon } from "@/api/coupon.api";
+import { CartItem } from "@/data/types";
+import { notifyCartUpdated } from "@/hooks/useCartCount";
+import { mapCartItemsToUi } from "@/lib/cart-mappers";
+import { getApiErrorMessage } from "@/utils/api-error";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Minus, Plus, Trash2, ShoppingBag,
-  Tag, ChevronRight, ArrowRight,
-  Shield, Truck, RotateCcw, CheckCircle2, X,
-} from 'lucide-react';
-import { getCart, removeCartItem, updateCartItem } from '@/api/cart.api';
-import { applyCoupon } from '@/api/coupon.api';
-import { mapCartItemsToUi } from '@/lib/cart-mappers';
-import { notifyCartUpdated } from '@/hooks/useCartCount';
-import { getApiErrorMessage } from '@/utils/api-error';
-import { toast } from 'sonner';
-import { CartItem } from '@/data/types';
+  ArrowRight,
+  CheckCircle2,
+  ChevronRight,
+  Minus,
+  Plus,
+  RotateCcw,
+  Shield,
+  ShoppingBag,
+  Tag,
+  Trash2,
+  Truck,
+  X,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 // import type { CartItem } from '@/types';
 
 export default function CartPage() {
-  const [items,       setItems]       = useState<CartItem[]>([]);
-  const [loading,     setLoading]     = useState(true);
-  const [coupon,      setCoupon]      = useState('');
-  const [couponInput, setCouponInput] = useState('');
-  const [couponError, setCouponError] = useState('');
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [coupon, setCoupon] = useState("");
+  const [couponInput, setCouponInput] = useState("");
+  const [couponError, setCouponError] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
   const [discountAmt, setDiscountAmt] = useState(0);
-  const [removing,    setRemoving]    = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
 
   const loadCart = useCallback(async () => {
     try {
@@ -43,21 +52,21 @@ export default function CartPage() {
   useEffect(() => {
     loadCart();
   }, [loadCart]);
-
   /* ── Calculations ── */
-  const subtotal     = items.reduce((s, i) => s + i.price * i.quantity, 0);
-  const discountFromCoupon = discountAmt;
-  const shipping     = subtotal >= 99 ? 0 : 14.99;
-  const tax          = (subtotal - discountFromCoupon) * 0.09;
-  const total        = subtotal - discountFromCoupon + shipping + tax;
-  const itemCount    = items.reduce((s, i) => s + i.quantity, 0);
+  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const discountFromCoupon = Math.min(discountAmt, subtotal); // Discount cannot exceed subtotal
+  const shipping = subtotal >= 99 || subtotal === 0 ? 0 : 14.99; // Ensure shipping is 0 if cart becomes empty
+  const tax = Math.max(0, subtotal - discountFromCoupon) * 0.09;
+  const total = Math.max(0, subtotal - discountFromCoupon) + shipping + tax;
+  const itemCount = items.reduce((s, i) => s + i.quantity, 0);
 
   /* ── Handlers ── */
   const updateQty = async (item: CartItem, delta: number) => {
     const nextQty = Math.max(1, Math.min(item.stock, item.quantity + delta));
     if (nextQty === item.quantity) return;
     try {
-      await updateCartItem(item.productId, nextQty);
+      // Pass the variantId here as well!
+      await updateCartItem(item.productId, nextQty, item.variantId);
       notifyCartUpdated();
       await loadCart();
     } catch (err) {
@@ -68,11 +77,18 @@ export default function CartPage() {
   const removeItem = async (item: CartItem) => {
     setRemoving(item.id);
     try {
-      await removeCartItem(item.productId);
+      // Pass both the productId and the newly exposed variantId
+      await removeCartItem(item.productId, item.variantId);
+
+      // Safety: Reset coupon so a shrinking cart total doesn't break calculations
+      removeCoupon();
+
       notifyCartUpdated();
       await loadCart();
+      toast.success("Item removed from cart");
     } catch (err) {
-      toast.error(getApiErrorMessage(err));
+      console.error("Failed to delete item:", err);
+      toast.error(getApiErrorMessage(err, "Could not remove item"));
     } finally {
       setRemoving(null);
     }
@@ -84,23 +100,23 @@ export default function CartPage() {
     try {
       const res = await applyCoupon(code);
       const data = res.data.data;
-      if (!data) throw new Error('Invalid coupon');
+      if (!data) throw new Error("Invalid coupon");
       setCoupon(data.code);
       setDiscountAmt(data.discountAmount);
       setCouponApplied(true);
-      setCouponError('');
+      setCouponError("");
     } catch (err) {
-      setCouponError(getApiErrorMessage(err, 'Invalid coupon code'));
+      setCouponError(getApiErrorMessage(err, "Invalid coupon code"));
       setCouponApplied(false);
       setDiscountAmt(0);
     }
   };
 
   const removeCoupon = () => {
-    setCoupon('');
-    setCouponInput('');
+    setCoupon("");
+    setCouponInput("");
     setCouponApplied(false);
-    setCouponError('');
+    setCouponError("");
     setDiscountAmt(0);
   };
 
@@ -119,7 +135,10 @@ export default function CartPage() {
         <div className="w-20 h-20 rounded-3xl bg-amber-100 flex items-center justify-center mb-5">
           <ShoppingBag size={36} className="text-amber-600" />
         </div>
-        <h2 className="text-2xl font-black text-slate-900 mb-2" style={{ fontFamily: "'Georgia', serif" }}>
+        <h2
+          className="text-2xl font-black text-slate-900 mb-2"
+          style={{ fontFamily: "'Georgia', serif" }}
+        >
           Your cart is empty
         </h2>
         <p className="text-slate-500 text-sm mb-7 text-center max-w-xs">
@@ -137,25 +156,30 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-[#FFFBEB]">
-
       {/* ── Page header ── */}
       <div className="bg-white border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex items-center gap-2 text-xs text-slate-400 mb-3">
-            <Link href="/" className="hover:text-amber-600 transition-colors">Home</Link>
+            <Link href="/" className="hover:text-amber-600 transition-colors">
+              Home
+            </Link>
             <ChevronRight size={11} />
             <span className="text-slate-700 font-semibold">Cart</span>
           </div>
-          <h1 className="text-3xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>
+          <h1
+            className="text-3xl font-black text-slate-900"
+            style={{ fontFamily: "'Georgia', serif" }}
+          >
             Shopping Cart
-            <span className="ml-3 text-lg font-bold text-amber-600">({itemCount} {itemCount === 1 ? 'item' : 'items'})</span>
+            <span className="ml-3 text-lg font-bold text-amber-600">
+              ({itemCount} {itemCount === 1 ? "item" : "items"})
+            </span>
           </h1>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
-
           {/* ══ Cart items ══ */}
           <div className="lg:col-span-2 space-y-3">
             <AnimatePresence initial={false}>
@@ -163,15 +187,21 @@ export default function CartPage() {
                 <motion.div
                   key={item.id}
                   layout
-                  initial={{ opacity: 1, height: 'auto' }}
-                  animate={{ opacity: removing === item.id ? 0 : 1, height: 'auto' }}
+                  initial={{ opacity: 1, height: "auto" }}
+                  animate={{
+                    opacity: removing === item.id ? 0 : 1,
+                    height: "auto",
+                  }}
                   exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                   transition={{ duration: 0.3 }}
                   className="bg-white rounded-2xl border border-slate-100 hover:border-amber-200 hover:shadow-sm transition-all p-4 sm:p-5"
                 >
                   <div className="flex gap-4">
                     {/* Product image */}
-                    <Link href={`/products/${item.productId}`} className="shrink-0">
+                    <Link
+                      href={`/products/${item.productId}`}
+                      className="shrink-0"
+                    >
                       <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-slate-50">
                         <Image
                           src={item.productImage}
@@ -186,7 +216,9 @@ export default function CartPage() {
                     {/* Info */}
                     <div className="flex-1 min-w-0 flex flex-col justify-between">
                       <div>
-                        <p className="text-xs font-semibold text-amber-600 mb-0.5">{item.vendorName}</p>
+                        <p className="text-xs font-semibold text-amber-600 mb-0.5">
+                          {item.vendorName}
+                        </p>
                         <Link href={`/products/${item.productId}`}>
                           <h3 className="font-bold text-slate-900 text-sm sm:text-base leading-snug hover:text-amber-700 transition-colors line-clamp-2">
                             {item.productName}
@@ -225,10 +257,16 @@ export default function CartPage() {
                         <div className="flex items-center gap-4">
                           <div className="text-right">
                             <p className="font-black text-slate-900 text-base">
-                              ${(item.price * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              $
+                              {(item.price * item.quantity).toLocaleString(
+                                "en-US",
+                                { minimumFractionDigits: 2 },
+                              )}
                             </p>
                             {item.quantity > 1 && (
-                              <p className="text-xs text-slate-400">${item.price.toFixed(2)} each</p>
+                              <p className="text-xs text-slate-400">
+                                ${item.price.toFixed(2)} each
+                              </p>
                             )}
                           </div>
                           <button
@@ -266,20 +304,26 @@ export default function CartPage() {
           {/* ══ Order summary ══ */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl border border-slate-100 p-6 sticky top-24">
-              <h2 className="font-black text-slate-900 text-lg mb-5">Order Summary</h2>
+              <h2 className="font-black text-slate-900 text-lg mb-5">
+                Order Summary
+              </h2>
 
               {/* Line items */}
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between text-slate-600">
                   <span>Subtotal ({itemCount} items)</span>
-                  <span className="font-semibold text-slate-900">${subtotal.toFixed(2)}</span>
+                  <span className="font-semibold text-slate-900">
+                    ${subtotal.toFixed(2)}
+                  </span>
                 </div>
                 {discountAmt > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span className="flex items-center gap-1">
                       <Tag size={12} /> Coupon ({coupon})
                     </span>
-                    <span className="font-bold">-${discountAmt.toFixed(2)}</span>
+                    <span className="font-bold">
+                      -${discountAmt.toFixed(2)}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between text-slate-600">
@@ -287,12 +331,16 @@ export default function CartPage() {
                   {shipping === 0 ? (
                     <span className="font-semibold text-green-600">Free</span>
                   ) : (
-                    <span className="font-semibold text-slate-900">${shipping.toFixed(2)}</span>
+                    <span className="font-semibold text-slate-900">
+                      ${shipping.toFixed(2)}
+                    </span>
                   )}
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Tax (9%)</span>
-                  <span className="font-semibold text-slate-900">${tax.toFixed(2)}</span>
+                  <span className="font-semibold text-slate-900">
+                    ${tax.toFixed(2)}
+                  </span>
                 </div>
               </div>
 
@@ -305,7 +353,9 @@ export default function CartPage() {
                   <div className="h-1.5 bg-amber-200 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-amber-600 rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(100, (subtotal / 99) * 100)}%` }}
+                      style={{
+                        width: `${Math.min(100, (subtotal / 99) * 100)}%`,
+                      }}
                     />
                   </div>
                 </div>
@@ -314,7 +364,9 @@ export default function CartPage() {
               {/* Total */}
               <div className="flex justify-between items-center border-t border-slate-100 mt-4 pt-4">
                 <span className="font-black text-slate-900">Total</span>
-                <span className="text-2xl font-black text-amber-700">${total.toFixed(2)}</span>
+                <span className="text-2xl font-black text-amber-700">
+                  ${total.toFixed(2)}
+                </span>
               </div>
 
               {/* Coupon */}
@@ -323,9 +375,14 @@ export default function CartPage() {
                   <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 size={15} className="text-green-600" />
-                      <span className="text-sm font-bold text-green-800">{coupon} applied — ${discountAmt.toFixed(2)} off</span>
+                      <span className="text-sm font-bold text-green-800">
+                        {coupon} applied — ${discountAmt.toFixed(2)} off
+                      </span>
                     </div>
-                    <button onClick={removeCoupon} className="text-green-600 hover:text-green-800 transition-colors">
+                    <button
+                      onClick={removeCoupon}
+                      className="text-green-600 hover:text-green-800 transition-colors"
+                    >
                       <X size={15} />
                     </button>
                   </div>
@@ -334,8 +391,13 @@ export default function CartPage() {
                     <input
                       type="text"
                       value={couponInput}
-                      onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(''); }}
-                      onKeyDown={(e) => e.key === 'Enter' && applyCouponHandler()}
+                      onChange={(e) => {
+                        setCouponInput(e.target.value.toUpperCase());
+                        setCouponError("");
+                      }}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && applyCouponHandler()
+                      }
                       placeholder="Coupon code"
                       className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition placeholder-slate-400"
                     />
@@ -347,7 +409,11 @@ export default function CartPage() {
                     </button>
                   </div>
                 )}
-                {couponError && <p className="text-xs text-red-500 font-medium mt-1.5">{couponError}</p>}
+                {couponError && (
+                  <p className="text-xs text-red-500 font-medium mt-1.5">
+                    {couponError}
+                  </p>
+                )}
               </div>
 
               {/* Checkout CTA */}
@@ -361,13 +427,18 @@ export default function CartPage() {
               {/* Trust badges */}
               <div className="grid grid-cols-3 gap-2 mt-5 pt-4 border-t border-slate-100">
                 {[
-                  { icon: Shield,    label: 'Secure Payment' },
-                  { icon: Truck,     label: 'Fast Delivery' },
-                  { icon: RotateCcw, label: '30-Day Return' },
+                  { icon: Shield, label: "Secure Payment" },
+                  { icon: Truck, label: "Fast Delivery" },
+                  { icon: RotateCcw, label: "30-Day Return" },
                 ].map(({ icon: Icon, label }) => (
-                  <div key={label} className="flex flex-col items-center text-center gap-1">
+                  <div
+                    key={label}
+                    className="flex flex-col items-center text-center gap-1"
+                  >
                     <Icon size={16} className="text-amber-600" />
-                    <p className="text-[10px] text-slate-500 font-medium leading-tight">{label}</p>
+                    <p className="text-[10px] text-slate-500 font-medium leading-tight">
+                      {label}
+                    </p>
                   </div>
                 ))}
               </div>

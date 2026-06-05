@@ -4,6 +4,7 @@ import { toNumber } from "@/types/product";
 
 export const mapCartItemDtoToUi = (dto: CartItemDto): CartItem => {
   const price = toNumber(dto.price);
+  const variant = (dto as { variant?: { id: string; name: string } }).variant;
   return {
     id: dto.id,
     productId: dto.productId,
@@ -15,6 +16,8 @@ export const mapCartItemDtoToUi = (dto: CartItemDto): CartItem => {
     quantity: dto.quantity,
     total: price * dto.quantity,
     stock: dto.stock,
+    variant: variant?.name,
+    variantId: variant?.id,
   };
 };
 

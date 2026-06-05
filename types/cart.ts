@@ -8,6 +8,8 @@ export interface CartItemDto {
   vendorName: string;
   price: string | number;
   stock: number;
+  variant?: string;   // For display (e.g., "Size: M")
+  variantId?: string;
 }
 
 export interface CartResponseDto {
