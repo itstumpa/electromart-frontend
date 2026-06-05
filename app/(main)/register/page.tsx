@@ -109,6 +109,7 @@ export default function RegisterPage() {
         "auth_notice",
         "Registration completed. Please verify your email, then sign in.",
       );
+      router.push('/login');
       // toast.success('Registration completed. Please verify your email.');
     } catch (apiError) {
       const msg = getApiErrorMessage(apiError);

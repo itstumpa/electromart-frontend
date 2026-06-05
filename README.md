@@ -140,7 +140,12 @@ cp .env.example .env.local
 # Start development server
 npm run dev
 
+to check error:
 npx tsc --noEmit
+
+to check extra dependies, and delete them, by delete node modules, and again reinstall them:
+npm ls
+
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.

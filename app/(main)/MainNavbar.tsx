@@ -639,21 +639,7 @@ const isCategoryActive = categoryItems.some(
 
               {/* Divider */}
               <div className="border-t border-slate-100 mt-2 pt-3 flex flex-col gap-2">
-                {/* Wishlist & Cart row */}
                 <div className="flex gap-2">
-                  {/* <Link
-                    href="/customer/wishlist"
-                    onClick={() => setMobileOpen(false)}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${
-                      pathname === '/customer/wishlist'
-                        ? 'border-amber-300 bg-amber-50 text-amber-700'
-                        : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                    }`}
-                  >
-                    <Heart size={15} />
-                    Wishlist
-                  </Link> */}
-
                   <Link
                     href="/customer/wishlist"
                     onClick={() => setMobileOpen(false)}

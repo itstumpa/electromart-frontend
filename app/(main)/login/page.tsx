@@ -65,9 +65,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     const notice = sessionStorage.getItem("auth_notice");
+    sessionStorage.removeItem("auth_notice");
     if (notice) {
-      toast.success(notice);
-      sessionStorage.removeItem("auth_notice");
+      setTimeout(() => toast.info(notice), 100);
     }
   }, []);
 
@@ -116,7 +116,7 @@ export default function LoginPage() {
         avatar: (currentUser as { avatar?: string }).avatar,
       });
       window.dispatchEvent(new Event("auth-updated"));
-      sessionStorage.setItem("auth_notice", "Login successful");
+      window.dispatchEvent(new Event("auth-updated"));
       router.push(getRedirectPathByRole(role));
     } catch (apiError) {
       setError(getApiErrorMessage(apiError));

@@ -1,10 +1,3 @@
-// app/(payment)/payment/fail/page.tsx
-// Reached via SSLCommerz redirect when payment attempt FAILS
-//   (card declined, bank error, network timeout, insufficient funds)
-//   ${CLIENT_URL}/payment/fail?orderId=xxx
-//
-// Different from /cancel — user DID attempt payment but it failed.
-// Shows: what went wrong + retry button + order summary + support link.
 
 import { Metadata } from 'next';
 import Image from 'next/image';
