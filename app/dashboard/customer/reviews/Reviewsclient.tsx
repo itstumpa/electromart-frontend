@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Pencil, Trash2, X, CheckCircle2 } from 'lucide-react';
 import { getMyReviews, updateReview, deleteReview, type ReviewDto } from '@/api/review.api';
@@ -177,21 +178,23 @@ export default function ReviewsClient() {
                   className="bg-white rounded-2xl border border-slate-100 p-5 hover:border-amber-200 transition-colors"
                 >
                   <div className="flex items-start gap-4">
-                     {review.product?.images?.[0]?.url && (
-    <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-50 shrink-0">
-      <Image
-        src={review.product.images[0].url}
-        alt={review.product.name ?? ''}
-        fill
-        className="object-cover"
-        sizes="56px"
-      />
-    </div>
-  )}
-                    <div className="flex-1 min-w-0">
+                      {review.product?.images?.[0]?.url && (
+                        <Link href={`/products/${review.product.slug}`} className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-50 shrink-0 block hover:opacity-90 transition-opacity">
+                          <Image
+                            src={review.product.images[0].url}
+                            alt={review.product.name ?? ''}
+                            fill
+                            className="object-cover"
+                            sizes="56px"
+                          />
+                        </Link>
+                      )}
+                      <div className="flex-1 min-w-0">
                         {review.product?.name && (
-      <p className="text-sm font-black text-slate-900 mb-1">{review.product.name}</p>
-    )}
+                          <Link href={`/products/${review.product.slug}`} className="hover:text-amber-600 transition-colors">
+                            <p className="text-sm font-black text-slate-900 mb-1">{review.product.name}</p>
+                          </Link>
+                        )}
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <div className="flex items-center gap-0.5">
                           {Array.from({ length: 5 }).map((_, i) => (

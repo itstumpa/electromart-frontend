@@ -101,7 +101,7 @@ function mapReviewToTestimonial(r: ReviewDto) {
     name: r.customer?.name ?? 'Verified Customer',
     role: 'Verified Buyer',
     location: 'Bangladesh',
-    avatar: '',
+    avatar: r.customer?.avatar ?? '',
     rating: r.rating,
     product: r.product?.name ?? 'ElectroMart Product',
     comment: r.comment,

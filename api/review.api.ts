@@ -13,6 +13,7 @@ export interface ReviewDto {
   product?: {
     id: string;
     name: string;
+    slug: string;
     images: { url: string }[];
   };
 }

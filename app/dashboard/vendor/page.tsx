@@ -107,7 +107,7 @@ export default function VendorOverviewPage() {
   // format monthly revenue for chart
   const chartData =
     analytics?.monthlyRevenue.map((r) => ({
-      month: r.month.slice(5), // "2024-03" → "03"
+      month: r.month.slice(5), // "2026-03" → "03"
       revenue: r.revenue,
       orders: 0, // not available per month from this endpoint
     })) ?? [];
@@ -152,16 +152,19 @@ export default function VendorOverviewPage() {
       {/* ── Welcome header ── */}
       <div className="flex items-center justify-between flex-wrap gap-4 bg-white rounded-2xl border border-slate-100 p-5 sm:p-6">
         <div className="flex items-center gap-4">
-         {store.logo && typeof store.logo === "string" && store.logo !== "[object Object]" && store.logo.trim() !== "" && (
-  <div className="relative w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-200 shrink-0">
-    <Image
-      src={store.logo}
-      alt={store.name}
-      fill
-      className="object-cover"
-    />
-  </div>
-)}
+          {store.logo &&
+            typeof store.logo === "string" &&
+            store.logo !== "[object Object]" &&
+            store.logo.trim() !== "" && (
+              <div className="relative w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-200 shrink-0">
+                <Image
+                  src={store.logo}
+                  alt={store.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
           <div>
             <p className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-0.5">
               Vendor Panel
