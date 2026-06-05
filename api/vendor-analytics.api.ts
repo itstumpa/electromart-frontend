@@ -1,5 +1,5 @@
-import api from './axios';
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse } from "@/types/api";
+import api from "./axios";
 
 export interface VendorAnalyticsDto {
   store: { id: string; name: string };
@@ -14,9 +14,9 @@ export interface VendorAnalyticsDto {
     totalRevenue: number;
     totalSold: number;
   }[];
-  monthlyRevenue: { month: string; revenue: number }[];
+  monthlyRevenue: { month: string; revenue: number; orders: number }[];
 }
 
 export const getMyAnalytics = () => {
-  return api.get<ApiResponse<VendorAnalyticsDto>>('/vendor-analytics');
+  return api.get<ApiResponse<VendorAnalyticsDto>>("/vendor-analytics");
 };

@@ -107,9 +107,9 @@ export default function VendorOverviewPage() {
   // format monthly revenue for chart
   const chartData =
     analytics?.monthlyRevenue.map((r) => ({
-      month: r.month.slice(5), // "2026-03" → "03"
+      month: r.month, // pass "2026-03" as-is, chart handles formatting
       revenue: r.revenue,
-      orders: 0, // not available per month from this endpoint
+      orders: r.orders ?? 0,
     })) ?? [];
 
   const stats = [
@@ -230,13 +230,11 @@ export default function VendorOverviewPage() {
       </div>
 
       {/* ── Revenue chart ── */}
-      {chartData.length > 0 && (
-        <VendorRevenueChart
-          data={chartData}
-          totalRevenue={totalRevenue}
-          totalOrders={totalOrders}
-        />
-      )}
+      <VendorRevenueChart
+        data={chartData}
+        totalRevenue={totalRevenue}
+        totalOrders={totalOrders}
+      />
 
       {/* ── Top products ── */}
       {analytics?.topProducts && analytics.topProducts.length > 0 && (

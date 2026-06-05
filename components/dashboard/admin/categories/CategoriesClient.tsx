@@ -8,6 +8,7 @@ import { Brand, Category } from '@/data/types';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { createCategory, updateCategory, deleteCategory } from '@/api/category.api';
+import { createBrand, updateBrand, deleteBrand as deleteBrandApi } from '@/api/brand.api';
 
 /* ── Category Form Modal ─────────────────────────── */
 function CategoryModal({
@@ -239,24 +240,62 @@ export default function CategoriesClient({
   };
 
   /* ── Brand CRUD ── */
-  const handleSaveBrand = (data: Partial<Brand>) => {
+const handleSaveBrand = async (data: Partial<Brand>) => {
+  try {
     if (editBrand) {
-      setBrands((prev) => prev.map((b) => b.id === editBrand.id ? { ...b, ...data } : b));
+      const res = await updateBrand(editBrand.id, {
+        name: data.name,
+        slug: data.slug,
+        logo: data.logo,
+        description: data.description,
+      });
+      const b = res.data.data;
+      setBrands((prev) => prev.map((br) => br.id === editBrand.id ? {
+        id: b.id,
+        name: b.name,
+        slug: b.slug,
+        logo: b.logo ?? '',
+        description: b.description ?? '',
+        productCount: b._count?.products ?? 0,
+        createdAt: b.createdAt,
+      } : br));
+      toast.success("Brand updated successfully");
       setEditBrand(null);
     } else {
-      const newBrand: Brand = {
-        id:           `brand-${Date.now()}`,
-        name:         data.name!,
-        slug:         data.slug!,
-        logo:         data.logo ?? '',
-        description:  data.description,
+      const res = await createBrand({
+        name: data.name!,
+        slug: data.slug,
+        logo: data.logo,
+        description: data.description,
+      });
+      const b = res.data.data;
+      setBrands((prev) => [{
+        id: b.id,
+        name: b.name,
+        slug: b.slug,
+        logo: b.logo ?? '',
+        description: b.description ?? '',
         productCount: 0,
-        createdAt:    new Date().toISOString(),
-      };
-      setBrands((prev) => [newBrand, ...prev]);
+        createdAt: b.createdAt,
+      }, ...prev]);
+      toast.success("Brand created successfully");
     }
-  };
+  } catch (err) {
+    toast.error(getApiErrorMessage(err, "Failed to save brand"));
+  }
+};
 
+const handleDeleteBrand = async () => {
+  if (!deleteBrand) return;
+  try {
+    await deleteBrandApi(deleteBrand.id);
+    setBrands((p) => p.filter((b) => b.id !== deleteBrand!.id));
+    toast.success("Brand deleted successfully");
+    setDeleteBrand(null);
+  } catch (err) {
+    toast.error(getApiErrorMessage(err, "Failed to delete brand"));
+  }
+};
   return (
     <div className="space-y-6">
       {/* Tab switcher */}
@@ -416,8 +455,8 @@ export default function CategoriesClient({
         description="This will permanently delete the brand. Products under this brand will not be deleted."
         confirmLabel="Delete Brand"
         danger
-        onConfirm={() => { setBrands((p) => p.filter((b) => b.id !== deleteBrand!.id)); setDeleteBrand(null); }}
-        onCancel={() => setDeleteBrand(null)}
+    onConfirm={handleDeleteBrand}
+  onCancel={() => setDeleteBrand(null)}
       />
     </div>
   );

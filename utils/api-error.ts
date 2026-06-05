@@ -21,8 +21,7 @@ export const getApiErrorMessage = (
 ): string => {
   if (!error) return fallback;
 
-  if (hasMessage(error)) return error.message;
-
+    // Axios error — check response.data.message first
   if (isObject(error) && "response" in error) {
     const response = (error as { response?: { data?: unknown } }).response;
     if (response && isApiErrorResponse(response.data)) {
@@ -30,10 +29,13 @@ export const getApiErrorMessage = (
     }
   }
 
+    // RTK Query error
   if (isObject(error) && "data" in error) {
     const data = (error as { data?: unknown }).data;
     if (isApiErrorResponse(data)) return data.message;
   }
+
+  if (hasMessage(error)) return error.message;
 
   return fallback;
 };

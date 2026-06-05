@@ -1,5 +1,6 @@
 'use client';
 
+import { BarChart2 } from 'lucide-react';
 import { RevenueDataPoint } from '@/data/types';
 import { useState } from 'react';
 import {
@@ -7,7 +8,13 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
-// import type { RevenueDataPoint } from '@/types';
+
+// Format "YYYY-MM" → short label e.g. "Jan '26"
+function fmtMonth(ym: string): string {
+  const [year, month] = ym.split('-');
+  const d = new Date(Number(year), Number(month) - 1, 1);
+  return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+}
 
 interface Props {
   revenueData: RevenueDataPoint[];
@@ -43,6 +50,38 @@ function CustomTooltip({ active, payload, label }: any) {
 export default function RevenueChart({ revenueData, totalRevenue, totalOrders }: Props) {
   const [mode, setMode] = useState<ChartMode>('revenue');
 
+  // Format month labels from "YYYY-MM" to "Jan '26" etc.
+  const chartData = revenueData.map((d) => ({ ...d, month: fmtMonth(d.month) }));
+
+  // ── Empty state ──────────────────────────────────────────────────────────
+  if (revenueData.length === 0) {
+    return (
+      <div className="grid lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="font-black text-slate-900">Performance Overview</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Last 6 months</p>
+            </div>
+          </div>
+          <div className="flex flex-col items-center justify-center h-52 border-2 border-dashed border-slate-200 rounded-xl gap-3 text-center px-4">
+            <BarChart2 size={32} className="text-slate-300" />
+            <p className="text-sm font-bold text-slate-400">No revenue data yet</p>
+            <p className="text-xs text-slate-400">Charts will populate once orders are created in the system.</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl border border-slate-100 p-6">
+          <h3 className="font-black text-slate-900 mb-1">Sales by Category</h3>
+          <p className="text-xs text-slate-500 mb-4">Revenue distribution</p>
+          <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-slate-200 rounded-xl">
+            <BarChart2 size={24} className="text-slate-300" />
+            <p className="text-xs text-slate-400 mt-2">No data</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid lg:grid-cols-3 gap-5">
 
@@ -72,7 +111,7 @@ export default function RevenueChart({ revenueData, totalRevenue, totalOrders }:
 
         <ResponsiveContainer width="100%" height={240}>
           {mode === 'revenue' ? (
-            <AreaChart data={revenueData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
               <defs>
                 <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%"  stopColor="#D97706" stopOpacity={0.18} />
@@ -86,7 +125,7 @@ export default function RevenueChart({ revenueData, totalRevenue, totalOrders }:
               <Area type="monotone" dataKey="revenue" stroke="#D97706" strokeWidth={2.5} fill="url(#revenueGrad)" dot={{ fill: '#D97706', r: 4, strokeWidth: 0 }} activeDot={{ r: 6, fill: '#D97706' }} />
             </AreaChart>
           ) : (
-            <BarChart data={revenueData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
+            <BarChart data={chartData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />

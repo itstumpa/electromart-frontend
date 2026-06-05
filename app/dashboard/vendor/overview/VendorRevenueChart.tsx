@@ -1,11 +1,19 @@
 'use client';
 
+import { BarChart2 } from 'lucide-react';
 import { useState } from 'react';
 import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
+
+// Format "YYYY-MM" → short month label e.g. "Jan 26"
+function fmtMonth(ym: string): string {
+  const [year, month] = ym.split('-');
+  const d = new Date(Number(year), Number(month) - 1, 1);
+  return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+}
 
 interface DataPoint { month: string; revenue: number; orders: number }
 
@@ -42,6 +50,38 @@ function CustomTooltip({ active, payload, label }: any) {
 export default function VendorRevenueChart({ data, totalRevenue, totalOrders }: Props) {
   const [mode, setMode] = useState<Mode>('revenue');
 
+  // Format month labels for display
+  const chartData = data.map((d) => ({ ...d, month: fmtMonth(d.month) }));
+
+  // ── Empty state ──────────────────────────────────────────────────────────
+  if (data.length === 0) {
+    return (
+      <div className="grid lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-5 sm:p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="font-black text-slate-900">Store Performance</h2>
+              <p className="text-xs text-slate-400 mt-0.5">Last 6 months</p>
+            </div>
+          </div>
+          <div className="flex flex-col items-center justify-center h-48 border-2 border-dashed border-slate-200 rounded-xl gap-3 text-center px-4">
+            <BarChart2 size={32} className="text-slate-300" />
+            <p className="text-sm font-bold text-slate-400">No revenue data yet</p>
+            <p className="text-xs text-slate-400">Revenue will appear here once orders are placed and processed.</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 sm:p-6">
+          <h2 className="font-black text-slate-900 mb-1">Sales by Category</h2>
+          <p className="text-xs text-slate-400 mb-4">Revenue distribution</p>
+          <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-slate-200 rounded-xl">
+            <BarChart2 size={24} className="text-slate-300" />
+            <p className="text-xs text-slate-400 mt-2">No data</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid lg:grid-cols-3 gap-5">
 
@@ -77,7 +117,7 @@ export default function VendorRevenueChart({ data, totalRevenue, totalOrders }: 
 
         <ResponsiveContainer width="100%" height={220}>
           {mode === 'revenue' ? (
-            <AreaChart data={data} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
               <defs>
                 <linearGradient id="vendorRevGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%"  stopColor="#D97706" stopOpacity={0.2} />
@@ -94,7 +134,7 @@ export default function VendorRevenueChart({ data, totalRevenue, totalOrders }: 
                 activeDot={{ r: 6, fill: '#D97706' }} />
             </AreaChart>
           ) : (
-            <BarChart data={data} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
+            <BarChart data={chartData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
