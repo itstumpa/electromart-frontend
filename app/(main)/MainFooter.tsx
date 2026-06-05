@@ -1,72 +1,91 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 import {
-  Mail,
-  Phone,
-  MapPin,
-  Facebook,
-  Twitter,
-  Instagram,
-  Youtube,
-//   Zap,
+  //   Zap,
   ArrowRight,
-  ShieldCheck,
   CreditCard,
+  Facebook,
+  Instagram,
+  Mail,
+  MapPin,
+  Phone,
+  ShieldCheck,
   Truck,
-} from 'lucide-react';
+  Twitter,
+  Youtube,
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 const footerLinks = {
   Shop: [
-    { label: 'Smartphones', href: '/products?category=smartphones' },
-    { label: 'Laptops & Computers', href: '/products?category=laptops-computers' },
-    { label: 'Audio & Headphones', href: '/products?category=audio-headphones' },
-    { label: 'Cameras', href: '/products?category=cameras-photography' },
-    { label: 'Gaming', href: '/products?category=gaming' },
-    { label: 'Sale', href: '/sale' },
+    { label: "Smartphones", href: "/products?category=smartphones" },
+    {
+      label: "Laptops & Computers",
+      href: "/products?category=laptops-computers",
+    },
+    {
+      label: "Audio & Headphones",
+      href: "/products?category=audio-headphones",
+    },
+    { label: "Cameras", href: "/products?category=cameras-photography" },
+    { label: "Gaming", href: "/products?category=gaming" },
+    { label: "Sale", href: "/sale" },
   ],
   Company: [
-    { label: 'About Us', href: '/about' },
-    // { label: 'Careers', href: '/careers' },
-    // { label: 'Press', href: '/press' },
-    // { label: 'Blog', href: '/blog' },
-    { label: 'Contact Us', href: '/contact' },
+    { label: "Terms", href: "/terms" },
+    { label: "About Us", href: "/about" },
+    { label: "Contact Us", href: "/contact" },
+    { label: "Privacy Policy", href: "/privacy" },
   ],
   Support: [
-    { label: 'Help Center', href: '/contact' },
-    { label: 'Track Your Order', href: '/dashboard/customer/orders' },
-    { label: 'Returns & Refunds', href: '/dashboard/customer/orders' },
-    // { label: 'Warranty Info', href: '/warranty' },
-    { label: 'Become a Vendor', href: '/register' },
+    { label: "Help Center", href: "/contact" },
+    { label: "Track Your Order", href: "/dashboard/customer/orders" },
+    { label: "Returns & Refunds", href: "/dashboard/customer/orders" },
+    { label: "Become a Vendor", href: "/register" },
   ],
 };
 
 export default function MainFooter() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
       setSubscribed(true);
-      setEmail('');
+      setEmail("");
     }
   };
 
   return (
     <footer className="bg-slate-900 text-white">
-
       {/* Trust bar */}
       <div className="border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Truck, title: 'Free Shipping', desc: 'On orders over $99' },
-              { icon: ShieldCheck, title: '2 Year Warranty', desc: 'All products covered' },
-              { icon: CreditCard, title: 'Secure Payment', desc: 'SSLCommerz protected' },
-              { icon: ArrowRight, title: '30-Day Returns', desc: 'No questions asked' },
+              {
+                icon: Truck,
+                title: "Free Shipping",
+                desc: "On orders over $99",
+              },
+              {
+                icon: ShieldCheck,
+                title: "2 Year Warranty",
+                desc: "All products covered",
+              },
+              {
+                icon: CreditCard,
+                title: "Secure Payment",
+                desc: "SSLCommerz protected",
+              },
+              {
+                icon: ArrowRight,
+                title: "30-Day Returns",
+                desc: "No questions asked",
+              },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-amber-600/20 flex items-center justify-center shrink-0">
@@ -85,13 +104,15 @@ export default function MainFooter() {
       {/* Main footer body */}
       <div className="container mx-auto px-4 sm:px-6 py-14">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-
           {/* Brand column */}
           <div className="lg:col-span-2 flex flex-col gap-6">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 w-fit">
               <div className="w-10 h-10 rounded-xl bg-amber-600 flex items-center justify-center">
-                <span className="text-white font-black text-xl" style={{ fontFamily: 'Georgia, serif' }}>
+                <span
+                  className="text-white font-black text-xl"
+                  style={{ fontFamily: "Georgia, serif" }}
+                >
                   E
                 </span>
               </div>
@@ -104,17 +125,23 @@ export default function MainFooter() {
             </Link>
 
             <p className="text-slate-400 text-sm leading-relaxed max-w-xs">
-              Your trusted destination for the latest electronics and tech. Authorized
-              reseller for Apple, Samsung, Sony, Dell and more.
+              Your trusted destination for the latest electronics and tech.
+              Authorized reseller for Apple, Samsung, Sony, Dell and more.
             </p>
 
             {/* Contact */}
             <div className="flex flex-col gap-3">
-              <a href="tel:+15550001234" className="flex items-center gap-2 text-sm text-slate-400 hover:text-amber-400 transition-colors">
+              <a
+                href="tel:+15550001234"
+                className="flex items-center gap-2 text-sm text-slate-400 hover:text-amber-400 transition-colors"
+              >
                 <Phone size={14} className="text-amber-500 shrink-0" />
                 +1 (555) 000-1234
               </a>
-              <a href="mailto:support@electromart.com" className="flex items-center gap-2 text-sm text-slate-400 hover:text-amber-400 transition-colors">
+              <a
+                href="mailto:support@electromart.com"
+                className="flex items-center gap-2 text-sm text-slate-400 hover:text-amber-400 transition-colors"
+              >
                 <Mail size={14} className="text-amber-500 shrink-0" />
                 support@electromart.com
               </a>
@@ -163,7 +190,9 @@ export default function MainFooter() {
           {/* Link columns */}
           {Object.entries(footerLinks).map(([title, links]) => (
             <div key={title} className="flex flex-col gap-4">
-              <h4 className="text-sm font-black text-white uppercase tracking-wider">{title}</h4>
+              <h4 className="text-sm font-black text-white uppercase tracking-wider">
+                {title}
+              </h4>
               <ul className="flex flex-col gap-2.5">
                 {links.map((link) => (
                   <li key={link.label}>
@@ -191,10 +220,10 @@ export default function MainFooter() {
           {/* Social icons */}
           <div className="flex items-center gap-3">
             {[
-              { icon: Facebook, href: '#', label: 'Facebook' },
-              { icon: Twitter, href: '#', label: 'Twitter' },
-              { icon: Instagram, href: '#', label: 'Instagram' },
-              { icon: Youtube, href: '#', label: 'YouTube' },
+              { icon: Facebook, href: "#", label: "Facebook" },
+              { icon: Twitter, href: "#", label: "Twitter" },
+              { icon: Instagram, href: "#", label: "Instagram" },
+              { icon: Youtube, href: "#", label: "YouTube" },
             ].map(({ icon: Icon, href, label }) => (
               <a
                 key={label}

@@ -125,13 +125,13 @@ export default function LoginPage() {
     }
   };
 
-  const socials = [
-    { name: "Google", logo: <Chrome size={18} className="text-red-500" /> },
-    {
-      name: "Facebook",
-      logo: <Facebook size={18} className="text-blue-600" />,
-    },
-  ];
+  // const socials = [
+  //   { name: "Google", logo: <Chrome size={18} className="text-red-500" /> },
+  //   {
+  //     name: "Facebook",
+  //     logo: <Facebook size={18} className="text-blue-600" />,
+  //   },
+  // ];
 
   return (
     <motion.div
@@ -204,7 +204,7 @@ export default function LoginPage() {
         </div>
 
         {/* ── Social buttons ── */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        {/* <div className="grid grid-cols-2 gap-3 mb-6">
           {socials.map(({ name, logo }) => (
             <button
               key={name}
@@ -214,16 +214,16 @@ export default function LoginPage() {
               {name}
             </button>
           ))}
-        </div>
+        </div> */}
 
         {/* ── Divider ── */}
-        <div className="flex items-center gap-3 mb-6">
+        {/* <div className="flex items-center gap-3 mb-6">
           <div className="flex-1 h-px bg-slate-100" />
           <span className="text-xs text-slate-400 font-medium">
             or continue with email
           </span>
           <div className="flex-1 h-px bg-slate-100" />
-        </div>
+        </div> */}
 
         {/* ── Error ── */}
         <AnimatePresence>
