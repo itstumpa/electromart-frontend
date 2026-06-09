@@ -2,6 +2,7 @@
 
 import { addToCart as addToCartApi } from "@/api/cart.api";
 import { getWishlist, removeFromWishlist } from "@/api/wishlist.api";
+import ConfirmModal from "@/components/dashboard/admin/Confirmmodal";
 import type { WishlistItem } from "@/data/types";
 import { notifyCartUpdated } from "@/hooks/useCartCount";
 import { mapWishlistItemsToUi } from "@/lib/wishlist-mappers";
@@ -27,6 +28,7 @@ export default function WishlistClient() {
   const [removing, setRemoving] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [clearingAll, setClearingAll] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const loadWishlist = useCallback(async () => {
     try {
@@ -58,30 +60,34 @@ export default function WishlistClient() {
     }
   };
 
-  const clearAll = async () => {
-    if (!window.confirm("Remove all items from your wishlist?")) return;
-    setClearingAll(true);
-    try {
-      await Promise.all(items.map((i) => removeFromWishlist(i.productId)));
-      await loadWishlist();
-      toast.success("Wishlist cleared");
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Failed to clear wishlist"));
-    } finally {
-      setClearingAll(false);
-    }
-  };
+const clearAll = async () => {
+  setClearingAll(true);
+  try {
+    await Promise.all(items.map((i) => removeFromWishlist(i.productId)));
+    await loadWishlist();
+    toast.success('Wishlist cleared');
+  } catch (err) {
+    toast.error(getApiErrorMessage(err, 'Failed to clear wishlist'));
+  } finally {
+    setClearingAll(false);
+    setShowClearConfirm(false);
+  }
+};
 
-  const addToCart = async (productId: string, itemId: string) => {
-    try {
-      await addToCartApi(productId, 1);
-      notifyCartUpdated();
-      setAdded(itemId);
-      setTimeout(() => setAdded(null), 1800);
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Failed to add to cart"));
-    }
-  };
+const addToCart = async (productId: string, itemId: string) => {
+  try {
+    await addToCartApi(productId, 1);
+    await removeFromWishlist(productId);
+    notifyCartUpdated();
+    setAdded(itemId);
+    setTimeout(() => {
+      setAdded(null);
+      loadWishlist();
+    }, 1800);
+  } catch (err) {
+    toast.error(getApiErrorMessage(err, 'Failed to add to cart'));
+  }
+};
 
   const discount = (item: WishlistItem) =>
     item.originalPrice
@@ -114,7 +120,7 @@ export default function WishlistClient() {
         {items.length > 0 && (
           <div className="flex items-center gap-2">
             <button
-              onClick={clearAll}
+              onClick={() => setShowClearConfirm(true)}
               disabled={clearingAll}
               className="flex items-center gap-2 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-200 text-slate-500 hover:text-red-500 font-bold text-sm px-4 py-2.5 rounded-xl transition-all disabled:opacity-50"
             >
@@ -295,13 +301,23 @@ export default function WishlistClient() {
                         )}
                       </button>
 
-                      <button
+                      {/* <button
                         onClick={() => remove(item.productId, item.id)}
                         aria-label="Remove from wishlist"
                         className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-500 flex items-center justify-center transition-colors"
                       >
                         <Trash2 size={14} />
-                      </button>
+                      </button> */}
+
+                      <ConfirmModal
+  open={showClearConfirm}
+  title="Clear Wishlist?"
+  description="This will remove all items from your wishlist. This action cannot be undone."
+  confirmLabel="Clear All"
+  danger
+  onConfirm={clearAll}
+  onCancel={() => setShowClearConfirm(false)}
+/>
                     </div>
                   </div>
                 </motion.div>

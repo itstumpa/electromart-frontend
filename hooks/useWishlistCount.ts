@@ -5,20 +5,26 @@ import {
   getWishlist,
   removeFromWishlist,
 } from "@/api/wishlist.api";
+import { authStorage } from "@/utils/auth-storage";
 import { useCallback, useEffect, useState } from "react";
 
 export function useWishlist() {
   const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
 
-  const refresh = useCallback(async () => {
-    try {
-      const res = await getWishlist();
-      const ids = res.data.data?.map((item) => item.productId) ?? [];
-      setWishlistIds(new Set(ids));
-    } catch {
-      setWishlistIds(new Set());
-    }
-  }, []);
+const refresh = useCallback(async () => {
+  const user = authStorage.getAuthUser();
+  if (!user) {
+    setWishlistIds(new Set());
+    return;
+  }
+  try {
+    const res = await getWishlist();
+    const ids = res.data.data?.map((item) => item.productId) ?? [];
+    setWishlistIds(new Set(ids));
+  } catch {
+    setWishlistIds(new Set());
+  }
+}, []);
 
   useEffect(() => {
     refresh();

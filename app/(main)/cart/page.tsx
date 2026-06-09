@@ -1,11 +1,17 @@
 "use client";
 
-import { getCart, removeCartItem, updateCartItem } from "@/api/cart.api";
-import { applyCoupon } from "@/api/coupon.api";
+import {
+  applyCartCoupon,
+  getCart,
+  removeCartCoupon,
+  removeCartItem,
+  updateCartItem,
+} from "@/api/cart.api";
 import { CartItem } from "@/data/types";
 import { notifyCartUpdated } from "@/hooks/useCartCount";
 import { mapCartItemsToUi } from "@/lib/cart-mappers";
 import { getApiErrorMessage } from "@/utils/api-error";
+import { authStorage } from "@/utils/auth-storage";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
@@ -38,9 +44,26 @@ export default function CartPage() {
   const [removing, setRemoving] = useState<string | null>(null);
 
   const loadCart = useCallback(async () => {
+    const user = authStorage.getAuthUser();
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     try {
       const res = await getCart();
-      setItems(mapCartItemsToUi(res.data.data?.items ?? []));
+      const data = res.data.data;
+      setItems(mapCartItemsToUi(data?.items ?? []));
+      if (data?.couponCode) {
+        setCoupon(data.couponCode);
+        setCouponInput(data.couponCode);
+        setDiscountAmt(data.discountAmount);
+        setCouponApplied(true);
+      } else {
+        setCoupon("");
+        setCouponInput("");
+        setDiscountAmt(0);
+        setCouponApplied(false);
+      }
     } catch (err) {
       toast.error(getApiErrorMessage(err));
       setItems([]);
@@ -77,13 +100,9 @@ export default function CartPage() {
   const removeItem = async (item: CartItem) => {
     setRemoving(item.id);
     try {
-      // Pass both the productId and the newly exposed variantId
       await removeCartItem(item.productId, item.variantId);
-
-      // Safety: Reset coupon so a shrinking cart total doesn't break calculations
-      removeCoupon();
-
       notifyCartUpdated();
+      // loadCart re-fetches the full cart; backend recomputes coupon discount on the new total
       await loadCart();
       toast.success("Item removed from cart");
     } catch (err) {
@@ -98,12 +117,9 @@ export default function CartPage() {
     const code = couponInput.trim().toUpperCase();
     if (!code) return;
     try {
-      const res = await applyCoupon(code);
-      const data = res.data.data;
-      if (!data) throw new Error("Invalid coupon");
-      setCoupon(data.code);
-      setDiscountAmt(data.discountAmount);
-      setCouponApplied(true);
+      // Persists the coupon on the backend cart; loadCart reads back the live result
+      await applyCartCoupon(code);
+      await loadCart();
       setCouponError("");
     } catch (err) {
       setCouponError(getApiErrorMessage(err, "Invalid coupon code"));
@@ -112,12 +128,13 @@ export default function CartPage() {
     }
   };
 
-  const removeCoupon = () => {
-    setCoupon("");
-    setCouponInput("");
-    setCouponApplied(false);
-    setCouponError("");
-    setDiscountAmt(0);
+  const removeCoupon = async () => {
+    try {
+      await removeCartCoupon();
+      await loadCart();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to remove coupon"));
+    }
   };
 
   if (loading) {

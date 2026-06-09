@@ -162,11 +162,11 @@ const handleWishlist = async (e: React.MouseEvent) => {
           </div>
 
           {/* Stock */}
-          {product.stock <= 15 && (
+          {/* {product.stock <= 15 && (
             <p className="text-[11px] text-red-500 font-semibold mt-1.5">
               Only {product.stock} left in stock
             </p>
-          )}
+          )} */}
         </div>
       </div>
     </Link>

@@ -9,13 +9,12 @@ import {
   ChevronRight, ChevronLeft, CheckCircle2,
   MapPin, CreditCard, ShoppingBag,
   Home, Briefcase, Plus, Shield, Lock,
-  Globe,
+  Globe, Tag, X,
 } from 'lucide-react';
-import { getCart } from '@/api/cart.api';
+import { getCart, applyCartCoupon, removeCartCoupon } from '@/api/cart.api';
 import { getMyAddresses, createAddress } from '@/api/address.api';
 import { placeOrder } from '@/api/order.api';
 import { initiatePayment } from '@/api/payment.api';
-import { applyCoupon } from '@/api/coupon.api';
 import { mapCartItemsToUi } from '@/lib/cart-mappers';
 import { mapAddressesToUi } from '@/lib/address-mappers';
 import { notifyCartUpdated } from '@/hooks/useCartCount';
@@ -412,7 +411,7 @@ function PaymentStep({
 
 // ─── Step 3: Review ───────────────────────────────────────────
 function ReviewStep({
-  address, payment, items, subtotal, shipping, tax, total, onBack, onPlace,
+  address, payment, items, subtotal, shipping, tax, total, discountAmt, couponCode, onBack, onPlace,
 }: {
   address: ShippingForm;
   payment: PaymentForm;
@@ -421,6 +420,8 @@ function ReviewStep({
   shipping: number;
   tax: number;
   total: number;
+  discountAmt: number;
+  couponCode: string;
   onBack: () => void;
   onPlace: () => Promise<void>;
 }) {
@@ -501,6 +502,12 @@ function ReviewStep({
       {/* Price breakdown */}
       <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-2.5 text-sm">
         <div className="flex justify-between text-slate-600"><span>Subtotal</span><span className="font-semibold">${subtotal.toFixed(2)}</span></div>
+        {discountAmt > 0 && (
+          <div className="flex justify-between text-green-600">
+            <span className="flex items-center gap-1"><Tag size={12} /> Coupon ({couponCode})</span>
+            <span className="font-bold">-${discountAmt.toFixed(2)}</span>
+          </div>
+        )}
         <div className="flex justify-between text-slate-600"><span>Shipping</span><span className="font-semibold">{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span></div>
         <div className="flex justify-between text-slate-600"><span>Tax (9%)</span><span className="font-semibold">${tax.toFixed(2)}</span></div>
         <div className="flex justify-between font-black text-base border-t border-slate-100 pt-2.5 mt-1">
@@ -546,15 +553,23 @@ export default function CheckoutPage() {
   const [payment, setPayment] = useState<PaymentForm | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [couponCode, setCouponCode] = useState('');
-  const [discountAmt, setDiscountAmt] = useState(0);
+  const [couponCode, setCouponCode]       = useState('');
+  const [discountAmt, setDiscountAmt]     = useState(0);
+  const [couponInput, setCouponInput]     = useState('');
+  const [couponError, setCouponError]     = useState('');
+  const [couponApplying, setCouponApplying] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadCheckoutData = useCallback(async () => {
     try {
       const [cartRes, addrRes] = await Promise.all([getCart(), getMyAddresses()]);
-      setCartItems(mapCartItemsToUi(cartRes.data.data?.items ?? []));
+      const cartData = cartRes.data.data;
+      setCartItems(mapCartItemsToUi(cartData?.items ?? []));
       setAddresses(mapAddressesToUi(addrRes.data.data ?? []));
+      // Sync coupon state from backend — cart is the source of truth
+      setCouponCode(cartData?.couponCode ?? '');
+      setCouponInput(cartData?.couponCode ?? '');
+      setDiscountAmt(cartData?.discountAmount ?? 0);
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Failed to load checkout'));
       setCartItems([]);
@@ -567,6 +582,30 @@ export default function CheckoutPage() {
   useEffect(() => {
     loadCheckoutData();
   }, [loadCheckoutData]);
+
+  const applyCouponHandler = async () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    setCouponApplying(true);
+    try {
+      await applyCartCoupon(code);
+      await loadCheckoutData();
+      setCouponError('');
+    } catch (err) {
+      setCouponError(getApiErrorMessage(err, 'Invalid coupon code'));
+    } finally {
+      setCouponApplying(false);
+    }
+  };
+
+  const removeCheckoutCoupon = async () => {
+    try {
+      await removeCartCoupon();
+      await loadCheckoutData();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to remove coupon'));
+    }
+  };
 
   const subtotal = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
   const shipping = subtotal >= 99 ? 0 : 14.99;
@@ -685,6 +724,8 @@ export default function CheckoutPage() {
                       shipping={shipping}
                       tax={tax}
                       total={total}
+                      discountAmt={discountAmt}
+                      couponCode={couponCode}
                       onBack={() => setStep('payment')}
                       onPlace={handlePlaceOrder}
                     />
@@ -717,11 +758,53 @@ export default function CheckoutPage() {
               </div>
               <div className="space-y-2 text-sm border-t border-slate-100 pt-3">
                 <div className="flex justify-between text-slate-500"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
+                {discountAmt > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="flex items-center gap-1"><Tag size={11} /> {couponCode}</span>
+                    <span className="font-bold">-${discountAmt.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-slate-500"><span>Shipping</span><span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span></div>
                 <div className="flex justify-between text-slate-500"><span>Tax</span><span>${tax.toFixed(2)}</span></div>
                 <div className="flex justify-between font-black text-base border-t border-slate-100 pt-2">
                   <span>Total</span><span className="text-amber-700">${total.toFixed(2)}</span>
                 </div>
+              </div>
+
+              {/* Coupon section */}
+              <div className="mt-4">
+                {couponCode ? (
+                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 size={14} className="text-green-600" />
+                      <span className="text-xs font-bold text-green-800">{couponCode} — ${discountAmt.toFixed(2)} off</span>
+                    </div>
+                    <button onClick={removeCheckoutCoupon} className="text-green-600 hover:text-green-800 transition-colors">
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={couponInput}
+                        onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(''); }}
+                        onKeyDown={(e) => e.key === 'Enter' && applyCouponHandler()}
+                        placeholder="Coupon code"
+                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition placeholder-slate-400"
+                      />
+                      <button
+                        onClick={applyCouponHandler}
+                        disabled={couponApplying}
+                        className="px-3 py-2 bg-slate-900 hover:bg-amber-600 disabled:bg-slate-400 text-white text-xs font-bold rounded-xl transition-colors"
+                      >
+                        {couponApplying ? '...' : 'Apply'}
+                      </button>
+                    </div>
+                    {couponError && <p className="text-[10px] text-red-500 font-medium mt-1">{couponError}</p>}
+                  </>
+                )}
               </div>
             </div>
           </div>

@@ -37,3 +37,19 @@ export const removeCartItem = (productId: string, variantId?: string) => {
 export const clearCart = () => {
   return api.delete<ApiResponse<null>>("/cart");
 };
+
+/**
+ * Validates and persists a coupon onto the cart on the backend.
+ * The response is the full updated cart including recalculated totals.
+ */
+export const applyCartCoupon = (code: string) => {
+  return api.post<ApiResponse<CartResponseDto>>("/cart/coupon", { code });
+};
+
+/**
+ * Removes the applied coupon from the cart on the backend.
+ * The response is the full updated cart with totals reset.
+ */
+export const removeCartCoupon = () => {
+  return api.delete<ApiResponse<CartResponseDto>>("/cart/coupon");
+};

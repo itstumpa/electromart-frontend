@@ -1,12 +1,18 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import { getCart } from '@/api/cart.api';
+import { getCart } from "@/api/cart.api";
+import { authStorage } from "@/utils/auth-storage";
+import { useCallback, useEffect, useState } from "react";
 
 export function useCartCount() {
   const [count, setCount] = useState(0);
 
   const refresh = useCallback(async () => {
+    const user = authStorage.getAuthUser();
+    if (!user) {
+      setCount(0);
+      return;
+    }
     try {
       const res = await getCart();
       const items = res.data.data?.items ?? [];
@@ -19,15 +25,15 @@ export function useCartCount() {
   useEffect(() => {
     refresh();
     const onUpdate = () => refresh();
-    window.addEventListener('cart-updated', onUpdate);
-    return () => window.removeEventListener('cart-updated', onUpdate);
+    window.addEventListener("cart-updated", onUpdate);
+    return () => window.removeEventListener("cart-updated", onUpdate);
   }, [refresh]);
 
   return { count, refresh };
 }
 
 export const notifyCartUpdated = () => {
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event('cart-updated'));
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("cart-updated"));
   }
 };
