@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Tag, X } from 'lucide-react';
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from "framer-motion";
+import { Tag, X } from "lucide-react";
+import { useState } from "react";
 
 export default function TopBar() {
   const [visible, setVisible] = useState(true);
@@ -12,7 +12,7 @@ export default function TopBar() {
       {visible && (
         <motion.div
           initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
+          animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.3 }}
           className="bg-amber-600 text-white overflow-hidden"
@@ -24,13 +24,22 @@ export default function TopBar() {
             {/* Center message */}
             <div className="flex items-center gap-2 font-medium tracking-wide flex-1 justify-center">
               <Tag size={14} className="shrink-0" />
-              <span className="text-amber-50 text-xs sm:text-sm">
-                Free shipping on orders over{' '}
-                <span className="font-bold text-white">$99</span>
-                &nbsp;·&nbsp; Use code{' '}
+              {/* Mobile: short version */}
+              <span className="text-amber-50 text-xs sm:hidden">
+                Use code{" "}
                 <span className="font-bold bg-white/20 px-2 py-0.5 rounded text-white tracking-widest">
                   ELECTRO20
-                </span>{' '}
+                </span>{" "}
+                for 20% off
+              </span>
+              {/* Desktop: full version */}
+              <span className="text-amber-50 text-sm hidden sm:inline">
+                Free shipping on orders over{" "}
+                <span className="font-bold text-white">$99</span>
+                &nbsp;·&nbsp; Use code{" "}
+                <span className="font-bold bg-white/20 px-2 py-0.5 rounded text-white tracking-widest">
+                  ELECTRO20
+                </span>{" "}
                 for 20% off your first order
               </span>
             </div>
