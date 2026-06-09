@@ -19,7 +19,7 @@ useEffect(() => {
 }, []);
 
   return ( 
-    <section className="py-6 bg-white">
+    <section className=" py-1 md:py-2  lg:py-6 bg-white">
       <div className="container mx-auto px-4 sm:px-6">
 
         {/* Header */}

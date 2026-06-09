@@ -23,7 +23,7 @@ export default function FeaturedProducts() {
   }, []);
 
   return (
-    <section className="py-5 bg-[#FFFBEB]">
+    <section className="py-1 md:py-5 bg-[#FFFBEB]">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
 
         <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-4">

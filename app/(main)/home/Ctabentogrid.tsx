@@ -20,7 +20,7 @@ export default function CTABentoGrid() {
   };
 
   return (
-    <section className="bg-white py-10 sm:py-4">
+    <section className="bg-white py-4 md:py-6 lg:py-10 sm:py-4">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
 
         {/* Label */}

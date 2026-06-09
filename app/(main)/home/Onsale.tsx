@@ -303,7 +303,7 @@ export default function FlashSaleSection() {
         </motion.div>
 
         {/* ── PRODUCT LAYOUT: featured left + 5 compact right ── */}
-        <div className="grid lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
 
           {/* ── Featured card (spans 2 rows) ── */}
           <motion.div
@@ -425,7 +425,7 @@ export default function FlashSaleSection() {
 
                   <div className="flex items-center gap-4 p-4">
                     {/* Image */}
-                    <div className="relative w-18 h-18 shrink-0 rounded-xl bg-slate-700/40 overflow-hidden">
+                    <div className="relative w-16 h-16 sm:w-18 sm:h-18 shrink-0 rounded-xl bg-slate-700/40 overflow-hidden">
                       <Image
                         src={p.image} alt={p.name} fill
                         className="object-contain p-2 group-hover:scale-110 transition-transform duration-500"
@@ -441,7 +441,7 @@ export default function FlashSaleSection() {
                     {/* Info */}
                     <div className="flex-1 min-w-0 space-y-1.5">
                       <p className="text-[10px] text-amber-400/70 font-bold uppercase tracking-wider">{p.category}</p>
-                      <h3 className="text-sm font-bold text-white leading-snug truncate group-hover:text-amber-100 transition-colors">
+                      <h3 className="text-sm font-bold text-white leading-snug line-clamp-2 sm:truncate group-hover:text-amber-100 transition-colors">
                         {p.name}
                       </h3>
 
@@ -495,7 +495,7 @@ export default function FlashSaleSection() {
                   <BadgePercent size={17} className="text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white">More deals waiting for you</p>
+                  <p className="text-sm font-bold text-white text-center sm:text-left">More deals waiting for you</p>
                   <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
                     <Package size={11} />500+ products on sale right now
                   </p>

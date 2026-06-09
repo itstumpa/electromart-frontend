@@ -26,7 +26,7 @@ export default async function TopVendors() {
   const vendors = await fetchTopVendors();
 
   return (
-    <section className="bg-white py-6">
+    <section className="bg-white md:py-2 lg:py-6">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
         {/* Header */}
         <div className="flex items-end justify-between mb-7 flex-wrap gap-3">

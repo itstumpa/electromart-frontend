@@ -167,7 +167,7 @@ export default function HeroBentoGrid() {
   const inView  = useInView(ref, { once: true, margin: '-60px' });
 
   return (
-    <section ref={ref} className="bg-[#FFFBEB] py-2 pb-6">
+    <section ref={ref} className="bg-[#FFFBEB] lg:py-2 md:pb-6">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
 
         {/* ── Header ── */}
@@ -175,7 +175,7 @@ export default function HeroBentoGrid() {
           variants={fadeSlide}
           initial="hidden"
           animate={inView ? 'show' : 'hidden'}
-          className="flex items-end justify-between mb-6 sm:mb-8 flex-wrap gap-3"
+          className="flex items-end justify-between mb-2 sm:mb-4 md:mb-6 flex-wrap gap-3"
         >
           
        
@@ -271,7 +271,7 @@ export default function HeroBentoGrid() {
               <motion.div
                 key={cell.id}
                 variants={fadeUp}
-                className="hidden md:flex col-span-2 relative overflow-hidden rounded-2xl sm:rounded-3xl group cursor-pointer"
+                className="hidden lg:flex col-span-2 relative overflow-hidden rounded-2xl sm:rounded-3xl group cursor-pointer"
                 style={{ minHeight: 170 }}
               >
                 <Image

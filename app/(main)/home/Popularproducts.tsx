@@ -36,7 +36,7 @@ export default function PopularProducts() {
   });
 
   return (
-    <section className="bg-[#FFFBEB] py-10 sm:py-4">
+    <section className="bg-[#FFFBEB] py-1 md:py-4 lg:py-10 sm:py-4">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
 
         {/* Header */}

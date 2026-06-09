@@ -251,7 +251,7 @@ export default function MainNavbar() {
       }`}
     >
       <div className="container mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-12 md:h-16">
           {/* ── Logo ── */}
           <Link href="/" className="flex items-center gap-2 group shrink-0">
             <div className="w-9 h-9 rounded-xl bg-amber-600 flex items-center justify-center shadow-sm group-hover:bg-amber-700 transition-colors">

@@ -247,7 +247,7 @@ export default function TestimonialsSection() {
   return (
     <section
       ref={sectionRef}
-      className="container mx-auto relative py-16 sm:py-20 bg-linear-to-b from-white via-amber-50/15 to-white overflow-hidden"
+      className="container mx-auto relative py-8 sm:py-20 bg-linear-to-b from-white via-amber-50/15 to-white overflow-hidden"
     >
       {/* Subtle background */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 rounded-full bg-amber-100/15 blur-[100px] pointer-events-none" />
@@ -257,12 +257,12 @@ export default function TestimonialsSection() {
         <motion.div
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
-          className="text-center mb-12 sm:mb-14"
+          className="text-center mb-2 sm:mb-6 md:mb-14"
         >
           <motion.span
             variants={fadeUp}
             custom={0}
-            className="inline-flex items-center gap-1.5 bg-accent-light text-primary text-xs font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full mb-4"
+            className="inline-flex items-center gap-1.5 bg-accent-light text-primary text-xs font-bold uppercase tracking-widest px-3.5 md:py-1.5 rounded-full mb-4"
           >
             <BadgeCheck size={13} />
             Customer Reviews
