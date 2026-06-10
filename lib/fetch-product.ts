@@ -1,15 +1,23 @@
 import type { Product } from "@/data/types";
 import { getServerApiBase } from "@/lib/api-config";
-import { mapDetailDtoToProduct, mapListItemDtoToProduct } from "@/lib/product-mappers";
+import {
+  mapDetailDtoToProduct,
+  mapListItemDtoToProduct,
+} from "@/lib/product-mappers";
 import type { ApiResponse } from "@/types/api";
 import type { ProductDetailDto, ProductListItemDto } from "@/types/product";
 
-export async function fetchProductBySlug(slug: string): Promise<Product | null> {
+export async function fetchProductBySlug(
+  slug: string,
+): Promise<Product | null> {
   try {
-    const res = await fetch(`${getServerApiBase()}/products/${encodeURIComponent(slug)}`, {
-      next: { revalidate: 60 },
-      credentials: "include",
-    });
+    const res = await fetch(
+      `${getServerApiBase()}/products/${encodeURIComponent(slug)}`,
+      {
+        next: { revalidate: 60 },
+        credentials: "include",
+      },
+    );
     if (!res.ok) return null;
     const json = (await res.json()) as ApiResponse<ProductDetailDto>;
     return mapDetailDtoToProduct(json.data);

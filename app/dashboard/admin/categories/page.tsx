@@ -1,10 +1,10 @@
 // SERVER COMPONENT — static shell; CategoriesClient fetches data client-side
-import { Metadata } from 'next';
-import { Tag } from 'lucide-react';
-import { mockCategories, mockBrands } from '@/data/mock-data';
-import CategoriesClient from '@/components/dashboard/admin/categories/CategoriesClient';
+import CategoriesClient from "@/components/dashboard/admin/categories/CategoriesClient";
+import { mockBrands, mockCategories } from "@/data/mock-data";
+import { Tag } from "lucide-react";
+import { Metadata } from "next";
 
-export const metadata: Metadata = { title: 'Categories & Brands — Admin' };
+export const metadata: Metadata = { title: "Categories & Brands — Admin" };
 
 export default function AdminCategoriesPage() {
   return (
@@ -14,7 +14,10 @@ export default function AdminCategoriesPage() {
           <Tag size={20} className="text-green-700" />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>
+          <h1
+            className="text-2xl font-black text-slate-900"
+            style={{ fontFamily: "'Georgia', serif" }}
+          >
             Categories & Brands
           </h1>
           <p className="text-sm text-slate-500">
@@ -22,7 +25,10 @@ export default function AdminCategoriesPage() {
           </p>
         </div>
       </div>
-      <CategoriesClient initialCategories={mockCategories} initialBrands={mockBrands} />
+      <CategoriesClient
+        initialCategories={mockCategories}
+        initialBrands={mockBrands}
+      />
     </div>
   );
 }

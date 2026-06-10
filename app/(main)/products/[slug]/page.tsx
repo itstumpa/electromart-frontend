@@ -6,10 +6,10 @@ import { notFound } from "next/navigation";
 import ProductActions from "@/components/features/product/ProductActions";
 import ProductGallery from "@/components/features/product/ProductGallery";
 import ProductTabs from "@/components/features/product/ProductTabs";
-import { fetchProductBySlug, fetchRelatedProducts } from "@/lib/fetch-product";
-import { getServerApiBase } from "@/lib/api-config";
-import type { ApiResponse } from "@/types/api";
 import type { Review } from "@/data/types";
+import { getServerApiBase } from "@/lib/api-config";
+import { fetchProductBySlug, fetchRelatedProducts } from "@/lib/fetch-product";
+import type { ApiResponse } from "@/types/api";
 import ProductCard from "../../Utilities/Productcard";
 import Reveal from "../../Utilities/Reveal";
 
