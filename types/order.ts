@@ -56,3 +56,17 @@ export interface OrderDto {
     amount?: string | number;
   } | null;
 }
+
+export interface TimelineEntryDto {
+  id: string;
+  orderId: string;
+  status: string;
+  note?: string | null;
+  createdAt: string;
+}
+
+export interface TimelineResponse {
+  orderId: string;
+  currentStatus: string;
+  timeline: TimelineEntryDto[];
+}

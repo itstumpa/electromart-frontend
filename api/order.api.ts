@@ -1,8 +1,12 @@
-import api from "./axios";
 import type { ApiResponse } from "@/types/api";
-import type { OrderDto } from "@/types/order";
-export type { OrderDto };
+import type {
+  OrderDto,
+  TimelineEntryDto,
+  TimelineResponse,
+} from "@/types/order";
 import type { ProductsMeta } from "@/types/product";
+import api from "./axios";
+export type { OrderDto, TimelineEntryDto, TimelineResponse };
 
 export interface PaginatedOrdersResponse {
   success: boolean;
@@ -85,5 +89,11 @@ export interface VendorOrderItemDto {
 }
 
 export const getVendorOrders = () => {
-  return api.get<ApiResponse<VendorOrderItemDto[]>>('/orders/vendor/items');
+  return api.get<ApiResponse<VendorOrderItemDto[]>>("/orders/vendor/items");
+};
+
+export const getOrderTimeline = (orderId: string) => {
+  return api.get<ApiResponse<TimelineResponse>>(
+    `/orderTracking/${orderId}/timeline`,
+  );
 };
