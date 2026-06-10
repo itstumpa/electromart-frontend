@@ -534,7 +534,7 @@ The backend for this project is a separate Node.js/Express/Prisma/PostgreSQL API
 
 > ⚠️ Update this link to the correct ElectroMart backend repo URL before publishing.
 
-**Backend stack:** Node.js · Express · TypeScript · Prisma · PostgreSQL · Redis · BullMQ · SSLCommerz · Stripe · Passport-JWT · Nodemailer · Socket.io
+**Backend stack:** Node.js · Express · TypeScript · Prisma · PostgreSQL · Redis · BullMQ · SSLCommerz · Stripe · Passport-JWT · Socket.io . Brevo
 
 ---
 
