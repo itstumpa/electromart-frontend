@@ -23,6 +23,7 @@ import {
 } from "@/data/mock-data";
 import { fetchDashboardOverview } from "@/lib/api/admin/dashboard";
 
+export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: "Admin Overview — ElectroMart" };
 
 // ── Status badge config ───────────────────────────────────────────────────────

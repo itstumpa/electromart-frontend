@@ -7,6 +7,7 @@ import { BrandDto } from '@/types/brand';
 
 
 
+export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Categories & Brands — Admin' };
 
 export default async function AdminCategoriesPage() {
