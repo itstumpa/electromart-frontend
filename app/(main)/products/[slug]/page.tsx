@@ -13,13 +13,13 @@ import type { Review } from "@/data/types";
 import ProductCard from "../../Utilities/Productcard";
 import Reveal from "../../Utilities/Reveal";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 async function fetchProductReviews(productId: string): Promise<Review[]> {
   try {
     const res = await fetch(
       `${getServerApiBase()}/reviews/product/${productId}?limit=20`,
-      { cache: "no-store" },
+      { next: { revalidate: 60 } },
     );
     if (!res.ok) return [];
     const json = (await res.json()) as ApiResponse<{

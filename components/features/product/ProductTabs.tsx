@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
-import type { ProductSpecification, Review } from '@/data/types';
-import Image from 'next/image';
-import ProductReviewForm from './ProductReviewForm';
-import { getProductReviews } from '@/api/review.api';
+import { getProductReviews } from "@/api/review.api";
+import type { ProductSpecification, Review } from "@/data/types";
+import { motion } from "framer-motion";
+import { Star } from "lucide-react";
+import Image from "next/image";
+import { useCallback, useState } from "react";
+import ProductReviewForm from "./ProductReviewForm";
 
 interface Props {
   specifications: ProductSpecification[];
@@ -14,8 +14,12 @@ interface Props {
   productId?: string;
 }
 
-export default function ProductTabs({ specifications, reviews: initialReviews, productId }: Props) {
-  const [activeTab, setActiveTab] = useState<'specs' | 'reviews'>('specs');
+export default function ProductTabs({
+  specifications,
+  reviews: initialReviews,
+  productId,
+}: Props) {
+  const [activeTab, setActiveTab] = useState<"specs" | "reviews">("specs");
   // Own the review list in state — seeded from SSR, refreshed after submit
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const [refreshing, setRefreshing] = useState(false);
@@ -25,23 +29,32 @@ export default function ProductTabs({ specifications, reviews: initialReviews, p
     setRefreshing(true);
     try {
       const res = await getProductReviews(productId, { limit: 20 });
-      const fetched = (res.data?.data as { reviews?: Array<{
-        id: string; productId: string; customerId: string;
-        rating: number; comment: string; createdAt: string;
-        customer?: { name: string; avatar?: string | null };
-      }> })?.reviews ?? [];
+      const fetched =
+        (
+          res.data?.data as {
+            reviews?: Array<{
+              id: string;
+              productId: string;
+              customerId: string;
+              rating: number;
+              comment: string;
+              createdAt: string;
+              customer?: { name: string; avatar?: string | null };
+            }>;
+          }
+        )?.reviews ?? [];
       setReviews(
         fetched.map((r) => ({
           id: r.id,
           productId: r.productId,
           customerId: r.customerId,
-          customerName: r.customer?.name ?? 'Customer',
+          customerName: r.customer?.name ?? "Customer",
           customerAvatar: r.customer?.avatar ?? undefined,
           rating: r.rating,
           comment: r.comment,
           createdAt: r.createdAt,
           updatedAt: r.createdAt,
-        }))
+        })),
       );
     } catch {
       // silently keep existing reviews if refresh fails
@@ -59,19 +72,19 @@ export default function ProductTabs({ specifications, reviews: initialReviews, p
     <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden">
       {/* Tab bar */}
       <div className="flex border-b border-slate-100">
-        {(['specs', 'reviews'] as const).map((tab) => (
+        {(["specs", "reviews"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`relative px-8 py-4 text-sm font-bold capitalize transition-colors ${
               activeTab === tab
-                ? 'text-amber-600'
-                : 'text-slate-500 hover:text-slate-700'
+                ? "text-amber-600"
+                : "text-slate-500 hover:text-slate-700"
             }`}
           >
-            {tab === 'reviews'
+            {tab === "reviews"
               ? `Reviews (${reviews.length})`
-              : 'Specifications'}
+              : "Specifications"}
             {activeTab === tab && (
               <motion.span
                 layoutId="tab-line"
@@ -84,7 +97,7 @@ export default function ProductTabs({ specifications, reviews: initialReviews, p
 
       {/* Tab body */}
       <div className="p-6 sm:p-8">
-        {activeTab === 'specs' ? (
+        {activeTab === "specs" ? (
           specifications.length > 0 ? (
             <div className="grid sm:grid-cols-2 gap-3">
               {specifications.map((spec) => (
@@ -121,16 +134,20 @@ export default function ProductTabs({ specifications, reviews: initialReviews, p
                       size={13}
                       className={
                         i < Math.round(avgRating)
-                          ? 'fill-amber-400 text-amber-400'
-                          : 'fill-slate-200 text-slate-200'
+                          ? "fill-amber-400 text-amber-400"
+                          : "fill-slate-200 text-slate-200"
                       }
                     />
                   ))}
                 </div>
-                <p className="text-xs text-slate-500 mt-1">{reviews.length} reviews</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {reviews.length} reviews
+                </p>
               </div>
               {refreshing && (
-                <span className="text-xs text-amber-600 animate-pulse ml-4">Updating…</span>
+                <span className="text-xs text-amber-600 animate-pulse ml-4">
+                  Updating…
+                </span>
               )}
             </div>
 
@@ -161,15 +178,17 @@ export default function ProductTabs({ specifications, reviews: initialReviews, p
                           size={11}
                           className={
                             i < review.rating
-                              ? 'fill-amber-400 text-amber-400'
-                              : 'fill-slate-200 text-slate-200'
+                              ? "fill-amber-400 text-amber-400"
+                              : "fill-slate-200 text-slate-200"
                           }
                         />
                       ))}
                     </div>
                     <span className="text-xs text-slate-400">
-                      {new Date(review.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric', month: 'short', day: 'numeric',
+                      {new Date(review.createdAt).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
                       })}
                     </span>
                   </div>
@@ -187,8 +206,11 @@ export default function ProductTabs({ specifications, reviews: initialReviews, p
         )}
 
         {/* Review form — always shown in reviews tab if productId is set */}
-        {productId && activeTab === 'reviews' && (
-          <ProductReviewForm productId={productId} onSubmitted={refreshReviews} />
+        {productId && activeTab === "reviews" && (
+          <ProductReviewForm
+            productId={productId}
+            onSubmitted={refreshReviews}
+          />
         )}
       </div>
     </div>

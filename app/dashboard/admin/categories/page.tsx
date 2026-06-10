@@ -1,63 +1,12 @@
-// SERVER COMPONENT
+// SERVER COMPONENT — static shell; CategoriesClient fetches data client-side
 import { Metadata } from 'next';
 import { Tag } from 'lucide-react';
 import { mockCategories, mockBrands } from '@/data/mock-data';
 import CategoriesClient from '@/components/dashboard/admin/categories/CategoriesClient';
-import { BrandDto } from '@/types/brand';
 
-
-
-export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Categories & Brands — Admin' };
 
-export default async function AdminCategoriesPage() {
-  const API_BASE = process.env.BACKEND_URL
-    ? `${process.env.BACKEND_URL.replace(/\/$/, "")}/api/v1`
-    : (process.env.NEXT_PUBLIC_API_URL || "/api/v1");
-
-  let categories = mockCategories;
-  try {
-    const res = await fetch(`${API_BASE}/categories`, { next: { revalidate: 0 } });
-    if (res.ok) {
-      const json = await res.json();
-      if (json.success && json.data) {
-        categories = json.data.map((c: any) => ({
-          id: c.id,
-          name: c.name,
-          slug: c.slug,
-          description: c.description || '',
-          image: c.image || '',
-          productCount: c._count?.products ?? 0,
-          createdAt: c.createdAt || new Date().toISOString(),
-          updatedAt: c.updatedAt || new Date().toISOString(),
-        }));
-      }
-    }
-  } catch (error) {
-    console.error("Failed to fetch categories, using mock data", error);
-  }
-
-  let brands = mockBrands;
-  try {
-    const res = await fetch(`${API_BASE}/brands`, { next: { revalidate: 0 } });
-    if (res.ok) {
-      const json = await res.json();
-      if (json.success && json.data) {
-        brands = json.data.map((b: BrandDto) => ({
-          id: b.id,
-          name: b.name,
-          slug: b.slug,
-          logo: b.logo || '',
-          description: b.description || '',
-          productCount: b._count?.products ?? 0,
-          createdAt: b.createdAt || new Date().toISOString(),
-        }));
-      }
-    }
-  } catch (error) {
-    console.error("Failed to fetch brands, using mock data", error);
-  }
-
+export default function AdminCategoriesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -69,11 +18,11 @@ export default async function AdminCategoriesPage() {
             Categories & Brands
           </h1>
           <p className="text-sm text-slate-500">
-            {categories.length} categories · {brands.length} brands
+            {mockCategories.length} categories · {mockBrands.length} brands
           </p>
         </div>
       </div>
-      <CategoriesClient initialCategories={categories} initialBrands={brands} />
+      <CategoriesClient initialCategories={mockCategories} initialBrands={mockBrands} />
     </div>
   );
 }

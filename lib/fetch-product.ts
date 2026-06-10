@@ -7,7 +7,7 @@ import type { ProductDetailDto, ProductListItemDto } from "@/types/product";
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
   try {
     const res = await fetch(`${getServerApiBase()}/products/${encodeURIComponent(slug)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
       credentials: "include",
     });
     if (!res.ok) return null;
@@ -25,7 +25,7 @@ export async function fetchRelatedProducts(
   try {
     const res = await fetch(
       `${getServerApiBase()}/products?categoryId=${product.categoryId}&limit=${limit + 1}`,
-      { cache: "no-store" },
+      { next: { revalidate: 60 } },
     );
     if (!res.ok) return [];
     const json = (await res.json()) as {

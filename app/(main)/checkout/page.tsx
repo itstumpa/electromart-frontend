@@ -645,7 +645,7 @@ export default function CheckoutPage() {
         window.location.href = gatewayUrl;
         return;
       }
-      router.push(`/payment/success?orderId=${order.id}`);
+      router.push(`/payment/result?status=success&orderId=${order.id}`);
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Failed to place order'));
       throw err;

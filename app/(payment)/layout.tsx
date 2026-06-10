@@ -1,7 +1,7 @@
 // app/(payment)/layout.tsx
 // Route group: (payment) — no MainNavbar, no MainFooter
 // Clean isolated layout for payment result pages only
-// URLs: /payment/success | /payment/fail | /payment/cancel
+// URLs: /payment/result?status=success|fail|cancel
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';

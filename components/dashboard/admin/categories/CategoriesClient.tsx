@@ -1,14 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, X, Tag, Bookmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConfirmModal from '../Confirmmodal';
 import { Brand, Category } from '@/data/types';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/utils/api-error';
-import { createCategory, updateCategory, deleteCategory } from '@/api/category.api';
-import { createBrand, updateBrand, deleteBrand as deleteBrandApi } from '@/api/brand.api';
+import {
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  getCategories,
+} from '@/api/category.api';
+import { createBrand, updateBrand, deleteBrand as deleteBrandApi, getBrands } from '@/api/brand.api';
 
 /* ── Category Form Modal ─────────────────────────── */
 function CategoryModal({
@@ -180,6 +185,54 @@ export default function CategoriesClient({
   const [brandModal,  setBrandModal]  = useState(false);
   const [editBrand,   setEditBrand]   = useState<Brand | null>(null);
   const [deleteBrand, setDeleteBrand] = useState<Brand | null>(null);
+
+  // Fetch real data from API on mount (replaces mock initial data)
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchData = async () => {
+      try {
+        const [catRes, brandRes] = await Promise.all([
+          getCategories(),
+          getBrands(),
+        ]);
+
+        if (cancelled) return;
+
+        if (catRes.data?.data) {
+          const realCategories: Category[] = catRes.data.data.map((dto) => ({
+            id: dto.id,
+            name: dto.name,
+            slug: dto.slug,
+            description: '',
+            image: dto.image ?? '',
+            productCount: dto._count?.products ?? 0,
+            createdAt: dto.createdAt ?? new Date().toISOString(),
+            updatedAt: dto.updatedAt ?? new Date().toISOString(),
+          }));
+          setCategories(realCategories);
+        }
+
+        if (brandRes.data?.data) {
+          const realBrands: Brand[] = brandRes.data.data.map((dto) => ({
+            id: dto.id,
+            name: dto.name,
+            slug: dto.slug,
+            logo: dto.logo ?? '',
+            description: dto.description ?? '',
+            productCount: dto._count?.products ?? 0,
+            createdAt: dto.createdAt,
+          }));
+          setBrands(realBrands);
+        }
+      } catch {
+        // Fall back to initial (mock) data — no user-facing error needed
+      }
+    };
+
+    fetchData();
+    return () => { cancelled = true; };
+  }, []);
 
   /* ── Category CRUD ── */
   const handleSaveCategory = async (data: Partial<Category>) => {
