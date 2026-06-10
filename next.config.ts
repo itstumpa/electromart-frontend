@@ -14,14 +14,14 @@ const nextConfig: import("next").NextConfig = {
       { protocol: "https", hostname: "res.cloudinary.com" },
     ],
   },
-  async rewrites() {
-    return [
-      {
-        source: "/api/v1/:path*",
-        destination: `${backendUrl}/api/v1/:path*`,
-      },
-    ];
-  },
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: "/api/v1/:path*",
+  //       destination: `${backendUrl}/api/v1/:path*`,
+  //     },
+  //   ];
+  // },
 };
 
 module.exports = nextConfig;
