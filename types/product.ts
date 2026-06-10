@@ -93,6 +93,7 @@ export interface UiProductCard {
   reviewCount: number;
   featured: boolean;
   bestseller: boolean;
+  isPublished: boolean;
   createdAt: string;
 }
 
@@ -126,6 +127,7 @@ export const mapProductToUiCard = (dto: ProductListItemDto): UiProductCard => {
     reviewCount: dto.reviewCount ?? 0,
     featured: dto.featured ?? false,
     bestseller: dto.bestseller ?? false,
+    isPublished: dto.isActive ?? false,
     createdAt: dto.createdAt,
   };
 };

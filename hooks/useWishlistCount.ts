@@ -1,79 +1,62 @@
 "use client";
 
-import {
-  addToWishlist,
-  getWishlist,
-  removeFromWishlist,
-} from "@/api/wishlist.api";
+import { create } from 'zustand';
+import { addToWishlist, getWishlist, removeFromWishlist } from "@/api/wishlist.api";
 import { authStorage } from "@/utils/auth-storage";
-import { useCallback, useEffect, useState } from "react";
 
-export function useWishlist() {
-  const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
-
-const refresh = useCallback(async () => {
-  const user = authStorage.getAuthUser();
-  if (!user) {
-    setWishlistIds(new Set());
-    return;
-  }
-  try {
-    const res = await getWishlist();
-    const ids = res.data.data?.map((item) => item.productId) ?? [];
-    setWishlistIds(new Set(ids));
-  } catch {
-    setWishlistIds(new Set());
-  }
-}, []);
-
-  useEffect(() => {
-    refresh();
-    const onUpdate = () => refresh();
-    window.addEventListener("wishlist-updated", onUpdate);
-    return () => window.removeEventListener("wishlist-updated", onUpdate);
-  }, [refresh]);
-
-  const toggle = useCallback(
-    async (productId: string) => {
-      const isInWishlist = wishlistIds.has(productId);
-
-      // optimistic update
-      setWishlistIds((prev) => {
-        const next = new Set(prev);
-        isInWishlist ? next.delete(productId) : next.add(productId);
-        return next;
-      });
-
-      try {
-        if (isInWishlist) {
-          await removeFromWishlist(productId);
-        } else {
-          await addToWishlist(productId);
-        }
-        notifyWishlistUpdated();
-      } catch (err) {
-        // revert on failure
-        setWishlistIds((prev) => {
-          const next = new Set(prev);
-          isInWishlist ? next.add(productId) : next.delete(productId);
-          return next;
-        });
-        throw err; // ← rethrow so caller can handle it
-      }
-    },
-    [wishlistIds],
-  );
-
-  return { wishlistIds, toggle, refresh };
+interface WishlistStore {
+  wishlistIds: Set<string>;
+  initialized: boolean;
+  refresh: () => Promise<void>;
+  toggle: (productId: string) => Promise<void>;
 }
 
-export const notifyWishlistUpdated = () => {
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event("wishlist-updated"));
-  }
-};
+export const useWishlist = create<WishlistStore>((set, get) => ({
+  wishlistIds: new Set(),
+  initialized: false,
+
+  refresh: async () => {
+    const user = authStorage.getAuthUser();
+    if (!user) { set({ wishlistIds: new Set(), initialized: true }); return; }
+    try {
+      const res = await getWishlist();
+      const ids = res.data.data?.map((item) => item.productId) ?? [];
+      set({ wishlistIds: new Set(ids), initialized: true });
+    } catch {
+      set({ wishlistIds: new Set(), initialized: true });
+    }
+  },
+
+  toggle: async (productId: string) => {
+    const { wishlistIds } = get();
+    const isInWishlist = wishlistIds.has(productId);
+
+    // optimistic update
+    set((state) => {
+      const next = new Set(state.wishlistIds);
+      isInWishlist ? next.delete(productId) : next.add(productId);
+      return { wishlistIds: next };
+    });
+
+    try {
+      if (isInWishlist) {
+        await removeFromWishlist(productId);
+      } else {
+        await addToWishlist(productId);
+      }
+    } catch (err) {
+      // revert
+      set((state) => {
+        const next = new Set(state.wishlistIds);
+        isInWishlist ? next.add(productId) : next.delete(productId);
+        return { wishlistIds: next };
+      });
+      throw err;
+    }
+  },
+}));
 
 export function useWishlistCount() {
-  const { wishlistIds } = useWishlist();
+  const wishlistIds = useWishlist((state) => state.wishlistIds);
   return { count: wishlistIds.size };
 }

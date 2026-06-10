@@ -1,13 +1,14 @@
-import api from "./axios";
 import type { ApiResponse } from "@/types/api";
 import type {
   ProductDetailDto,
   ProductListItemDto,
   ProductsMeta,
 } from "@/types/product";
+import api from "./axios";
 
 export interface ProductListQuery {
   categoryId?: string;
+  includeInactive?: boolean;
   storeId?: string;
   search?: string;
   minPrice?: number;
@@ -61,16 +62,18 @@ export interface ProductSearchQuery {
 }
 
 export const searchProducts = (query: ProductSearchQuery) => {
-  return api.get<PaginatedApiResponse<ProductListItemDto[]>>("/products/search", {
-    params: query,
-  });
+  return api.get<PaginatedApiResponse<ProductListItemDto[]>>(
+    "/products/search",
+    {
+      params: query,
+    },
+  );
 };
 
 export const getSearchSuggestions = (q: string) => {
-  return api.get<ApiResponse<Array<{ id: string; name: string; images: { url: string }[] }>>>(
-    "/products/search/suggestions",
-    { params: { q } },
-  );
+  return api.get<
+    ApiResponse<Array<{ id: string; name: string; images: { url: string }[] }>>
+  >("/products/search/suggestions", { params: { q } });
 };
 
 // ── Vendor product management ──────────────────────────────
@@ -86,9 +89,8 @@ export interface CreateProductDto {
   isActive?: boolean;
 }
 
-
 export const getMyProducts = () => {
-  return api.get<ApiResponse<ProductListItemDto[]>>('/products/my/products');
+  return api.get<ApiResponse<ProductListItemDto[]>>("/products/my/products");
 };
 
 export const createProduct = (data: CreateProductDto, images?: File[]) => {
@@ -96,18 +98,22 @@ export const createProduct = (data: CreateProductDto, images?: File[]) => {
   Object.entries(data).forEach(([k, v]) => {
     if (v !== undefined) formData.append(k, String(v));
   });
-  images?.forEach((f) => formData.append('files', f));
-  return api.post<ApiResponse<ProductDetailDto>>('/products', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+  images?.forEach((f) => formData.append("files", f));
+  return api.post<ApiResponse<ProductDetailDto>>("/products", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
 };
 
-export const updateProduct = (id: string, data: Partial<CreateProductDto>, newImages?: File[]) => {
+export const updateProduct = (
+  id: string,
+  data: Partial<CreateProductDto>,
+  newImages?: File[],
+) => {
   const formData = new FormData();
-  formData.append('data', JSON.stringify(data));
-newImages?.forEach((f) => formData.append('files', f));
+  formData.append("data", JSON.stringify(data));
+  newImages?.forEach((f) => formData.append("files", f));
   return api.patch<ApiResponse<ProductDetailDto>>(`/products/${id}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+    headers: { "Content-Type": "multipart/form-data" },
   });
 };
 
@@ -117,8 +123,12 @@ export const deleteProduct = (id: string) => {
 
 export const toggleProductVisibility = (id: string, isActive: boolean) => {
   const formData = new FormData();
-  formData.append('data', JSON.stringify({ isActive }));
+  formData.append("data", JSON.stringify({ isActive }));
   return api.patch<ApiResponse<ProductDetailDto>>(`/products/${id}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+    headers: { "Content-Type": "multipart/form-data" },
   });
+};
+
+export const getAdminProducts = () => {
+  return api.get<PaginatedApiResponse<ProductListItemDto[]>>('/products/admin/all');
 };

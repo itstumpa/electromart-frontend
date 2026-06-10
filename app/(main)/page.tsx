@@ -63,6 +63,7 @@ export const metadata = {
 export default function HomePage() {
   return (
     <>
+    
       <HeroBanner />
       <CategoryGrid />
       <FeaturedProducts />

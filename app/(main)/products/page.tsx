@@ -1003,7 +1003,7 @@ export default function HeroBanner() {
                   layout
                   className={
                     view === "grid"
-                      ? "grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-5"
+                      ? "grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-5"
                       : "flex flex-col gap-4"
                   }
                 >
@@ -1067,9 +1067,9 @@ export default function HeroBanner() {
                                   <span className="text-sm font-semibold text-slate-700">
                                     {product.rating}
                                   </span>
-                                  <span className="text-xs text-slate-400">
+                                  {/* <span className="text-xs text-slate-400">
                                     ({product.reviewCount})
-                                  </span>
+                                  </span> */}
                                 </div>
                               </div>
                             </div>

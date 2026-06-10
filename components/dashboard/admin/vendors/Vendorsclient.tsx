@@ -49,39 +49,57 @@ const mapMockVendorToVendorDto = (v: any): VendorDto => ({
 });
 
 export default function VendorsClient({ initialVendors }: { initialVendors?: any[] }) {
-  const [vendors, setVendors] = useState<VendorDto[]>(() => (initialVendors || []).map(mapMockVendorToVendorDto));
+  const [vendors, setVendors] = useState<VendorDto[]>(() =>
+    (initialVendors || [])
+      .filter((v: any) => !v.id.startsWith("store-vendor") && !v.id.startsWith("vendor"))
+      .map(mapMockVendorToVendorDto)
+  );
   const [loading, setLoading] = useState(true);
   const [approveTarget, setApproveTarget] = useState<VendorDto | null>(null);
   const [rejectTarget, setRejectTarget] = useState<VendorDto | null>(null);
   const [processing, setProcessing] = useState(false);
   const [viewVendor, setViewVendor] = useState<VendorDto | null>(null);
+const [cancelTarget, setCancelTarget] = useState<VendorDto | null>(null);
+
 
   useEffect(() => {
     getAllStores()
       .then((res) => {
+        console.log('getAllStores response:', res.data);
         if (res.data?.data) {
-          setVendors(res.data.data);
+          const realVendors = res.data.data
+            .filter((v: any) => !v.id.startsWith("store-vendor") && !v.id.startsWith("vendor"))
+            .map((v: any) => ({
+              ...v,
+              avatar: v.logo || null,
+              ownerName: v.owner?.name || v.ownerName || 'Unknown Owner',
+            }));
+          setVendors(realVendors);
         }
       })
       .catch((err) => toast.error(getApiErrorMessage(err, "Failed to load vendors, using offline data.")))
       .finally(() => setLoading(false));
   }, []);
 
-  const handleApprove = async () => {
-    if (!approveTarget) return;
-    setProcessing(true);
-    try {
-      const res = await api.patch<ApiResponse<VendorDto>>(`/stores/${approveTarget.id}/approve`, { isApproved: true });
-      const updated = res.data.data;
-      setVendors((prev) => prev.map((v) => (v.id === approveTarget.id ? updated : v)));
-      toast.success("Store approved");
-      setApproveTarget(null);
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Failed to approve store"));
-    } finally {
-      setProcessing(false);
-    }
-  };
+const handleApprove = async () => {
+  if (!approveTarget) return;
+  console.log('approving:', approveTarget.id);
+  setProcessing(true);
+  try {
+    const res = await api.patch(`/stores/${approveTarget.id}/approve`, { isApproved: true });
+    console.log('approve response:', res.data);
+    setVendors((prev) => {
+      console.log('prev vendors:', prev.map(v => v.id));
+      return prev.map((v) => v.id === approveTarget.id ? { ...v, isApproved: true } : v);
+    });
+    toast.success("Store approved");
+    setApproveTarget(null);
+  } catch (err) {
+    toast.error(getApiErrorMessage(err, "Failed to approve store"));
+  } finally {
+    setProcessing(false);
+  }
+};
 
   const handleReject = async () => {
     if (!rejectTarget) return;
@@ -97,6 +115,23 @@ export default function VendorsClient({ initialVendors }: { initialVendors?: any
       setProcessing(false);
     }
   };
+
+  const handleCancel = async () => {
+  if (!cancelTarget) return;
+  setProcessing(true);
+  try {
+    await api.patch(`/stores/${cancelTarget.id}/approve`, { isApproved: false });
+    setVendors((prev) =>
+      prev.map((v) => v.id === cancelTarget.id ? { ...v, isApproved: false } : v)
+    );
+    toast.success("Store approval cancelled");
+    setCancelTarget(null);
+  } catch (err) {
+    toast.error(getApiErrorMessage(err, "Failed to cancel approval"));
+  } finally {
+    setProcessing(false);
+  }
+};
 
   const columns: Column<VendorDto>[] = [
     {
@@ -145,16 +180,24 @@ export default function VendorsClient({ initialVendors }: { initialVendors?: any
       <button onClick={() => setViewVendor(s)} className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center hover:bg-amber-100 text-slate-500 hover:text-amber-700 transition-colors" title="View details">
         <Eye size={14} />
       </button>
-      {!s.isApproved && (
-        <>
-          <button onClick={() => setApproveTarget(s)} className="w-8 h-8 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 flex items-center justify-center transition-colors" title="Approve store">
-            <CheckIcon size={14} />
-          </button>
-          <button onClick={() => setRejectTarget(s)} className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center transition-colors" title="Reject store">
-            <X size={14} />
-          </button>
-        </>
-      )}
+{s.isApproved ? (
+  <button
+    onClick={() => setCancelTarget(s)}
+    className="w-8 h-8 rounded-lg bg-orange-100 hover:bg-orange-200 text-orange-600 flex items-center justify-center transition-colors"
+    title="Cancel approval"
+  >
+    <X size={14} />
+  </button>
+) : (
+  <>
+    <button onClick={() => setApproveTarget(s)} className="w-8 h-8 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 flex items-center justify-center transition-colors" title="Approve store">
+      <CheckIcon size={14} />
+    </button>
+    <button onClick={() => setRejectTarget(s)} className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center transition-colors" title="Reject store">
+      <X size={14} />
+    </button>
+  </>
+)}
     </div>
   );
 
@@ -201,6 +244,16 @@ export default function VendorsClient({ initialVendors }: { initialVendors?: any
         onConfirm={handleReject}
         onCancel={() => setRejectTarget(null)}
       />
+
+      <ConfirmModal
+  open={!!cancelTarget}
+  title={`Cancel approval for ${cancelTarget?.name}?`}
+  description="This will move the store back to pending status."
+  confirmLabel="Yes, Cancel Approval"
+  danger={true}
+  onConfirm={handleCancel}
+  onCancel={() => setCancelTarget(null)}
+/>
 
       {/* View modal */}
       <AnimatePresence>
