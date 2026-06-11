@@ -12,14 +12,18 @@ interface Props {
   specifications: ProductSpecification[];
   reviews: Review[];
   productId?: string;
+  details?: string | null;
 }
 
 export default function ProductTabs({
   specifications,
   reviews: initialReviews,
   productId,
+  details,
 }: Props) {
-  const [activeTab, setActiveTab] = useState<"specs" | "reviews">("specs");
+  const [activeTab, setActiveTab] = useState<"details" | "specs" | "reviews">(
+    details ? "details" : "specs",
+  );
   // Own the review list in state — seeded from SSR, refreshed after submit
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const [refreshing, setRefreshing] = useState(false);
@@ -72,32 +76,42 @@ export default function ProductTabs({
     <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden">
       {/* Tab bar */}
       <div className="flex border-b border-slate-100">
-        {(["specs", "reviews"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`relative px-8 py-4 text-sm font-bold capitalize transition-colors ${
-              activeTab === tab
-                ? "text-amber-600"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            {tab === "reviews"
-              ? `Reviews (${reviews.length})`
-              : "Specifications"}
-            {activeTab === tab && (
-              <motion.span
-                layoutId="tab-line"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-600"
-              />
-            )}
-          </button>
-        ))}
+        {(["details", "specs", "reviews"] as const).map((tab) => {
+          if (tab === "details" && !details) return null;
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`relative px-8 py-4 text-sm font-bold capitalize transition-colors ${
+                activeTab === tab
+                  ? "text-amber-600"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              {tab === "reviews"
+                ? `Reviews (${reviews.length})`
+                : tab === "details"
+                  ? "Details"
+                  : "Specifications"}
+              {activeTab === tab && (
+                <motion.span
+                  layoutId="tab-line"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-600"
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Tab body */}
       <div className="p-6 sm:p-8">
-        {activeTab === "specs" ? (
+        {activeTab === "details" && details ? (
+          <div
+            className="prose prose-slate max-w-none prose-headings:text-slate-900 prose-headings:font-bold prose-p:text-slate-700 prose-p:leading-relaxed prose-ul:list-disc prose-ol:list-decimal prose-li:text-slate-700 prose-strong:text-slate-900 prose-a:text-amber-600"
+            dangerouslySetInnerHTML={{ __html: details }}
+          />
+        ) : activeTab === "specs" ? (
           specifications.length > 0 ? (
             <div className="grid sm:grid-cols-2 gap-3">
               {specifications.map((spec) => (

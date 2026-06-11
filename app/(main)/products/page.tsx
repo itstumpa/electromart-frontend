@@ -262,10 +262,11 @@ export default function HeroBanner() {
         const storeMap = new Map<string, Brand>();
         filtered.forEach((p) => {
           if (!storeMap.has(p.brandId)) {
+            const brandName = p.brandName ?? "Unknown Brand";
             storeMap.set(p.brandId, {
               id: p.brandId,
-              name: p.brandName,
-              slug: p.brandName.toLowerCase().replace(/\s+/g, "-"),
+              name: brandName,
+              slug: brandName.toLowerCase().replace(/\s+/g, "-"),
               logo: "",
               productCount: 1,
               createdAt: new Date().toISOString(),
@@ -278,7 +279,10 @@ export default function HeroBanner() {
           prev.length ? prev : Array.from(storeMap.values()),
         );
       })
-      .catch(() => setProductList([]));
+      .catch((err) => {
+        console.error("PRODUCT FETCH ERROR:", err?.message || err);
+        setProductList([]);
+      });
   }, [
     search,
     category,
@@ -715,7 +719,7 @@ export default function HeroBanner() {
       <div className="min-h-screen bg-[#FFFBEB]">
         {/* ── Page header ── */}
         <div className="bg-white border-b border-slate-100">
-        <div className="container mx-auto px-4 sm:px-6 py-4 lg:py-10">
+          <div className="container mx-auto px-4 sm:px-6 py-4 lg:py-10">
             <Reveal>
               <h1
                 className="text-4xl font-black text-slate-900 tracking-tight"

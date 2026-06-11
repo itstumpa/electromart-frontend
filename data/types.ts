@@ -280,6 +280,7 @@ export interface Product {
   name: string;
   slug: string;
   description: string;
+  details?: string;
   status?: 'active' | 'draft' | 'out-of-stock';
   price: number;
   originalPrice?: number;

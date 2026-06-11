@@ -230,6 +230,15 @@ export default async function AdminOverviewPage() {
       iconColor: "text-green-700",
     },
     {
+      label: "Total Vendors",
+      value: totalStores.toLocaleString(),
+      change: 4.2,
+      trend: "up" as const,
+      icon: Store,
+      iconBg: "bg-indigo-100",
+      iconColor: "text-indigo-700",
+    },
+    {
       label: "Total Products",
       value: totalProducts.toLocaleString(),
       change: 3.1,
@@ -279,7 +288,7 @@ export default async function AdminOverviewPage() {
       </div>
 
       {/* ── Stat cards — server rendered ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
         {stats.map((s) => (
           <StatCard key={s.label} {...s} />
         ))}

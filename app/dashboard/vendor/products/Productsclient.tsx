@@ -39,9 +39,11 @@ interface ProductForm {
   stock: string;
   categoryId: string;
   description: string;
+  details: string;
   featured: boolean;
   isActive: boolean;
   imageUrl: string;
+  specifications: { key: string; value: string }[];
 }
 
 const BLANK_FORM: ProductForm = {
@@ -51,9 +53,11 @@ const BLANK_FORM: ProductForm = {
   stock: "",
   categoryId: "",
   description: "",
+  details: "",
   featured: false,
   isActive: true,
   imageUrl: "",
+  specifications: [],
 };
 
 function Field({
@@ -112,9 +116,11 @@ function ProductModal({
           stock: String(initial.stock),
           categoryId: initial.categoryId,
           description: initial.description ?? "",
+          details: initial.details ?? "",
           featured: initial.featured ?? false,
           isActive: initial.isActive,
           imageUrl: initial.images?.[0]?.url ?? "",
+          specifications: initial.specifications ?? [],
         }
       : BLANK_FORM,
   );
@@ -305,17 +311,122 @@ function ProductModal({
           {/* Description */}
           <div>
             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">
-              Description
+              Product Overview
             </label>
             <textarea
-              rows={3}
-              placeholder="Describe your product..."
+              rows={6}
+              placeholder="Describe your product in detail — key features, benefits, use cases, target audience, and what makes it special..."
               value={form.description}
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
               }
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition resize-none"
             />
+          </div>
+
+          {/* Details (rich content) */}
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">
+              Details Section
+            </label>
+            <p className="text-xs text-slate-400 mb-2">
+              Use HTML tags for rich formatting — &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;ol&gt;, &lt;li&gt;, &lt;strong&gt;, etc.
+            </p>
+            <textarea
+              rows={10}
+              placeholder={`<h2>Key Highlights</h2>
+<p>This product is designed for...</p>
+<ul>
+  <li>Feature one</li>
+  <li>Feature two</li>
+</ul>
+<ol>
+  <li>Step one</li>
+  <li>Step two</li>
+</ol>`}
+              value={form.details}
+              onChange={(e) =>
+                setForm({ ...form, details: e.target.value })
+              }
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition resize-none font-mono"
+            />
+          </div>
+
+          {/* Specifications */}
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">
+              Specifications
+            </label>
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {["Key Features", "What's in the Box", "Warranty", "Compatibility"].map((tmpl) => (
+                <button
+                  key={tmpl}
+                  type="button"
+                  onClick={() => {
+                    if (form.specifications.some((s) => s.key === tmpl)) return;
+                    setForm({
+                      ...form,
+                      specifications: [...form.specifications, { key: tmpl, value: "" }],
+                    });
+                  }}
+                  className="text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 hover:bg-amber-100 hover:text-amber-700 transition-colors font-medium"
+                >
+                  + {tmpl}
+                </button>
+              ))}
+            </div>
+            <div className="space-y-2">
+              {form.specifications.map((spec, idx) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    placeholder="Key (e.g. RAM)"
+                    value={spec.key}
+                    onChange={(e) => {
+                      const specs = [...form.specifications];
+                      specs[idx] = { ...specs[idx], key: e.target.value };
+                      setForm({ ...form, specifications: specs });
+                    }}
+                    className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Value (e.g. 16GB)"
+                    value={spec.value}
+                    onChange={(e) => {
+                      const specs = [...form.specifications];
+                      specs[idx] = { ...specs[idx], value: e.target.value };
+                      setForm({ ...form, specifications: specs });
+                    }}
+                    className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForm({
+                        ...form,
+                        specifications: form.specifications.filter((_, i) => i !== idx),
+                      });
+                    }}
+                    className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors shrink-0"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                setForm({
+                  ...form,
+                  specifications: [...form.specifications, { key: "", value: "" }],
+                })
+              }
+              className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+            >
+              <Plus size={13} /> Add Specification
+            </button>
           </div>
 
           {/* Toggles */}
@@ -450,8 +561,14 @@ export default function VendorProductsClient() {
       stock: parseInt(data.stock),
       categoryId: data.categoryId,
       description: data.description || undefined,
+      details: data.details || undefined,
       featured: data.featured,
       isActive: data.isActive,
+      specifications:
+        data.specifications.length > 0
+          ? data.specifications.filter((s) => s.key.trim() && s.value.trim())
+          : undefined,
+      imageUrl: data.imageUrl || undefined,
     };
 
     const images = imageFile ? [imageFile] : undefined;

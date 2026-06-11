@@ -65,6 +65,10 @@ export const updateOrderStatus = (id: string, status: string) => {
   return api.patch<ApiResponse<OrderDto>>(`/orders/${id}`, { status });
 };
 
+export const adminCancelOrder = (id: string, reason?: string) => {
+  return api.patch<ApiResponse<null>>(`/orders/${id}/admin-cancel`, { reason });
+};
+
 export interface VendorOrderItemDto {
   id: string;
   orderId: string;

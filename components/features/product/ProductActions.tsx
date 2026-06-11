@@ -10,6 +10,7 @@ import {
   Shield,
   ShoppingCart,
   Truck,
+  Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -21,6 +22,7 @@ import {
 } from "@/api/wishlist.api";
 import { notifyCartUpdated } from "@/hooks/useCartCount";
 import { getApiErrorMessage, isUnauthorized } from "@/utils/api-error";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 interface Props {
@@ -40,6 +42,8 @@ export default function ProductActions({
   const [wishlisted, setWishlisted] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [buyingNow, setBuyingNow] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     checkWishlistItem(productId)
@@ -76,6 +80,21 @@ export default function ProductActions({
       toast.error(getApiErrorMessage(err));
     } finally {
       setAdding(false);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    setBuyingNow(true);
+    try {
+      await addToCart(productId, qty);
+      notifyCartUpdated();
+      router.push("/checkout");
+    } catch (err) {
+      toast.error(
+        getApiErrorMessage(err, "Unable to proceed. Please try again."),
+      );
+    } finally {
+      setBuyingNow(false);
     }
   };
 
@@ -141,6 +160,27 @@ export default function ProductActions({
               </motion.span>
             )}
           </AnimatePresence>
+        </motion.button>
+
+        {/* Buy Now */}
+        <motion.button
+          onClick={handleBuyNow}
+          whileTap={{ scale: 0.97 }}
+          disabled={stock === 0 || buyingNow}
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm bg-white border-2 border-amber-600 text-slate-800 hover:bg-amber-50 disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 shadow-md transition-all duration-300"
+        >
+          {buyingNow ? (
+            <motion.span
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }}
+              className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full block"
+            />
+          ) : (
+            <>
+              <Zap size={16} />
+              {stock === 0 ? "Unavailable" : "Buy Now"}
+            </>
+          )}
         </motion.button>
 
         {/* Wishlist */}

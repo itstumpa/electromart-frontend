@@ -278,6 +278,7 @@ export default async function ProductDetailPage({ params }: Props) {
             specifications={product.specifications}
             reviews={productReviews}
             productId={product.id}
+            details={product.details}
           />
         </Reveal>
 

@@ -48,13 +48,19 @@ export interface OrderDto {
   updatedAt: string;
   items: OrderItemDto[];
   shipping?: OrderShippingDto | null;
-  user?: { id: string; name: string; email: string };
+  user?: { id: string; name: string; email: string; phone?: string | null };
   payment?: {
     id: string;
     status: string;
     method?: string;
     amount?: string | number;
   } | null;
+  statusHistory?: {
+    id: string;
+    status: string;
+    note?: string | null;
+    createdAt: string;
+  }[];
 }
 
 export interface TimelineEntryDto {

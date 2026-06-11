@@ -33,6 +33,7 @@ export interface ProductListItemDto {
   name: string;
   slug: string;
   description?: string | null;
+  details?: string | null;
   price: string | number;
   originalPrice?: string | number | null;
   stock: number;
@@ -48,6 +49,7 @@ export interface ProductListItemDto {
   images: ProductImageDto[];
   category: ProductCategoryDto;
   store: ProductStoreDto;
+  specifications?: { key: string; value: string }[];
 }
 
 export interface ProductDetailDto {
@@ -55,6 +57,7 @@ export interface ProductDetailDto {
   name: string;
   slug?: string;
   description?: string | null;
+  details?: string | null;
   price: string | number;
   stock: number;
   storeId: string;
@@ -81,12 +84,14 @@ export interface UiProductCard {
   name: string;
   slug: string;
   description: string;
+  details?: string;
   price: number;
   originalPrice?: number;
   stock: number;
   image: string;
   images: string[];
   brandName: string;
+  storeName: string;
   categoryId: string;
   categoryName: string;
   rating: number;
@@ -115,12 +120,14 @@ export const mapProductToUiCard = (dto: ProductListItemDto): UiProductCard => {
     name: dto.name,
     slug: dto.slug,
     description: dto.description ?? "",
+    details: dto.details ?? undefined,
     price: toNumber(dto.price),
     originalPrice: dto.originalPrice != null ? toNumber(dto.originalPrice) : undefined, // ← add this
     stock: dto.stock,
     image: primaryImage,
     images,
     brandName: dto.store?.name ?? "ElectroMart",
+    storeName: dto.store?.name ?? "ElectroMart",
     categoryId: dto.categoryId,
     categoryName: dto.category?.name ?? "",
     rating: dto.rating ?? 0,

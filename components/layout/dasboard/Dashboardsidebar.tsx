@@ -2,93 +2,56 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  LayoutDashboard, Users, Store, Package,
-  ShoppingBag, ShoppingCart, Tag, Menu, X,
-  LogOut, Settings, Bell, User,
-  Heart, MapPin, Star, Wallet,
-  ClipboardList, BarChart2, Boxes,
+  Menu, X,
+  LogOut, Settings, User,
   ArrowBigLeft,
 } from 'lucide-react';
 import type { UserRole } from '@/data/types';
 import { authStorage } from '@/utils/auth-storage';
 import { logoutUser } from '@/api/auth.api';
+import { getAdminDashboard } from '@/api/admin.api';
 import { toast } from 'sonner';
-
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ElementType;
-  badge?: number;
-}
-
-// ─── Nav definitions per role ──────────────────────────────
-const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
-  SUPER_ADMIN: [
-    { label: 'Overview',   href: '/dashboard/admin',            icon: LayoutDashboard },
-    { label: 'Users',      href: '/dashboard/admin/users',      icon: Users },
-    { label: 'Vendors',    href: '/dashboard/admin/vendors',    icon: Store,      badge: 2 },
-    { label: 'Products',   href: '/dashboard/admin/products',   icon: Package },
-    { label: 'Orders',     href: '/dashboard/admin/orders',     icon: ShoppingBag },
-    { label: 'Categories', href: '/dashboard/admin/categories', icon: Tag },
-  ],
-  ADMIN: [
-    { label: 'Overview',   href: '/dashboard/admin',            icon: LayoutDashboard },
-    { label: 'Users',      href: '/dashboard/admin/users',      icon: Users },
-    { label: 'Vendors',    href: '/dashboard/admin/vendors',    icon: Store,      badge: 2 },
-    { label: 'Products',   href: '/dashboard/admin/products',   icon: Package },
-    { label: 'Orders',     href: '/dashboard/admin/orders',     icon: ShoppingBag },
-    { label: 'Categories', href: '/dashboard/admin/categories', icon: Tag },
-  ],
-  VENDOR: [
-    { label: 'Overview',   href: '/dashboard/vendor',           icon: LayoutDashboard },
-    { label: 'Products',   href: '/dashboard/vendor/products',  icon: Package },
-    { label: 'Orders',     href: '/dashboard/vendor/orders',    icon: ShoppingBag },
-    { label: 'Inventory',  href: '/dashboard/vendor/inventory', icon: Boxes },
-    { label: 'Earnings',   href: '/dashboard/vendor/earnings',  icon: Wallet },
-    { label: 'Store',      href: '/dashboard/vendor/store',     icon: Store },
-  ],
-  CUSTOMER: [
-    { label: 'Overview',       href: '/dashboard/customer',               icon: LayoutDashboard },
-    { label: 'My Orders',      href: '/dashboard/customer/orders',        icon: ShoppingBag },
-    { label: 'My Cart',        href: '/dashboard/customer/cart',          icon: ShoppingCart },
-    { label: 'Wishlist',       href: '/dashboard/customer/wishlist',      icon: Heart },
-    { label: 'My Reviews',     href: '/dashboard/customer/reviews',       icon: Star },
-    { label: 'Addresses',      href: '/dashboard/customer/addresses',     icon: MapPin },
-    { label: 'Notifications',  href: '/dashboard/customer/notifications', icon: Bell },
-  ],
-  DELIVERY: [
-    { label: 'Overview',   href: '/dashboard/delivery',          icon: LayoutDashboard },
-    { label: 'Assigned',   href: '/dashboard/delivery/assigned', icon: ClipboardList },
-    { label: 'History',    href: '/dashboard/delivery/history',  icon: BarChart2 },
-  ],
-};
-
-const ROLE_LABEL: Record<UserRole, string> = {
-  SUPER_ADMIN: 'Super Admin',
-  ADMIN:       'Admin',
-  VENDOR:      'Vendor',
-  CUSTOMER:    'Customer',
-  DELIVERY:    'Delivery Agent',
-};
-
-// ─── Root href per role (for exact-match check) ────────────
-const ROLE_ROOT: Record<UserRole, string> = {
-  SUPER_ADMIN: '/dashboard/admin',
-  ADMIN:       '/dashboard/admin',
-  VENDOR:      '/dashboard/vendor',
-  CUSTOMER:    '/dashboard/customer',
-  DELIVERY:    '/dashboard/delivery',
-};
+import {
+  NAV_BY_ROLE,
+  ROLE_LABEL,
+  ROLE_ROOT,
+  type NavItem,
+} from '@/lib/dashboard-nav.config';
 
 interface Props { role: UserRole }
 
 export default function DashboardSidebar({ role }: Props) {
   const pathname    = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const navItems    = NAV_BY_ROLE[role];
+  const [vendorCount, setVendorCount] = useState<number | null>(null);
+
+  // Fetch vendor count for admin roles
+  useEffect(() => {
+    if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
+      getAdminDashboard()
+        .then((res) => {
+          const count = res.data.data?.totalStores;
+          if (typeof count === 'number') setVendorCount(count);
+        })
+        .catch(() => { /* silently ignore — badge simply won't show */ });
+    }
+  }, [role]);
+
+  // Build nav items with dynamic badges
+  const navItems: NavItem[] = (() => {
+    const items = NAV_BY_ROLE[role];
+    if ((role === 'SUPER_ADMIN' || role === 'ADMIN') && vendorCount !== null) {
+      return items.map((item) =>
+        item.href === '/dashboard/admin/vendors'
+          ? { ...item, badge: vendorCount }
+          : item,
+      );
+    }
+    return items;
+  })();
   const roleRoot    = ROLE_ROOT[role];
 
   const isActive = (href: string) =>

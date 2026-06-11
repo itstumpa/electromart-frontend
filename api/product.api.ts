@@ -85,8 +85,11 @@ export interface CreateProductDto {
   stock: number;
   categoryId: string;
   description?: string;
+  details?: string;
   featured?: boolean;
   isActive?: boolean;
+  specifications?: { key: string; value: string }[];
+  imageUrl?: string;
 }
 
 export const getMyProducts = () => {
@@ -96,7 +99,9 @@ export const getMyProducts = () => {
 export const createProduct = (data: CreateProductDto, images?: File[]) => {
   const formData = new FormData();
   Object.entries(data).forEach(([k, v]) => {
-    if (v !== undefined) formData.append(k, String(v));
+    if (v !== undefined) {
+      formData.append(k, typeof v === 'object' ? JSON.stringify(v) : String(v));
+    }
   });
   images?.forEach((f) => formData.append("files", f));
   return api.post<ApiResponse<ProductDetailDto>>("/products", formData, {
