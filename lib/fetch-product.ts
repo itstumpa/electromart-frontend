@@ -14,7 +14,7 @@ export async function fetchProductBySlug(
     const res = await fetch(
       `${getServerApiBase()}/products/${encodeURIComponent(slug)}`,
       {
-        next: { revalidate: 60 },
+        cache: 'no-store',
         credentials: "include",
       },
     );
@@ -33,7 +33,7 @@ export async function fetchRelatedProducts(
   try {
     const res = await fetch(
       `${getServerApiBase()}/products?categoryId=${product.categoryId}&limit=${limit + 1}`,
-      { next: { revalidate: 60 } },
+      { cache: 'no-store' },
     );
     if (!res.ok) return [];
     const json = (await res.json()) as {

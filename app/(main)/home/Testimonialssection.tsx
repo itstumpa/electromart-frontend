@@ -1,4 +1,3 @@
-// components/features/testimonials/testimonials-section.tsx
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
@@ -81,7 +80,7 @@ const STATIC_TESTIMONIALS = [
 ];
 
 /* ── Map a real DB review into the testimonial shape ── */
-function mapReviewToTestimonial(r: ReviewDto) {
+function mapReviewToTestimonial(r: ReviewDto, index: number) {
   const daysAgo = Math.floor(
     (Date.now() - new Date(r.createdAt).getTime()) / 86_400_000,
   );
@@ -96,12 +95,14 @@ function mapReviewToTestimonial(r: ReviewDto) {
             ? `${Math.floor(daysAgo / 7)} week${Math.floor(daysAgo / 7) > 1 ? 's' : ''} ago`
             : `${Math.floor(daysAgo / 30)} month${Math.floor(daysAgo / 30) > 1 ? 's' : ''} ago`;
 
-  return {
+return {
     id: r.id,
     name: r.customer?.name ?? 'Verified Customer',
     role: 'Verified Buyer',
     location: 'Bangladesh',
-    avatar: r.customer?.avatar ?? '',
+    avatar:
+      r.customer?.avatar?.trim() ||
+      STATIC_TESTIMONIALS[index % STATIC_TESTIMONIALS.length].avatar,
     rating: r.rating,
     product: r.product?.name ?? 'ElectroMart Product',
     comment: r.comment,
@@ -141,6 +142,37 @@ function StarRating({ rating, size = 13 }: { rating: number; size?: number }) {
   );
 }
 
+/* ── Avatar — fixes the flex + fill conflict ──── */
+function Avatar({ src, name, size }: { src: string; name: string; size: number }) {
+  const [imgError, setImgError] = useState(false);
+  const sizeClass = size === 44 ? 'w-11 h-11' : 'w-9 h-9';
+  const ringClass = size === 44 ? 'ring-amber-100 ring-offset-1' : 'ring-white';
+
+  const showImage = src && !imgError;
+
+  return (
+    <div className={cn('relative shrink-0 rounded-full overflow-hidden ring-2', sizeClass, ringClass)}>
+      {showImage ? (
+        <Image
+          src={src}
+          alt={name}
+          fill
+          sizes={`${size}px`}
+          className="object-cover"
+          unoptimized
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <div className="w-full h-full bg-amber-100 flex items-center justify-center">
+          <span className="text-amber-700 font-black" style={{ fontSize: size * 0.4 }}>
+            {name.charAt(0).toUpperCase()}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Review Card ──────────────────────────────── */
 function ReviewCard({ testimonial }: { testimonial: Testimonial }) {
   return (
@@ -148,21 +180,7 @@ function ReviewCard({ testimonial }: { testimonial: Testimonial }) {
       <div className="h-full bg-white rounded-2xl border border-border-primary/60 p-6 flex flex-col gap-4 hover:border-primary/30 hover:shadow-md hover:shadow-amber-900/4 transition-all duration-300">
         {/* Header — Avatar + Info */}
         <div className="flex items-center gap-3.5">
-          <div className="relative w-11 h-11 rounded-full overflow-hidden ring-2 ring-amber-100 ring-offset-1 shrink-0 bg-amber-100 flex items-center justify-center">
-            {testimonial.avatar ? (
-              <Image
-                src={testimonial.avatar}
-                alt={testimonial.name}
-                fill
-                className="object-cover"
-                sizes="44px"
-              />
-            ) : (
-              <span className="text-amber-700 font-black text-lg">
-                {testimonial.name.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
+          <Avatar src={testimonial.avatar} name={testimonial.name} size={44} />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <p className="text-sm font-semibold text-foreground truncate">
@@ -224,23 +242,22 @@ export default function TestimonialsSection() {
 
   const [displayList, setDisplayList] = useState<Testimonial[]>(STATIC_TESTIMONIALS);
 
-  // Fetch real reviews on mount and replace static fallbacks if enough exist
   useEffect(() => {
     getLatestReviews(10)
       .then((res) => {
         const real = (res.data?.data ?? []).filter((r) => r.comment?.trim());
+         console.log('real reviews:', real.length, real);
         if (real.length >= 3) {
           setDisplayList(real.map(mapReviewToTestimonial));
         } else if (real.length > 0) {
-          // Blend: real reviews first, fill remainder with static
           const mapped = real.map(mapReviewToTestimonial);
           const fill = STATIC_TESTIMONIALS.slice(0, 5 - mapped.length);
           setDisplayList([...mapped, ...fill]);
         }
-        // < 1 real review → keep static fallback as-is
       })
-      .catch(() => {
-        // Network error or backend unavailable → keep static
+      .catch((err) => {
+         console.error('review fetch failed:', err);
+        // keep static fallback
       });
   }, []);
 
@@ -327,23 +344,12 @@ export default function TestimonialsSection() {
         >
           <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-linear-to-r from-amber-50 via-white to-amber-50 rounded-2xl border border-amber-100/80 px-8 py-6 shadow-sm">
             <div className="flex items-center gap-3">
-              {/* Stacked avatars — initials from display list */}
+              {/* Stacked avatars — FIXED: no flex on the image wrapper */}
               <div className="flex -space-x-2.5">
                 {displayList.slice(0, 4).map((t) => (
-                  <div
-                    key={t.id}
-                    className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-white bg-amber-100 flex items-center justify-center"
-                  >
-                    {t.avatar ? (
-                      <Image src={t.avatar} alt={t.name} fill className="object-cover" sizes="36px" />
-                    ) : (
-                      <span className="text-amber-700 font-black text-sm">
-                        {t.name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
+                  <Avatar key={t.id} src={t.avatar} name={t.name} size={36} />
                 ))}
-                <div className="w-9 h-9 rounded-full ring-2 ring-white bg-primary flex items-center justify-center text-[10px] font-bold text-white">
+                <div className="w-9 h-9 rounded-full ring-2 ring-white bg-primary flex items-center justify-center text-[10px] font-bold text-white shrink-0">
                   +50K
                 </div>
               </div>

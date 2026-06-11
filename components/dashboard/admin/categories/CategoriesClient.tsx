@@ -462,6 +462,15 @@ export default function CategoriesClient({
               }`}
             >
               {tab}
+              <span
+                className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
+                  activeTab === tab
+                    ? "bg-white/20 text-white"
+                    : "bg-slate-100 text-slate-500"
+                }`}
+              >
+                {tab === "categories" ? categories.length : brands.length}
+              </span>
             </button>
           ))}
         </div>

@@ -329,6 +329,7 @@ export interface Review {
 export interface CartItem {
   id: string;
   productId: string;
+  productSlug: string;
   productName: string;
   productImage: string;
   vendorId: string;

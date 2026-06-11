@@ -1,6 +1,5 @@
 // SERVER COMPONENT — static shell; CategoriesClient fetches data client-side
 import CategoriesClient from "@/components/dashboard/admin/categories/CategoriesClient";
-import { mockBrands, mockCategories } from "@/data/mock-data";
 import { Tag } from "lucide-react";
 import { Metadata } from "next";
 
@@ -21,14 +20,11 @@ export default function AdminCategoriesPage() {
             Categories & Brands
           </h1>
           <p className="text-sm text-slate-500">
-            {mockCategories.length} categories · {mockBrands.length} brands
+            Manage product categories and brands
           </p>
         </div>
       </div>
-      <CategoriesClient
-        initialCategories={mockCategories}
-        initialBrands={mockBrands}
-      />
+      <CategoriesClient initialCategories={[]} initialBrands={[]} />
     </div>
   );
 }

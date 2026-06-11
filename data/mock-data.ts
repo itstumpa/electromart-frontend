@@ -904,6 +904,7 @@ export const mockCart: Cart = {
     {
       id: "cart-item-1",
       productId: "prod-1",
+      productSlug: "iphone-15-pro-max",
       productName: "iPhone 15 Pro Max",
       productImage:
         "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=200",
@@ -918,6 +919,7 @@ export const mockCart: Cart = {
     {
       id: "cart-item-2",
       productId: "prod-3",
+      productSlug: "sony-wh-1000xm5-wireless-headphones",
       productName: "Sony WH-1000XM5 Wireless Headphones",
       productImage:
         "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200",
@@ -931,6 +933,7 @@ export const mockCart: Cart = {
     {
       id: "cart-item-3",
       productId: "prod-10",
+      productSlug: "samsung-65w-usb-c-super-fast-charger-trio",
       productName: "Samsung 65W USB-C Super Fast Charger Trio",
       productImage:
         "https://images.unsplash.com/photo-1625895197185-efcec01cffe0?w=200",

@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Users, Store, Package,
-  ShoppingBag, Tag, Menu, X,
+  ShoppingBag, ShoppingCart, Tag, Menu, X,
   LogOut, Settings, Bell, User,
   Heart, MapPin, Star, Wallet,
   ClipboardList, BarChart2, Boxes,
@@ -53,6 +53,7 @@ const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
   CUSTOMER: [
     { label: 'Overview',       href: '/dashboard/customer',               icon: LayoutDashboard },
     { label: 'My Orders',      href: '/dashboard/customer/orders',        icon: ShoppingBag },
+    { label: 'My Cart',        href: '/dashboard/customer/cart',          icon: ShoppingCart },
     { label: 'Wishlist',       href: '/dashboard/customer/wishlist',      icon: Heart },
     { label: 'My Reviews',     href: '/dashboard/customer/reviews',       icon: Star },
     { label: 'Addresses',      href: '/dashboard/customer/addresses',     icon: MapPin },

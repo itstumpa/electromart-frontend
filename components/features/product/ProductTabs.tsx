@@ -39,7 +39,7 @@ export default function ProductTabs({
               rating: number;
               comment: string;
               createdAt: string;
-              customer?: { name: string; avatar?: string | null };
+              customer?: { id: string; name: string; avatar?: string | null };
             }>;
           }
         )?.reviews ?? [];
@@ -56,8 +56,8 @@ export default function ProductTabs({
           updatedAt: r.createdAt,
         })),
       );
-    } catch {
-      // silently keep existing reviews if refresh fails
+    } catch (err) {
+      console.error("Failed to refresh reviews:", err);
     } finally {
       setRefreshing(false);
     }
@@ -157,15 +157,23 @@ export default function ProductTabs({
                 key={review.id}
                 className="flex gap-4 pb-5 border-b border-slate-100 last:border-0 last:pb-0"
               >
-                {review.customerAvatar && (
-                  <Image
-                    src={review.customerAvatar}
-                    alt={review.customerName}
-                    width={40}
-                    height={40}
-                    className="w-10 h-10 rounded-full object-cover shrink-0"
-                  />
-                )}
+                <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 bg-amber-100 flex items-center justify-center">
+                  {review.customerAvatar ? (
+                    <Image
+                      key={review.customerAvatar}
+                      src={review.customerAvatar}
+                      alt={review.customerName}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <span className="text-amber-700 font-black text-sm">
+                      {review.customerName.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                     <span className="text-sm font-bold text-slate-900">

@@ -8,6 +8,7 @@ export const mapCartItemDtoToUi = (dto: CartItemDto): CartItem => {
   return {
     id: dto.id,
     productId: dto.productId,
+    productSlug: dto.productSlug,
     productName: dto.productName,
     productImage: dto.productImage,
     vendorId: "",

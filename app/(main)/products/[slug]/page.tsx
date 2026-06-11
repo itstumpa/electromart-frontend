@@ -13,13 +13,13 @@ import type { ApiResponse } from "@/types/api";
 import ProductCard from "../../Utilities/Productcard";
 import Reveal from "../../Utilities/Reveal";
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 async function fetchProductReviews(productId: string): Promise<Review[]> {
   try {
     const res = await fetch(
       `${getServerApiBase()}/reviews/product/${productId}?limit=20`,
-      { next: { revalidate: 60 } },
+      { cache: 'no-store', credentials: 'include' },
     );
     if (!res.ok) return [];
     const json = (await res.json()) as ApiResponse<{
@@ -30,7 +30,7 @@ async function fetchProductReviews(productId: string): Promise<Review[]> {
         rating: number;
         comment: string;
         createdAt: string;
-        customer?: { name: string; avatar?: string | null };
+        customer?: { id: string; name: string; avatar?: string | null };
       }>;
     }>;
     return (json.data?.reviews ?? []).map((r) => ({

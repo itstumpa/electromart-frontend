@@ -108,7 +108,7 @@ export const toNumber = (value: string | number | null | undefined): number => {
 
 export const mapProductToUiCard = (dto: ProductListItemDto): UiProductCard => {
   const images = dto.images?.map((i) => i.url).filter(Boolean) ?? [];
-  const primaryImage = images[0] ?? "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=800&q=80";
+  const primaryImage = images[0] ?? "";
 
   return {
     id: dto.id,
