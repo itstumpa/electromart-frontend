@@ -49,6 +49,7 @@ export interface ProductListItemDto {
   images: ProductImageDto[];
   category: ProductCategoryDto;
   store: ProductStoreDto;
+  brand?: { id: string; name: string; slug: string } | null;
   specifications?: { key: string; value: string }[];
 }
 
@@ -126,7 +127,7 @@ export const mapProductToUiCard = (dto: ProductListItemDto): UiProductCard => {
     stock: dto.stock,
     image: primaryImage,
     images,
-    brandName: dto.store?.name ?? "ElectroMart",
+    brandName: dto.brand?.name ?? dto.store?.name ?? "ElectroMart",
     storeName: dto.store?.name ?? "ElectroMart",
     categoryId: dto.categoryId,
     categoryName: dto.category?.name ?? "",

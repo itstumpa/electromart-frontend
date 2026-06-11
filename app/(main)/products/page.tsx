@@ -1,5 +1,6 @@
 "use client";
 
+import { getBrands } from "@/api/brand.api";
 import { getCategories, mapCategoriesToListItems } from "@/api/category.api";
 import { getProducts, searchProducts } from "@/api/product.api";
 import { Button } from "@/components/ui/button";
@@ -207,6 +208,26 @@ export default function HeroBanner() {
   }, []);
 
   useEffect(() => {
+    getBrands()
+      .then((res) => {
+        const apiBrands = res.data.data;
+        setBrands(
+          apiBrands.map((b) => ({
+            id: b.id,
+            name: b.name,
+            slug: b.slug,
+            logo: b.logo ?? "",
+            productCount: b._count?.products ?? 0,
+            createdAt: b.createdAt,
+          })),
+        );
+      })
+      .catch(() => {
+        setBrands([]);
+      });
+  }, []);
+
+  useEffect(() => {
     setVendor(urlVendor);
   }, [urlVendor]);
 
@@ -259,25 +280,6 @@ export default function HeroBanner() {
         if (minRating > 0)
           filtered = filtered.filter((p) => p.rating >= minRating);
         setProductList(filtered);
-        const storeMap = new Map<string, Brand>();
-        filtered.forEach((p) => {
-          if (!storeMap.has(p.brandId)) {
-            const brandName = p.brandName ?? "Unknown Brand";
-            storeMap.set(p.brandId, {
-              id: p.brandId,
-              name: brandName,
-              slug: brandName.toLowerCase().replace(/\s+/g, "-"),
-              logo: "",
-              productCount: 1,
-              createdAt: new Date().toISOString(),
-            });
-          } else {
-            storeMap.get(p.brandId)!.productCount += 1;
-          }
-        });
-        setBrands((prev) =>
-          prev.length ? prev : Array.from(storeMap.values()),
-        );
       })
       .catch((err) => {
         console.error("PRODUCT FETCH ERROR:", err?.message || err);
@@ -789,10 +791,7 @@ export default function HeroBanner() {
                         <span
                           className={`text-xs ${category === cat.slug ? "text-amber-200" : "text-slate-400"}`}
                         >
-                          {
-                            productList.filter((p) => p.categoryId === cat.id)
-                              .length
-                          }
+                          {cat.productCount}
                         </span>
                       </button>
                     ))}

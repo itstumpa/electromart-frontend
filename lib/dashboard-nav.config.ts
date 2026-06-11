@@ -48,6 +48,7 @@ export const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: "Products",   href: "/dashboard/admin/products",   icon: Package },
     { label: "Orders",     href: "/dashboard/admin/orders",     icon: ShoppingBag },
     { label: "Categories", href: "/dashboard/admin/categories", icon: Tag },
+    { label: "Coupons",    href: "/dashboard/admin/coupon",     icon: Tag },
   ],
   ADMIN: [
     { label: "Overview",   href: "/dashboard/admin",            icon: LayoutDashboard },
@@ -56,6 +57,7 @@ export const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: "Products",   href: "/dashboard/admin/products",   icon: Package },
     { label: "Orders",     href: "/dashboard/admin/orders",     icon: ShoppingBag },
     { label: "Categories", href: "/dashboard/admin/categories", icon: Tag },
+    { label: "Coupons",    href: "/dashboard/admin/coupon",     icon: Tag },
   ],
   VENDOR: [
     { label: "Overview",   href: "/dashboard/vendor",           icon: LayoutDashboard },

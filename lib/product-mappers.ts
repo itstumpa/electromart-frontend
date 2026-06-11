@@ -27,7 +27,7 @@ export const mapListItemDtoToProduct = (dto: ProductListItemDto): Product => {
     vendorName: card.brandName || "ElectroMart",
     categoryId: card.categoryId,
     categoryName: card.categoryName,
-    brandId: dto.storeId,
+    brandId: dto.brand?.id ?? dto.storeId,
     brandName: card.brandName || "ElectroMart",
     name: card.name,
     slug: card.slug,

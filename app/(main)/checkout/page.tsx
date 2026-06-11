@@ -859,8 +859,11 @@ export default function CheckoutPage() {
       await applyCartCoupon(code);
       await loadCheckoutData();
       setCouponError("");
+      toast.success("Coupon applied successfully");
     } catch (err) {
-      setCouponError(getApiErrorMessage(err, "Invalid coupon code"));
+      const msg = getApiErrorMessage(err, "Invalid coupon code");
+      setCouponError(msg);
+      toast.error(msg);
     } finally {
       setCouponApplying(false);
     }

@@ -8,6 +8,7 @@ import {
   DollarSign,
   Eye,
   Hash,
+  Loader2,
   Pencil,
   Percent,
   Plus,
@@ -19,78 +20,22 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  getAdminCoupons,
+  createAdminCoupon,
+  updateAdminCoupon,
+  toggleAdminCoupon,
+  deleteAdminCoupon,
+  type AdminCoupon,
+} from "@/api/admin.api";
 
 /* ── Types ─────────────────────────────────────────── */
 export type DiscountType = "PERCENTAGE" | "FIXED";
-export type CouponStatus = "ACTIVE" | "INACTIVE";
 
-export interface Coupon {
-  id: string;
-  code: string;
-  discountType: DiscountType;
-  discountValue: number;
-  minOrderAmount?: number;
-  maxDiscount?: number;
-  usageLimit?: number;
-  usedCount: number;
-  expiryDate?: string;
-  isActive: boolean;
-  createdAt: string;
-}
-
-/* ── Mock data ──────────────────────────────────────── */
-const MOCK_COUPONS: Coupon[] = [
-  {
-    id: "1",
-    code: "SAVE20",
-    discountType: "PERCENTAGE",
-    discountValue: 20,
-    minOrderAmount: 100,
-    maxDiscount: 50,
-    usageLimit: 100,
-    usedCount: 34,
-    expiryDate: "2026-12-31",
-    isActive: true,
-    createdAt: "2026-01-01T00:00:00Z",
-  },
-  {
-    id: "2",
-    code: "FLAT15",
-    discountType: "FIXED",
-    discountValue: 15,
-    minOrderAmount: 50,
-    usageLimit: 200,
-    usedCount: 89,
-    expiryDate: "2026-09-30",
-    isActive: true,
-    createdAt: "2026-02-01T00:00:00Z",
-  },
-  {
-    id: "3",
-    code: "WELCOME10",
-    discountType: "PERCENTAGE",
-    discountValue: 10,
-    usageLimit: 500,
-    usedCount: 412,
-    isActive: false,
-    createdAt: "2026-03-01T00:00:00Z",
-  },
-  {
-    id: "4",
-    code: "SUMMER30",
-    discountType: "PERCENTAGE",
-    discountValue: 30,
-    minOrderAmount: 200,
-    maxDiscount: 80,
-    usageLimit: 50,
-    usedCount: 50,
-    expiryDate: "2026-08-31",
-    isActive: false,
-    createdAt: "2026-04-01T00:00:00Z",
-  },
-];
+// Re-export the API type for internal usage
+type Coupon = AdminCoupon;
 
 /* ── Coupon Form Modal ──────────────────────────────── */
 interface CouponFormData {
@@ -126,6 +71,20 @@ function couponToForm(c: Coupon): CouponFormData {
     expiryDate: c.expiryDate ? c.expiryDate.slice(0, 10) : "",
     isActive: c.isActive,
   };
+}
+
+function mapFormToPayload(data: CouponFormData): Record<string, unknown> {
+  const payload: Record<string, unknown> = {
+    code: data.code,
+    discountType: data.discountType,
+    discountValue: Number(data.discountValue),
+  };
+  if (data.minOrderAmount) payload.minOrderAmount = Number(data.minOrderAmount);
+  if (data.maxDiscount) payload.maxDiscount = Number(data.maxDiscount);
+  if (data.usageLimit) payload.usageLimit = Number(data.usageLimit);
+  if (data.expiryDate) payload.expiryDate = new Date(data.expiryDate).toISOString();
+  payload.isActive = data.isActive;
+  return payload;
 }
 
 function CouponModal({
@@ -545,18 +504,32 @@ function StatusBadge({ coupon }: { coupon: Coupon }) {
 }
 
 /* ── Main Component ─────────────────────────────────── */
-export default function CouponsClient({
-  initialCoupons,
-}: {
-  initialCoupons: Coupon[];
-}) {
-  const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
+export default function CouponsClient() {
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
   const [editCoupon, setEditCoupon] = useState<Coupon | null>(null);
   const [viewCoupon, setViewCoupon] = useState<Coupon | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+
+  // ── Fetch coupons from API ───────────────────────────
+  const fetchCoupons = async () => {
+    try {
+      setLoading(true);
+      const res = await getAdminCoupons();
+      setCoupons(res.data.data ?? []);
+    } catch {
+      toast.error("Failed to load coupons");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCoupons();
+  }, []);
 
   const filtered = coupons.filter((c) => {
     const matchSearch = c.code.toLowerCase().includes(search.toLowerCase());
@@ -565,66 +538,47 @@ export default function CouponsClient({
     return matchSearch && matchFilter;
   });
 
-  const handleSave = (data: CouponFormData) => {
-    if (editCoupon) {
-      setCoupons((prev) =>
-        prev.map((c) =>
-          c.id === editCoupon.id
-            ? {
-                ...c,
-                code: data.code,
-                discountType: data.discountType,
-                discountValue: Number(data.discountValue),
-                minOrderAmount: data.minOrderAmount
-                  ? Number(data.minOrderAmount)
-                  : undefined,
-                maxDiscount: data.maxDiscount
-                  ? Number(data.maxDiscount)
-                  : undefined,
-                usageLimit: data.usageLimit
-                  ? Number(data.usageLimit)
-                  : undefined,
-                expiryDate: data.expiryDate || undefined,
-                isActive: data.isActive,
-              }
-            : c,
-        ),
-      );
-      toast.success("Coupon updated");
-      setEditCoupon(null);
-    } else {
-      const newCoupon: Coupon = {
-        id: `coupon-${Date.now()}`,
-        code: data.code,
-        discountType: data.discountType,
-        discountValue: Number(data.discountValue),
-        minOrderAmount: data.minOrderAmount
-          ? Number(data.minOrderAmount)
-          : undefined,
-        maxDiscount: data.maxDiscount ? Number(data.maxDiscount) : undefined,
-        usageLimit: data.usageLimit ? Number(data.usageLimit) : undefined,
-        expiryDate: data.expiryDate || undefined,
-        isActive: data.isActive,
-        usedCount: 0,
-        createdAt: new Date().toISOString(),
-      };
-      setCoupons((prev) => [newCoupon, ...prev]);
-      toast.success("Coupon created");
+  const handleSave = async (data: CouponFormData) => {
+    try {
+      const payload = mapFormToPayload(data);
+      if (editCoupon) {
+        await updateAdminCoupon(editCoupon.id, payload);
+        toast.success("Coupon updated");
+        setEditCoupon(null);
+      } else {
+        await createAdminCoupon(payload as Parameters<typeof createAdminCoupon>[0]);
+        toast.success("Coupon created");
+      }
+      await fetchCoupons();
+    } catch {
+      toast.error(editCoupon ? "Failed to update coupon" : "Failed to create coupon");
     }
   };
 
-  const toggleStatus = (id: string) => {
-    setCoupons((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, isActive: !c.isActive } : c)),
-    );
-    const coupon = coupons.find((c) => c.id === id);
-    toast.success(coupon?.isActive ? "Coupon deactivated" : "Coupon activated");
+  const toggleStatus = async (id: string) => {
+    try {
+      const res = await toggleAdminCoupon(id);
+      setCoupons((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, isActive: res.data.data?.isActive ?? !c.isActive } : c)),
+      );
+      toast.success(
+        res.data.data?.isActive ? "Coupon activated" : "Coupon deactivated",
+      );
+    } catch {
+      toast.error("Failed to toggle coupon");
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setCoupons((prev) => prev.filter((c) => c.id !== id));
-    toast.success("Coupon deleted");
-    setDeleteId(null);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteAdminCoupon(id);
+      setCoupons((prev) => prev.filter((c) => c.id !== id));
+      toast.success("Coupon deleted");
+    } catch {
+      toast.error("Failed to delete coupon");
+    } finally {
+      setDeleteId(null);
+    }
   };
 
   const stats = {
@@ -743,7 +697,16 @@ export default function CouponsClient({
             </thead>
             <tbody className="divide-y divide-slate-50">
               <AnimatePresence>
-                {filtered.length === 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={8} className="py-16 text-center">
+                      <Loader2 size={32} className="text-slate-300 mx-auto mb-3 animate-spin" />
+                      <p className="text-sm font-bold text-slate-400">
+                        Loading coupons...
+                      </p>
+                    </td>
+                  </tr>
+                ) : filtered.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-16 text-center">
                       <Tag size={32} className="text-slate-200 mx-auto mb-3" />
