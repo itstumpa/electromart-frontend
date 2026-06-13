@@ -17,6 +17,10 @@ export const initiatePayment = (data: InitiatePaymentPayload) => {
   return api.post<ApiResponse<InitiatePaymentResponse>>("/payments/initiate", data);
 };
 
+export const initiateGuestPayment = (data: InitiatePaymentPayload) => {
+  return api.post<ApiResponse<InitiatePaymentResponse>>("/payments/initiate/guest", data);
+};
+
 export const getPaymentByOrderId = (orderId: string) => {
   return api.get<ApiResponse<Record<string, unknown>>>(`/payments/order/${orderId}`);
 };

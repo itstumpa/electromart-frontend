@@ -1,7 +1,14 @@
 "use client";
 
 import { create } from 'zustand';
-import { addToWishlist, getWishlist, removeFromWishlist } from "@/api/wishlist.api";
+import {
+  addToWishlist,
+  addToGuestWishlist,
+  getGuestWishlist,
+  getWishlist,
+  removeFromGuestWishlist,
+  removeFromWishlist,
+} from "@/api/wishlist.api";
 import { authStorage } from "@/utils/auth-storage";
 
 interface WishlistStore {
@@ -17,9 +24,8 @@ export const useWishlist = create<WishlistStore>((set, get) => ({
 
   refresh: async () => {
     const user = authStorage.getAuthUser();
-    if (!user) { set({ wishlistIds: new Set(), initialized: true }); return; }
     try {
-      const res = await getWishlist();
+      const res = user ? await getWishlist() : await getGuestWishlist();
       const ids = res.data.data?.map((item) => item.productId) ?? [];
       set({ wishlistIds: new Set(ids), initialized: true });
     } catch {
@@ -30,6 +36,7 @@ export const useWishlist = create<WishlistStore>((set, get) => ({
   toggle: async (productId: string) => {
     const { wishlistIds } = get();
     const isInWishlist = wishlistIds.has(productId);
+    const user = authStorage.getAuthUser();
 
     // optimistic update
     set((state) => {
@@ -40,9 +47,9 @@ export const useWishlist = create<WishlistStore>((set, get) => ({
 
     try {
       if (isInWishlist) {
-        await removeFromWishlist(productId);
+        await (user ? removeFromWishlist(productId) : removeFromGuestWishlist(productId));
       } else {
-        await addToWishlist(productId);
+        await (user ? addToWishlist(productId) : addToGuestWishlist(productId));
       }
     } catch (err) {
       // revert

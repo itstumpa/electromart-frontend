@@ -24,11 +24,12 @@ export const mapListItemDtoToProduct = (dto: ProductListItemDto): Product => {
   return {
     id: card.id,
     vendorId: dto.storeId,
-    vendorName: card.brandName || "ElectroMart",
+    vendorName: card.storeName || "ElectroMart", // Store/vendor name
     categoryId: card.categoryId,
     categoryName: card.categoryName,
     brandId: dto.brand?.id ?? dto.storeId,
-    brandName: card.brandName || "ElectroMart",
+    brandName: card.brandName || "ElectroMart", // Brand name
+    storeName: card.storeName, // Store name (same as vendorName for display)
     name: card.name,
     slug: card.slug,
     description: card.description,

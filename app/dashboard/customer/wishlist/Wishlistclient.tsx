@@ -1,7 +1,13 @@
 "use client";
 
-import { addToCart as addToCartApi } from "@/api/cart.api";
-import { getWishlist, removeFromWishlist } from "@/api/wishlist.api";
+import { addToCart as addToCartApi, addToGuestCart } from "@/api/cart.api";
+import {
+  getWishlist,
+  getGuestWishlist,
+  removeFromWishlist,
+  removeFromGuestWishlist,
+} from "@/api/wishlist.api";
+import { authStorage } from "@/utils/auth-storage";
 import ConfirmModal from "@/components/dashboard/admin/Confirmmodal";
 import type { WishlistItem } from "@/data/types";
 import { notifyCartUpdated } from "@/hooks/useCartCount";
@@ -32,7 +38,9 @@ export default function WishlistClient() {
 
   const loadWishlist = useCallback(async () => {
     try {
-      const res = await getWishlist();
+      const user = authStorage.getAuthUser();
+      const fetch = user ? getWishlist : getGuestWishlist;
+      const res = await fetch();
       setItems(mapWishlistItemsToUi(res.data.data ?? []));
     } catch (err) {
       if (!isUnauthorized(err)) {
@@ -50,8 +58,10 @@ export default function WishlistClient() {
 
   const remove = async (productId: string, itemId: string) => {
     setRemoving(itemId);
+    const user = authStorage.getAuthUser();
+    const removeFn = user ? removeFromWishlist : removeFromGuestWishlist;
     try {
-      await removeFromWishlist(productId);
+      await removeFn(productId);
       await loadWishlist();
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to remove item"));
@@ -62,8 +72,10 @@ export default function WishlistClient() {
 
 const clearAll = async () => {
   setClearingAll(true);
+  const user = authStorage.getAuthUser();
+  const removeFn = user ? removeFromWishlist : removeFromGuestWishlist;
   try {
-    await Promise.all(items.map((i) => removeFromWishlist(i.productId)));
+    await Promise.all(items.map((i) => removeFn(i.productId)));
     await loadWishlist();
     toast.success('Wishlist cleared');
   } catch (err) {
@@ -75,9 +87,12 @@ const clearAll = async () => {
 };
 
 const addToCart = async (productId: string, itemId: string) => {
+  const user = authStorage.getAuthUser();
+  const addFn = user ? addToCartApi : addToGuestCart;
+  const removeFn = user ? removeFromWishlist : removeFromGuestWishlist;
   try {
-    await addToCartApi(productId, 1);
-    await removeFromWishlist(productId);
+    await addFn(productId, 1);
+    await removeFn(productId);
     notifyCartUpdated();
     setAdded(itemId);
     setTimeout(() => {

@@ -160,9 +160,13 @@ export default async function ProductDetailPage({ params }: Props) {
           {/* ── Product info (server-rendered) ── */}
           <div className="flex flex-col gap-5">
             {/* Brand + category */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-bold text-amber-600 uppercase tracking-widest">
                 {product.brandName}
+              </span>
+              <span className="text-slate-300">·</span>
+              <span className="text-xs text-slate-500">
+                {product.storeName}
               </span>
               <span className="text-slate-300">·</span>
               <span className="text-xs text-slate-500">

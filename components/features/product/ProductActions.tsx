@@ -14,14 +14,18 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { addToCart } from "@/api/cart.api";
+import { addToCart, addToGuestCart } from "@/api/cart.api";
 import {
   addToWishlist,
+  addToGuestWishlist,
   checkWishlistItem,
+  checkGuestWishlistItem,
   removeFromWishlist,
+  removeFromGuestWishlist,
 } from "@/api/wishlist.api";
 import { notifyCartUpdated } from "@/hooks/useCartCount";
 import { getApiErrorMessage, isUnauthorized } from "@/utils/api-error";
+import { authStorage } from "@/utils/auth-storage";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -46,19 +50,24 @@ export default function ProductActions({
   const router = useRouter();
 
   useEffect(() => {
-    checkWishlistItem(productId)
+    const user = authStorage.getAuthUser();
+    const check = user ? checkWishlistItem : checkGuestWishlistItem;
+    check(productId)
       .then((res) => setWishlisted(res.data.data?.inWishlist ?? false))
       .catch(() => setWishlisted(false));
   }, [productId]);
 
   const toggleWishlist = async () => {
+    const user = authStorage.getAuthUser();
+    const remove = user ? removeFromWishlist : removeFromGuestWishlist;
+    const add = user ? addToWishlist : addToGuestWishlist;
     try {
       if (wishlisted) {
-        await removeFromWishlist(productId);
+        await remove(productId);
         setWishlisted(false);
         toast.success("Removed from wishlist");
       } else {
-        await addToWishlist(productId);
+        await add(productId);
         setWishlisted(true);
         toast.success("Added to wishlist");
       }
@@ -71,8 +80,10 @@ export default function ProductActions({
 
   const handleAddToCart = async () => {
     setAdding(true);
+    const user = authStorage.getAuthUser();
+    const add = user ? addToCart : addToGuestCart;
     try {
-      await addToCart(productId, qty);
+      await add(productId, qty);
       notifyCartUpdated();
       setAddedToCart(true);
       setTimeout(() => setAddedToCart(false), 2500);
@@ -85,8 +96,10 @@ export default function ProductActions({
 
   const handleBuyNow = async () => {
     setBuyingNow(true);
+    const user = authStorage.getAuthUser();
+    const add = user ? addToCart : addToGuestCart;
     try {
-      await addToCart(productId, qty);
+      await add(productId, qty);
       notifyCartUpdated();
       router.push("/checkout");
     } catch (err) {

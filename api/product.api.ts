@@ -84,6 +84,7 @@ export interface CreateProductDto {
   originalPrice?: number;
   stock: number;
   categoryId: string;
+  brandId?: string;
   description?: string;
   overview?: Record<string, unknown> | null;
   details?: Record<string, unknown> | null;

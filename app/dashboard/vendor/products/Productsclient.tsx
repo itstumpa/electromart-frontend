@@ -1,6 +1,7 @@
 "use client";
 
 import { getCategories, mapCategoriesToListItems } from "@/api/category.api";
+import { getBrands } from "@/api/brand.api";
 import {
   createProduct,
   deleteProduct,
@@ -42,6 +43,7 @@ interface ProductForm {
   originalPrice: string;
   stock: string;
   categoryId: string;
+  brandId: string;
   description: string;
   overview?: Record<string, unknown> | null;
   details?: Record<string, unknown> | null;
@@ -59,6 +61,7 @@ const BLANK_FORM: ProductForm = {
   originalPrice: "",
   stock: "",
   categoryId: "",
+  brandId: "",
   description: "",
   overview: null,
   details: null,
@@ -107,11 +110,13 @@ function Field({
 function ProductModal({
   initial,
   categories,
+  brands,
   onSave,
   onClose,
 }: {
   initial?: ProductListItemDto | null;
   categories: { id: string; name: string }[];
+  brands: { id: string; name: string }[];
   onSave: (data: ProductForm, newFiles: File[], primaryImageId: string | null, existingImages: ProductImageResponse[]) => Promise<void>;
   onClose: () => void;
 }) {
@@ -125,6 +130,7 @@ function ProductModal({
             : "",
           stock: String(initial.stock),
           categoryId: initial.categoryId,
+          brandId: initial.brand?.id ?? "",
           description: initial.description ?? "",
           overview: initial.overview ?? null,
           details: initial.details ?? null,
@@ -278,6 +284,33 @@ function ProductModal({
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={13}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
+            </div>
+          </div>
+
+          {/* Brand */}
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">
+              Brand
+            </label>
+            <div className="relative">
+              <select
+                value={form.brandId}
+                onChange={(e) =>
+                  setForm({ ...form, brandId: e.target.value })
+                }
+                className="w-full appearance-none pl-4 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent cursor-pointer"
+              >
+                <option value="">Select brand (optional)</option>
+                {brands.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
                   </option>
                 ))}
               </select>
@@ -520,6 +553,7 @@ export default function VendorProductsClient() {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>(
     [],
   );
+  const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("");
@@ -531,13 +565,19 @@ export default function VendorProductsClient() {
 
 
   useEffect(() => {
-    Promise.all([getMyProducts(), getCategories()])
-      .then(([prodRes, catRes]) => {
+    Promise.all([getMyProducts(), getCategories(), getBrands()])
+      .then(([prodRes, catRes, brandRes]) => {
         setProducts(prodRes.data.data ?? []);
         setCategories(
           mapCategoriesToListItems(catRes.data.data).map((c) => ({
             id: c.id,
             name: c.name,
+          })),
+        );
+        setBrands(
+          (brandRes.data.data ?? []).map((b) => ({
+            id: b.id,
+            name: b.name,
           })),
         );
       })
@@ -575,6 +615,7 @@ export default function VendorProductsClient() {
         : undefined,
       stock: parseInt(data.stock),
       categoryId: data.categoryId,
+      brandId: data.brandId || undefined,
       description: data.description || undefined,
       overview: data.overview ?? undefined,
       details: data.details ?? undefined,
@@ -897,6 +938,7 @@ export default function VendorProductsClient() {
             key={editTarget?.id ?? 'new'}
             initial={editTarget}
             categories={categories}
+            brands={brands}
             onSave={handleSave}
             onClose={() => {
               setModalOpen(false);

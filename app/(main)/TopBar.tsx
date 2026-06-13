@@ -63,7 +63,7 @@ export default function TopBar() {
                     <span className="font-bold bg-white/20 px-2 py-0.5 rounded text-white tracking-widest">
                       {promo.code}
                     </span>{" "}
-                    for {discountText} on your first order
+                    for {discountText} on your order
                   </span>
                 </>
               ) : (

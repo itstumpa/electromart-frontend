@@ -1,6 +1,6 @@
 "use client";
 
-import { getCart } from "@/api/cart.api";
+import { getCart, getGuestCart } from "@/api/cart.api";
 import { authStorage } from "@/utils/auth-storage";
 import { useCallback, useEffect, useState } from "react";
 
@@ -9,12 +9,8 @@ export function useCartCount() {
 
   const refresh = useCallback(async () => {
     const user = authStorage.getAuthUser();
-    if (!user) {
-      setCount(0);
-      return;
-    }
     try {
-      const res = await getCart();
+      const res = user ? await getCart() : await getGuestCart();
       const items = res.data.data?.items ?? [];
       setCount(items.reduce((sum, i) => sum + i.quantity, 0));
     } catch {

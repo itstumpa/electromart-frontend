@@ -284,7 +284,7 @@ export default function VendorOrdersClient() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5 truncate">
-                        {item.order.user.name} · {item.product.name} · qty{" "}
+                        {item.order.user?.name ?? "Unknown User"} · {item.product.name} · qty{" "}
                         {item.quantity} ·{" "}
                         {new Date(item.createdAt).toLocaleDateString("en-US", {
                           month: "short",

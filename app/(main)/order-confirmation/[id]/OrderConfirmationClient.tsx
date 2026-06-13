@@ -3,16 +3,20 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { CheckCircle2, MapPin, ArrowRight } from 'lucide-react';
+import { CheckCircle2, MapPin, ArrowRight, Search } from 'lucide-react';
 import { getOrderById } from '@/api/order.api';
+import { authStorage } from '@/utils/auth-storage';
 import { mapOrderDtoToUi } from '@/lib/order-mappers';
 import type { Order } from '@/data/types';
 
 export default function OrderConfirmationClient({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
+    const user = authStorage.getAuthUser();
+    setIsGuest(!user);
     getOrderById(orderId)
       .then((res) => {
         if (res.data.data) setOrder(mapOrderDtoToUi(res.data.data));
@@ -85,12 +89,21 @@ export default function OrderConfirmationClient({ orderId }: { orderId: string }
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          <Link
-            href="/dashboard/customer/orders"
-            className="flex-1 flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-black py-3.5 rounded-xl text-sm"
-          >
-            View My Orders <ArrowRight size={15} />
-          </Link>
+          {isGuest ? (
+            <Link
+              href={`/order/track/${orderId}`}
+              className="flex-1 flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-black py-3.5 rounded-xl text-sm"
+            >
+              <Search size={15} /> Track Order <ArrowRight size={15} />
+            </Link>
+          ) : (
+            <Link
+              href="/dashboard/customer/orders"
+              className="flex-1 flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-black py-3.5 rounded-xl text-sm"
+            >
+              View My Orders <ArrowRight size={15} />
+            </Link>
+          )}
           <Link
             href="/products"
             className="flex-1 flex items-center justify-center gap-2 border-2 border-slate-200 text-slate-700 font-bold py-3.5 rounded-xl text-sm"

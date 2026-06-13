@@ -25,6 +25,8 @@ export interface PlaceOrderShippingAddress {
   country: string;
 }
 
+// ── Authenticated user orders ────────────────────────────────────────────────
+
 export const placeOrder = (
   shippingAddress: PlaceOrderShippingAddress,
   couponCode?: string,
@@ -99,5 +101,32 @@ export const getVendorOrders = () => {
 export const getOrderTimeline = (orderId: string) => {
   return api.get<ApiResponse<TimelineResponse>>(
     `/orderTracking/${orderId}/timeline`,
+  );
+};
+
+// ── Guest order endpoints (uses guestId cookie) ──────────────────────────────
+
+export interface PlaceGuestOrderRequest {
+  guestEmail: string;
+  guestName: string;
+  guestPhone: string;
+  shippingAddress: PlaceOrderShippingAddress;
+  couponCode?: string;
+}
+
+export const placeGuestOrder = (data: PlaceGuestOrderRequest) => {
+  return api.post<ApiResponse<OrderDto>>("/orders/guest", data);
+};
+
+export const trackGuestOrder = (orderId: string, email: string) => {
+  return api.get<ApiResponse<OrderDto>>(`/orders/guest/track/${orderId}`, {
+    params: { email },
+  });
+};
+
+export const getGuestOrderTimeline = (orderId: string, email: string) => {
+  return api.get<ApiResponse<TimelineResponse>>(
+    `/orderTracking/${orderId}/guest-timeline`,
+    { params: { email } },
   );
 };

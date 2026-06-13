@@ -14,6 +14,8 @@ export interface WishlistItemDto {
   addedAt: string;
 }
 
+// ── Authenticated user wishlist ──────────────────────────────────────────────
+
 export const getWishlist = () => {
   return api.get<ApiResponse<WishlistItemDto[]>>("/wishlist");
 };
@@ -32,4 +34,26 @@ export const clearWishlist = () => {
 
 export const checkWishlistItem = (productId: string) => {
   return api.get<ApiResponse<{ inWishlist: boolean }>>(`/wishlist/check/${productId}`);
+};
+
+// ── Guest wishlist (uses guestId cookie) ─────────────────────────────────────
+
+export const getGuestWishlist = () => {
+  return api.get<ApiResponse<WishlistItemDto[]>>("/wishlist/guest");
+};
+
+export const addToGuestWishlist = (productId: string) => {
+  return api.post<ApiResponse<WishlistItemDto[]>>(`/wishlist/guest/${productId}`);
+};
+
+export const removeFromGuestWishlist = (productId: string) => {
+  return api.delete<ApiResponse<WishlistItemDto[]>>(`/wishlist/guest/${productId}`);
+};
+
+export const clearGuestWishlist = () => {
+  return api.delete<ApiResponse<null>>("/wishlist/guest");
+};
+
+export const checkGuestWishlistItem = (productId: string) => {
+  return api.get<ApiResponse<{ inWishlist: boolean }>>(`/wishlist/guest/check/${productId}`);
 };

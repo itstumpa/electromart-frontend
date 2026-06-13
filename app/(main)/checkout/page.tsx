@@ -1,9 +1,16 @@
 "use client";
 
 import { createAddress, getMyAddresses } from "@/api/address.api";
-import { applyCartCoupon, getCart, removeCartCoupon } from "@/api/cart.api";
-import { placeOrder } from "@/api/order.api";
-import { initiatePayment } from "@/api/payment.api";
+import {
+  applyCartCoupon,
+  applyGuestCartCoupon,
+  getCart,
+  getGuestCart,
+  removeCartCoupon,
+  removeGuestCartCoupon,
+} from "@/api/cart.api";
+import { placeGuestOrder, placeOrder } from "@/api/order.api";
+import { initiatePayment, initiateGuestPayment } from "@/api/payment.api";
 import type { Address, CartItem } from "@/data/types";
 import { notifyCartUpdated } from "@/hooks/useCartCount";
 import { mapAddressesToUi } from "@/lib/address-mappers";
@@ -825,12 +832,16 @@ export default function CheckoutPage() {
   const [couponApplying, setCouponApplying] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const [isGuest, setIsGuest] = useState(false);
+
   const loadCheckoutData = useCallback(async () => {
+    const user = (await import('@/utils/auth-storage')).authStorage.getAuthUser();
+    const guest = !user;
+    setIsGuest(guest);
     try {
-      const [cartRes, addrRes] = await Promise.all([
-        getCart(),
-        getMyAddresses(),
-      ]);
+      const cartProm = guest ? getGuestCart() : getCart();
+      const addrProm = guest ? Promise.resolve({ data: { data: [] } }) : getMyAddresses();
+      const [cartRes, addrRes] = await Promise.all([cartProm, addrProm]);
       const cartData = cartRes.data.data;
       setCartItems(mapCartItemsToUi(cartData?.items ?? []));
       setAddresses(mapAddressesToUi(addrRes.data.data ?? []));
@@ -856,7 +867,11 @@ export default function CheckoutPage() {
     if (!code) return;
     setCouponApplying(true);
     try {
-      await applyCartCoupon(code);
+      if (isGuest) {
+        await applyGuestCartCoupon(code);
+      } else {
+        await applyCartCoupon(code);
+      }
       await loadCheckoutData();
       setCouponError("");
       toast.success("Coupon applied successfully");
@@ -871,7 +886,11 @@ export default function CheckoutPage() {
 
   const removeCheckoutCoupon = async () => {
     try {
-      await removeCartCoupon();
+      if (isGuest) {
+        await removeGuestCartCoupon();
+      } else {
+        await removeCartCoupon();
+      }
       await loadCheckoutData();
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to remove coupon"));
@@ -883,21 +902,50 @@ export default function CheckoutPage() {
   const tax = Math.max(0, (subtotal - discountAmt) * 0.09);
   const total = subtotal - discountAmt + shipping + tax;
 
+  const [guestInfo, setGuestInfo] = useState({
+    guestEmail: "",
+    guestName: "",
+    guestPhone: "",
+  });
+
   const handlePlaceOrder = async () => {
     if (!address || !payment) return;
     try {
-      const orderRes = await placeOrder(
-        {
-          fullName: address.fullName,
-          phone: address.phone,
-          street: address.street,
-          city: address.city,
-          state: address.state,
-          zipCode: address.zipCode,
-          country: address.country,
-        },
-        couponCode || undefined,
-      );
+      let orderRes;
+      if (isGuest) {
+        if (!guestInfo.guestEmail || !guestInfo.guestName || !guestInfo.guestPhone) {
+          toast.error("Please fill in your contact information");
+          return;
+        }
+        orderRes = await placeGuestOrder({
+          guestEmail: guestInfo.guestEmail,
+          guestName: guestInfo.guestName,
+          guestPhone: guestInfo.guestPhone,
+          shippingAddress: {
+            fullName: address.fullName,
+            phone: address.phone,
+            street: address.street,
+            city: address.city,
+            state: address.state,
+            zipCode: address.zipCode,
+            country: address.country,
+          },
+          couponCode: couponCode || undefined,
+        });
+      } else {
+        orderRes = await placeOrder(
+          {
+            fullName: address.fullName,
+            phone: address.phone,
+            street: address.street,
+            city: address.city,
+            state: address.state,
+            zipCode: address.zipCode,
+            country: address.country,
+          },
+          couponCode || undefined,
+        );
+      }
       const order = orderRes.data.data;
       if (!order?.id) throw new Error("Order not created");
       notifyCartUpdated();
@@ -907,16 +955,22 @@ export default function CheckoutPage() {
         return;
       }
 
-      const payRes = await initiatePayment({
-        orderId: order.id,
-        gateway: "SSLCOMMERZ",
-      });
+      const payRes = isGuest
+        ? await initiateGuestPayment({
+            orderId: order.id,
+            gateway: "SSLCOMMERZ",
+          })
+        : await initiatePayment({
+            orderId: order.id,
+            gateway: "SSLCOMMERZ",
+          });
       const gatewayUrl = payRes.data.data?.gatewayUrl as string | undefined;
       if (gatewayUrl) {
         window.location.href = gatewayUrl;
         return;
       }
-      router.push(`/payment/result?status=success&orderId=${order.id}`);
+      // If no gateway URL (payment already processed), redirect to order confirmation
+      router.push(`/order-confirmation/${order.id}`);
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to place order"));
       throw err;
@@ -991,14 +1045,56 @@ export default function CheckoutPage() {
                   transition={{ duration: 0.22 }}
                 >
                   {step === "address" && (
-                    <AddressStep
-                      addresses={addresses}
-                      onAddressCreated={loadCheckoutData}
-                      onNext={(data) => {
-                        setAddress(data);
-                        setStep("payment");
-                      }}
-                    />
+                    <>
+                      {isGuest && (
+                        <div className="mb-6 p-5 bg-amber-50 border border-amber-200 rounded-2xl space-y-4">
+                          <div>
+                            <h3 className="text-sm font-black text-amber-900 uppercase tracking-widest">
+                              Contact Information
+                            </h3>
+                            <p className="text-xs text-amber-700 mt-0.5">
+                              You&apos;ll use this to track your order later.
+                            </p>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="col-span-2">
+                              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">
+                                Email Address <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="email"
+                                placeholder="you@example.com"
+                                value={guestInfo.guestEmail}
+                                onChange={(e) =>
+                                  setGuestInfo({ ...guestInfo, guestEmail: e.target.value })
+                                }
+                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
+                              />
+                            </div>
+                            <Field
+                              label="Full Name *"
+                              value={guestInfo.guestName}
+                              onChange={(v) => setGuestInfo({ ...guestInfo, guestName: v })}
+                              placeholder="John Smith"
+                            />
+                            <Field
+                              label="Phone *"
+                              value={guestInfo.guestPhone}
+                              onChange={(v) => setGuestInfo({ ...guestInfo, guestPhone: v })}
+                              placeholder="+1 (555) 000-0000"
+                            />
+                          </div>
+                        </div>
+                      )}
+                      <AddressStep
+                        addresses={addresses}
+                        onAddressCreated={loadCheckoutData}
+                        onNext={(data) => {
+                          setAddress(data);
+                          setStep("payment");
+                        }}
+                      />
+                    </>
                   )}
                   {step === "payment" && (
                     <PaymentStep

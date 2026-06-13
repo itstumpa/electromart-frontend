@@ -2,10 +2,15 @@
 
 import {
   applyCartCoupon,
+  applyGuestCartCoupon,
   getCart,
+  getGuestCart,
   removeCartCoupon,
+  removeCartCoupon as removeGuestCartCoupon,
   removeCartItem,
+  removeGuestCartItem,
   updateCartItem,
+  updateGuestCartItem,
 } from "@/api/cart.api";
 import { CartItem } from "@/data/types";
 import { notifyCartUpdated } from "@/hooks/useCartCount";
@@ -45,12 +50,8 @@ export default function CartPage() {
 
   const loadCart = useCallback(async () => {
     const user = authStorage.getAuthUser();
-    if (!user) {
-      setLoading(false);
-      return;
-    }
     try {
-      const res = await getCart();
+      const res = user ? await getCart() : await getGuestCart();
       const data = res.data.data;
       setItems(mapCartItemsToUi(data?.items ?? []));
       if (data?.couponCode) {
@@ -84,12 +85,17 @@ export default function CartPage() {
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
 
   /* ── Handlers ── */
+  const isGuest = !authStorage.getAuthUser();
+
   const updateQty = async (item: CartItem, delta: number) => {
     const nextQty = Math.max(1, Math.min(item.stock, item.quantity + delta));
     if (nextQty === item.quantity) return;
     try {
-      // Pass the variantId here as well!
-      await updateCartItem(item.productId, nextQty, item.variantId);
+      if (isGuest) {
+        await updateGuestCartItem(item.productId, nextQty, item.variantId);
+      } else {
+        await updateCartItem(item.productId, nextQty, item.variantId);
+      }
       notifyCartUpdated();
       await loadCart();
     } catch (err) {
@@ -100,9 +106,12 @@ export default function CartPage() {
   const removeItem = async (item: CartItem) => {
     setRemoving(item.id);
     try {
-      await removeCartItem(item.productId, item.variantId);
+      if (isGuest) {
+        await removeGuestCartItem(item.productId, item.variantId);
+      } else {
+        await removeCartItem(item.productId, item.variantId);
+      }
       notifyCartUpdated();
-      // loadCart re-fetches the full cart; backend recomputes coupon discount on the new total
       await loadCart();
       toast.success("Item removed from cart");
     } catch (err) {
@@ -117,8 +126,11 @@ export default function CartPage() {
     const code = couponInput.trim().toUpperCase();
     if (!code) return;
     try {
-      // Persists the coupon on the backend cart; loadCart reads back the live result
-      await applyCartCoupon(code);
+      if (isGuest) {
+        await applyGuestCartCoupon(code);
+      } else {
+        await applyCartCoupon(code);
+      }
       await loadCart();
       setCouponError("");
     } catch (err) {
@@ -130,7 +142,11 @@ export default function CartPage() {
 
   const removeCoupon = async () => {
     try {
-      await removeCartCoupon();
+      if (isGuest) {
+        await removeGuestCartCoupon();
+      } else {
+        await removeCartCoupon();
+      }
       await loadCart();
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to remove coupon"));
