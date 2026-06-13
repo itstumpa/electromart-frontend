@@ -127,11 +127,11 @@ const handleWishlist = async (e: React.MouseEvent) => {
 
         {/* Info */}
         <div className="p-4">
-          <p className="text-xs text-amber-600 font-semibold mb-1">{product.brandName}</p>
-          <p className="text-xs text-slate-500 mb-1">{product.storeName}</p>
           <h3 className="text-sm font-bold text-slate-900 leading-snug line-clamp-1 mb-2 group-hover:text-amber-700 transition-colors">
             {product.name}
           </h3>
+          <p className="text-xs text-slate-500 mb-1">{product.storeName}</p>
+          {/* <p className="text-xs text-amber-600 font-semibold mb-1">{product.brandName}</p> */}
 
           {/* Rating */}
           <div className="flex items-center gap-1.5 mb-3">

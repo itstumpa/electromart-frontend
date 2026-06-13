@@ -144,10 +144,12 @@ function AddressStep({
   addresses,
   onNext,
   onAddressCreated,
+  isGuest,
 }: {
   addresses: Address[];
   onNext: (data: ShippingForm) => void;
   onAddressCreated: () => Promise<void>;
+  isGuest?: boolean;
 }) {
   const defaultId =
     addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id ?? "";
@@ -191,19 +193,21 @@ function AddressStep({
         return;
       setSaving(true);
       try {
-        const payload: CreateAddressPayload = {
-          label: "home",
-          fullName: form.fullName,
-          phone: form.phone,
-          street: form.street,
-          city: form.city,
-          state: form.state,
-          country: form.country,
-          zipCode: form.zipCode,
-          isDefault: addresses.length === 0,
-        };
-        await createAddress(payload);
-        await onAddressCreated();
+        if (!isGuest) {
+          const payload: CreateAddressPayload = {
+            label: "home",
+            fullName: form.fullName,
+            phone: form.phone,
+            street: form.street,
+            city: form.city,
+            state: form.state,
+            country: form.country,
+            zipCode: form.zipCode,
+            isDefault: addresses.length === 0,
+          };
+          await createAddress(payload);
+          await onAddressCreated();
+        }
         onNext(form);
       } catch (err) {
         toast.error(getApiErrorMessage(err, "Failed to save address"));
@@ -1089,6 +1093,7 @@ export default function CheckoutPage() {
                       <AddressStep
                         addresses={addresses}
                         onAddressCreated={loadCheckoutData}
+                        isGuest={isGuest}
                         onNext={(data) => {
                           setAddress(data);
                           setStep("payment");
