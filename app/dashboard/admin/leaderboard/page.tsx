@@ -6,6 +6,6 @@ export const metadata: Metadata = {
   description: "Top vendors ranked by revenue, orders, and ratings",
 };
 
-export default function LeaderboardPage() {
+export default function AdminLeaderboardPage() {
   return <LeaderboardClient />;
 }

@@ -3,7 +3,7 @@ import DashboardShell from '@/components/layout/dasboard/DashboardShell';
 
 export default function AdminDashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <DashboardShell allowedRoles={['SUPER_ADMIN']}>
+    <DashboardShell allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
       {children}
     </DashboardShell>
   );
