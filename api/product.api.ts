@@ -85,7 +85,10 @@ export interface CreateProductDto {
   stock: number;
   categoryId: string;
   description?: string;
-  details?: string;
+  overview?: Record<string, unknown> | null;
+  details?: Record<string, unknown> | null;
+  highlights?: Record<string, unknown> | null;
+  additionalInfo?: Record<string, unknown> | null;
   featured?: boolean;
   isActive?: boolean;
   specifications?: { key: string; value: string }[];
@@ -136,4 +139,47 @@ export const toggleProductVisibility = (id: string, isActive: boolean) => {
 
 export const getAdminProducts = () => {
   return api.get<PaginatedApiResponse<ProductListItemDto[]>>('/products/admin/all');
+};
+
+// ── Product Image Management ──────────────────────────────
+
+export interface ProductImageResponse {
+  id: string;
+  url: string;
+  publicId: string | null;
+  isPrimary: boolean;
+  order: number;
+  productId: string;
+}
+
+export const uploadProductImages = (productId: string, files: File[]) => {
+  const formData = new FormData();
+  files.forEach((f) => formData.append("images", f));
+  return api.post<ApiResponse<{ jobIds: string[] }>>(
+    `/products/${productId}/images`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } },
+  );
+};
+
+export const getProductImages = (productId: string) => {
+  return api.get<ApiResponse<ProductImageResponse[]>>(`/products/${productId}/images`);
+};
+
+export const setPrimaryImage = (productId: string, imageId: string) => {
+  return api.patch<ApiResponse<ProductImageResponse[]>>(
+    `/products/${productId}/images/primary`,
+    { imageId },
+  );
+};
+
+export const reorderImages = (productId: string, imageIds: string[]) => {
+  return api.patch<ApiResponse<ProductImageResponse[]>>(
+    `/products/${productId}/images/reorder`,
+    { imageIds },
+  );
+};
+
+export const deleteProductImage = (productId: string, imageId: string) => {
+  return api.delete<ApiResponse<null>>(`/products/${productId}/images/${imageId}`);
 };

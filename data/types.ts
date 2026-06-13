@@ -280,8 +280,12 @@ export interface Product {
   name: string;
   slug: string;
   description: string;
-  details?: string;
+  overview?: Record<string, unknown> | null;
+  details?: Record<string, unknown> | null;
+  highlights?: Record<string, unknown> | null;
+  additionalInfo?: Record<string, unknown> | null;
   status?: 'active' | 'draft' | 'out-of-stock';
+  storeName?: string;
   price: number;
   originalPrice?: number;
   image: string;

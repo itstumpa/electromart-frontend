@@ -1,6 +1,7 @@
 "use client";
 
 import { getProductReviews } from "@/api/review.api";
+import TiptapRenderer from "@/components/ui/TiptapRenderer";
 import type { ProductSpecification, Review } from "@/data/types";
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
@@ -12,7 +13,7 @@ interface Props {
   specifications: ProductSpecification[];
   reviews: Review[];
   productId?: string;
-  details?: string | null;
+  details?: Record<string, unknown> | string | null;
 }
 
 export default function ProductTabs({
@@ -107,10 +108,7 @@ export default function ProductTabs({
       {/* Tab body */}
       <div className="p-6 sm:p-8">
         {activeTab === "details" && details ? (
-          <div
-            className="prose prose-slate max-w-none prose-headings:text-slate-900 prose-headings:font-bold prose-p:text-slate-700 prose-p:leading-relaxed prose-ul:list-disc prose-ol:list-decimal prose-li:text-slate-700 prose-strong:text-slate-900 prose-a:text-amber-600"
-            dangerouslySetInnerHTML={{ __html: details }}
-          />
+          <TiptapRenderer content={details} />
         ) : activeTab === "specs" ? (
           specifications.length > 0 ? (
             <div className="grid sm:grid-cols-2 gap-3">

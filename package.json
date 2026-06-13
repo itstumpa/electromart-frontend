@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-checkbox": "^1.3.3",
@@ -26,6 +29,7 @@
     "@tiptap/extension-heading": "^3.26.1",
     "@tiptap/extension-highlight": "^3.26.1",
     "@tiptap/extension-ordered-list": "^3.26.1",
+    "@tiptap/extension-placeholder": "^3.26.1",
     "@tiptap/extension-text-align": "^3.26.1",
     "@tiptap/extension-underline": "^3.26.1",
     "@tiptap/pm": "^3.26.1",

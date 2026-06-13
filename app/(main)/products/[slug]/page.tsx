@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import ProductActions from "@/components/features/product/ProductActions";
 import ProductGallery from "@/components/features/product/ProductGallery";
 import ProductTabs from "@/components/features/product/ProductTabs";
+import TiptapRenderer from "@/components/ui/TiptapRenderer";
 import type { Review } from "@/data/types";
 import { getServerApiBase } from "@/lib/api-config";
 import { fetchProductBySlug, fetchRelatedProducts } from "@/lib/fetch-product";
@@ -237,10 +238,19 @@ export default async function ProductDetailPage({ params }: Props) {
               )}
             </div>
 
-            {/* Description */}
-            <p className="text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-4">
-              {product.description}
-            </p>
+            {/* Description (plain text — SEO summary) */}
+            {product.description && (
+              <p className="text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-4">
+                {product.description}
+              </p>
+            )}
+
+            {/* Overview (rich text) */}
+            {product.overview && (
+              <div className="border-t border-slate-100 pt-4">
+                <TiptapRenderer content={product.overview} />
+              </div>
+            )}
 
             {/* Tags */}
             {product.tags.length > 0 && (

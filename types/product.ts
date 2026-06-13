@@ -3,6 +3,8 @@ export interface ProductImageDto {
   url: string;
   productId?: string;
   publicId?: string | null;
+  isPrimary?: boolean;
+  order?: number;
 }
 
 export interface ProductVariantDto {
@@ -33,7 +35,10 @@ export interface ProductListItemDto {
   name: string;
   slug: string;
   description?: string | null;
-  details?: string | null;
+  overview?: Record<string, unknown> | null;
+  details?: Record<string, unknown> | null;
+  highlights?: Record<string, unknown> | null;
+  additionalInfo?: Record<string, unknown> | null;
   price: string | number;
   originalPrice?: string | number | null;
   stock: number;
@@ -58,7 +63,10 @@ export interface ProductDetailDto {
   name: string;
   slug?: string;
   description?: string | null;
-  details?: string | null;
+  overview?: Record<string, unknown> | null;
+  details?: Record<string, unknown> | null;
+  highlights?: Record<string, unknown> | null;
+  additionalInfo?: Record<string, unknown> | null;
   price: string | number;
   stock: number;
   storeId: string;
@@ -85,7 +93,10 @@ export interface UiProductCard {
   name: string;
   slug: string;
   description: string;
-  details?: string;
+  overview?: Record<string, unknown> | null;
+  details?: Record<string, unknown> | null;
+  highlights?: Record<string, unknown> | null;
+  additionalInfo?: Record<string, unknown> | null;
   price: number;
   originalPrice?: number;
   stock: number;
@@ -114,14 +125,17 @@ export const toNumber = (value: string | number | null | undefined): number => {
 
 export const mapProductToUiCard = (dto: ProductListItemDto): UiProductCard => {
   const images = dto.images?.map((i) => i.url).filter(Boolean) ?? [];
-  const primaryImage = images[0] ?? "";
+  const primaryImage = dto.images?.find((i) => i.isPrimary)?.url ?? images[0] ?? "";
 
   return {
     id: dto.id,
     name: dto.name,
     slug: dto.slug,
     description: dto.description ?? "",
-    details: dto.details ?? undefined,
+    overview: dto.overview ?? null,
+    details: dto.details ?? null,
+    highlights: dto.highlights ?? null,
+    additionalInfo: dto.additionalInfo ?? null,
     price: toNumber(dto.price),
     originalPrice: dto.originalPrice != null ? toNumber(dto.originalPrice) : undefined, // ← add this
     stock: dto.stock,

@@ -8,8 +8,10 @@ import {
   toggleProductVisibility,
   updateProduct,
   type CreateProductDto,
+  type ProductImageResponse,
 } from "@/api/product.api";
 import ConfirmModal from "@/components/dashboard/admin/Confirmmodal";
+import ProductImageManager from "@/components/dashboard/vendor/ProductImageManager";
 import { toNumber, type ProductListItemDto } from "@/types/product";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
@@ -31,6 +33,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import RichTextEditor from "@/components/ui/RichTextEditor";
+
 // ─── Form types ───────────────────────────────────────────────
 interface ProductForm {
   name: string;
@@ -39,7 +43,10 @@ interface ProductForm {
   stock: string;
   categoryId: string;
   description: string;
-  details: string;
+  overview?: Record<string, unknown> | null;
+  details?: Record<string, unknown> | null;
+  highlights?: Record<string, unknown> | null;
+  additionalInfo?: Record<string, unknown> | null;
   featured: boolean;
   isActive: boolean;
   imageUrl: string;
@@ -53,7 +60,10 @@ const BLANK_FORM: ProductForm = {
   stock: "",
   categoryId: "",
   description: "",
-  details: "",
+  overview: null,
+  details: null,
+  highlights: null,
+  additionalInfo: null,
   featured: false,
   isActive: true,
   imageUrl: "",
@@ -102,7 +112,7 @@ function ProductModal({
 }: {
   initial?: ProductListItemDto | null;
   categories: { id: string; name: string }[];
-  onSave: (data: ProductForm, imageFile?: File) => Promise<void>;
+  onSave: (data: ProductForm, newFiles: File[], primaryImageId: string | null, existingImages: ProductImageResponse[]) => Promise<void>;
   onClose: () => void;
 }) {
   const [form, setForm] = useState<ProductForm>(
@@ -116,7 +126,10 @@ function ProductModal({
           stock: String(initial.stock),
           categoryId: initial.categoryId,
           description: initial.description ?? "",
-          details: initial.details ?? "",
+          overview: initial.overview ?? null,
+          details: initial.details ?? null,
+          highlights: initial.highlights ?? null,
+          additionalInfo: initial.additionalInfo ?? null,
           featured: initial.featured ?? false,
           isActive: initial.isActive,
           imageUrl: initial.images?.[0]?.url ?? "",
@@ -125,39 +138,44 @@ function ProductModal({
       : BLANK_FORM,
   );
   const [saving, setSaving] = useState(false);
-  const [imageFile, setImageFile] = useState<File | undefined>();
-  const [previewImg, setPreviewImg] = useState(initial?.images?.[0]?.url ?? "");
-  const [imageError, setImageError] = useState("");
-  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > MAX_FILE_SIZE) {
-      setImageError("Image must be under 2 MB.");
-      toast.error("Image size must be less than 2 MB.");
-      e.target.value = "";
-      return;
-    }
-    setImageError("");
-    setImageFile(file);
-    setPreviewImg(URL.createObjectURL(file));
-  };
+  // Multi-image state — lazily initialised from `initial` prop
+  const [existingImages, setExistingImages] = useState<ProductImageResponse[]>(
+    () =>
+      initial?.images?.map((img) => ({
+        id: img.id,
+        url: img.url,
+        publicId: img.publicId ?? null,
+        isPrimary: img.isPrimary ?? false,
+        order: img.order ?? 0,
+        productId: initial.id,
+      })) ?? [],
+  );
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [primaryImageId, setPrimaryImageId] = useState<string | null>(() => {
+    if (!initial?.images?.length) return null;
+    const primary = initial.images.find((img) => img.isPrimary);
+    return primary?.id ?? initial.images[0].id ?? null;
+  });
+  const [imageError, setImageError] = useState("");
 
   const handleSave = async () => {
     if (!form.name || !form.price || !form.stock) {
       toast.error("Name, price and stock are required");
       return;
     }
-    if (imageFile && imageFile.size > MAX_FILE_SIZE) {
-      toast.error(
-        "Image size exceeds the 2 MB limit. Remove the image and try again.",
-      );
+
+    // If images exist, require a primary image
+    if (existingImages.length + newFiles.length > 0 && !primaryImageId) {
+      setImageError("Please select a primary image");
+      toast.error("Please select a primary image");
       return;
     }
+
+    setImageError("");
     setSaving(true);
     try {
-      await onSave(form, imageFile);
+      await onSave(form, newFiles, primaryImageId, existingImages);
       onClose();
     } finally {
       setSaving(false);
@@ -193,56 +211,18 @@ function ProductModal({
         </div>
 
         <div className="p-6 space-y-5">
-          {/* Image */}
-          <div>
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">
-              Product Image
-            </label>
-            <div className="flex gap-3 items-start">
-              <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                {previewImg ? (
-                  <Image
-                    src={previewImg}
-                    alt="preview"
-                    fill
-                    className="object-cover"
-                    sizes="96px"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <ImageIcon size={24} className="text-slate-300" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 space-y-2">
-                <label className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-sm font-semibold text-amber-700 cursor-pointer hover:bg-amber-100 transition-colors w-fit">
-                  <ImageIcon size={14} /> Upload Image
-                  <input
-                    type="file"
-                    className="sr-only"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                </label>
-                {imageError && (
-                  <p className="text-xs font-medium text-red-500">
-                    {imageError}
-                  </p>
-                )}
-                <p className="text-xs text-slate-400">Or paste a URL:</p>
-                <input
-                  type="url"
-                  placeholder="https://image-url.com/photo.jpg"
-                  value={form.imageUrl}
-                  onChange={(e) => {
-                    setForm({ ...form, imageUrl: e.target.value });
-                    setPreviewImg(e.target.value);
-                  }}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition"
-                />
-              </div>
-            </div>
-          </div>
+          {/* Multi-image manager */}
+          <ProductImageManager
+            productId={initial?.id}
+            initialImages={undefined}
+            newFiles={newFiles}
+            onNewFilesChange={setNewFiles}
+            existingImages={existingImages}
+            onExistingImagesChange={setExistingImages}
+            primaryImageId={primaryImageId}
+            onPrimaryImageIdChange={setPrimaryImageId}
+            error={imageError}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <Field
@@ -308,14 +288,14 @@ function ProductModal({
             </div>
           </div>
 
-          {/* Description */}
+          {/* Description (plain text — for SEO, search, metadata) */}
           <div>
             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">
-              Product Overview
+              Short Description
             </label>
             <textarea
-              rows={6}
-              placeholder="Describe your product in detail — key features, benefits, use cases, target audience, and what makes it special..."
+              rows={3}
+              placeholder="A brief plain‑text summary for search engines and listings..."
               value={form.description}
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
@@ -324,33 +304,65 @@ function ProductModal({
             />
           </div>
 
-          {/* Details (rich content) */}
+          {/* Product Overview (rich text) */}
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">
+              Product Overview
+            </label>
+            <p className="text-xs text-slate-400 mb-2">
+              Rich description — key features, benefits, use cases…
+            </p>
+            <RichTextEditor
+              key={initial?.id ?? "create-overview"}
+              content={form.overview}
+              placeholder="Describe your product in detail — key features, benefits, use cases, target audience, and what makes it special..."
+              onChange={(json) => setForm({ ...form, overview: json })}
+            />
+          </div>
+
+          {/* Details Section (rich text) */}
           <div>
             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">
               Details Section
             </label>
             <p className="text-xs text-slate-400 mb-2">
-              Use HTML tags for rich formatting — &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;ol&gt;, &lt;li&gt;, &lt;strong&gt;, etc.
+              In‑depth product details, specifications, features…
             </p>
-            <textarea
-              rows={10}
-              placeholder={`<h2>Key Highlights</h2>
-<p>This product is designed for...</p>
-<ul>
-  <li>Feature one</li>
-  <li>Feature two</li>
-</ul>
-<ol>
-  <li>Step one</li>
-  <li>Step two</li>
-</ol>`}
-              value={form.details}
-              onChange={(e) =>
-                setForm({ ...form, details: e.target.value })
-              }
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition resize-none font-mono"
+            <RichTextEditor
+              key={initial?.id ?? "create-details"}
+              content={form.details}
+              placeholder="Add detailed product information, highlights, and more..."
+              onChange={(json) => setForm({ ...form, details: json })}
             />
           </div>
+
+          {/* Highlights (rich text) */}
+          {/* <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">
+              Key Highlights
+            </label>
+            <RichTextEditor
+              key={initial?.id ?? "create-highlights"}
+              content={form.highlights}
+              placeholder="List the key selling points and highlights..."
+              onChange={(json) => setForm({ ...form, highlights: json })}
+              minHeight={120}
+            />
+          </div> */}
+
+          {/* Additional Information (rich text) */}
+          {/* <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">
+              Additional Information
+            </label>
+            <RichTextEditor
+              key={initial?.id ?? "create-additional-info"}
+              content={form.additionalInfo}
+              placeholder="Warranty info, shipping details, care instructions, etc..."
+              onChange={(json) => setForm({ ...form, additionalInfo: json })}
+              minHeight={120}
+            />
+          </div> */}
 
           {/* Specifications */}
           <div>
@@ -443,7 +455,7 @@ function ProductModal({
               >
                 <div
                   onClick={() => setForm((f) => ({ ...f, [k]: !f[k] }))}
-                  className={`w-[18px] h-[18px] rounded-md border-2 flex items-center justify-center transition-colors shrink-0 ${
+                  className={`w-4.5 h-4.5 rounded-md border-2 flex items-center justify-center transition-colors shrink-0 ${
                     form[k]
                       ? "bg-amber-600 border-amber-600"
                       : "border-slate-300"
@@ -517,7 +529,6 @@ export default function VendorProductsClient() {
     null,
   );
 
-  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
   useEffect(() => {
     Promise.all([getMyProducts(), getCategories()])
@@ -543,14 +554,18 @@ export default function VendorProductsClient() {
     return matchSearch && matchCat;
   });
 
-  const handleSave = async (data: ProductForm, imageFile?: File) => {
-    // Validate file size at submission time — block if oversized
-    if (imageFile && imageFile.size > MAX_FILE_SIZE) {
-      toast.error(
-        "Image size exceeds the 2 MB limit. Remove the image and try again.",
-      );
-      throw new Error("Image size exceeds the 2 MB limit.");
-    }
+  const handleSave = async (
+    data: ProductForm,
+    newFiles: File[],
+    primaryImageId: string | null,
+    existingImages: ProductImageResponse[],
+  ) => {
+    // Determine which existing images to remove (those in original but no longer in current list)
+    const originalImageIds = new Set(editTarget?.images?.map((img) => img.id) ?? []);
+    const currentImageIds = new Set(existingImages.map((img) => img.id));
+    const removeImageIds = editTarget
+      ? Array.from(originalImageIds).filter((id) => !currentImageIds.has(id))
+      : [];
 
     const payload: CreateProductDto = {
       name: data.name.trim(),
@@ -561,47 +576,70 @@ export default function VendorProductsClient() {
       stock: parseInt(data.stock),
       categoryId: data.categoryId,
       description: data.description || undefined,
-      details: data.details || undefined,
+      overview: data.overview ?? undefined,
+      details: data.details ?? undefined,
+      highlights: data.highlights ?? undefined,
+      additionalInfo: data.additionalInfo ?? undefined,
       featured: data.featured,
       isActive: data.isActive,
       specifications:
         data.specifications.length > 0
           ? data.specifications.filter((s) => s.key.trim() && s.value.trim())
           : undefined,
-      imageUrl: data.imageUrl || undefined,
+      imageUrl: undefined,
     };
-
-    const images = imageFile ? [imageFile] : undefined;
 
     try {
       if (editTarget) {
-        const res = await updateProduct(editTarget.id, payload, images);
+        // For edit: update product with image changes (extra fields flow via formData JSON)
+        const updatePayload: Partial<CreateProductDto> & {
+          removeImageIds: string[];
+          primaryImageId: string | null;
+        } = {
+          ...payload,
+          removeImageIds,
+          primaryImageId,
+        };
+
+        const res = await updateProduct(
+          editTarget.id,
+          updatePayload as Partial<CreateProductDto>,
+          newFiles.length > 0 ? newFiles : undefined,
+        );
         setProducts((prev) =>
           prev.map((p) =>
-            p.id === editTarget.id ? (res.data.data as any) : p,
+            p.id === editTarget.id
+              ? { ...p, ...(res.data.data as ProductListItemDto) }
+              : p,
           ),
         );
         toast.success("Product updated");
         setEditTarget(null);
       } else {
-        const res = await createProduct(payload, images);
-        setProducts((prev) => [res.data.data as any, ...prev]);
+        // For create: the backend handles images via multipart upload
+        const res = await createProduct(
+          payload,
+          newFiles.length > 0 ? newFiles : undefined,
+        );
+        const created = res.data.data as ProductListItemDto;
+        setProducts((prev) => [created, ...prev]);
         toast.success("Product created");
       }
-    } catch (err: any) {
-      const status = err?.response?.status;
-      const errMsg = err?.response?.data?.message ?? err?.message ?? "";
+    } catch (raw: unknown) {
+      const err = raw as { response?: { status?: number; data?: { message?: string } }; message?: string };
+      const status = err.response?.status;
+      const errMsg = err.response?.data?.message ?? err.message ?? "";
       if (
         status === 413 ||
-        errMsg?.toLowerCase().includes("file too large") ||
-        errMsg?.toLowerCase().includes("file size") ||
-        errMsg?.toLowerCase().includes("image size")
+        errMsg.toLowerCase().includes("file too large") ||
+        errMsg.toLowerCase().includes("file size") ||
+        errMsg.toLowerCase().includes("image size")
       ) {
         toast.error("Upload failed. File size exceeds the allowed limit.");
       } else {
-        toast.error(getApiErrorMessage(err, "Failed to save product"));
+        toast.error(getApiErrorMessage(raw, "Failed to save product"));
       }
-      throw err; // re-throw so modal's saving state resets in finally block
+      throw raw;
     }
   };
 
@@ -690,7 +728,7 @@ export default function VendorProductsClient() {
 
         {/* Filters */}
         <div className="flex gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative flex-1 min-w-50">
             <Search
               size={14}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
@@ -743,7 +781,7 @@ export default function VendorProductsClient() {
                   className="group bg-white rounded-2xl border border-slate-100 hover:border-amber-200 hover:shadow-md transition-all overflow-hidden"
                 >
                   {/* Image */}
-                  <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
+                  <div className="relative aspect-4/3 overflow-hidden bg-slate-50">
                     {image ? (
                       <Image
                         src={image}
@@ -856,6 +894,7 @@ export default function VendorProductsClient() {
       <AnimatePresence>
         {modalOpen && (
           <ProductModal
+            key={editTarget?.id ?? 'new'}
             initial={editTarget}
             categories={categories}
             onSave={handleSave}
