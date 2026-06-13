@@ -4,10 +4,11 @@ import { getProductReviews } from "@/api/review.api";
 import TiptapRenderer from "@/components/ui/TiptapRenderer";
 import type { ProductSpecification, Review } from "@/data/types";
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { Star, MessageSquare } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
 import ProductReviewForm from "./ProductReviewForm";
+import ProductQATab from "./ProductQATab";
 
 interface Props {
   specifications: ProductSpecification[];
@@ -22,7 +23,7 @@ export default function ProductTabs({
   productId,
   details,
 }: Props) {
-  const [activeTab, setActiveTab] = useState<"details" | "specs" | "reviews">(
+  const [activeTab, setActiveTab] = useState<"details" | "specs" | "reviews" | "qa">(
     details ? "details" : "specs",
   );
   // Own the review list in state — seeded from SSR, refreshed after submit
@@ -77,7 +78,7 @@ export default function ProductTabs({
     <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden">
       {/* Tab bar */}
       <div className="flex border-b border-slate-100">
-        {(["details", "specs", "reviews"] as const).map((tab) => {
+          {(["details", "specs", "reviews", "qa"] as const).map((tab) => {
           if (tab === "details" && !details) return null;
           return (
             <button
@@ -93,7 +94,9 @@ export default function ProductTabs({
                 ? `Reviews (${reviews.length})`
                 : tab === "details"
                   ? "Details"
-                  : "Specifications"}
+                  : tab === "qa"
+                    ? "Q&A"
+                    : "Specifications"}
               {activeTab === tab && (
                 <motion.span
                   layoutId="tab-line"
@@ -131,7 +134,7 @@ export default function ProductTabs({
               No specifications available.
             </p>
           )
-        ) : reviews.length > 0 ? (
+        ) : activeTab === "reviews" && reviews.length > 0 ? (
           <div className="flex flex-col gap-5">
             {/* Average rating summary */}
             <div className="flex items-center gap-4 p-4 bg-amber-50 rounded-2xl mb-2">
@@ -219,11 +222,13 @@ export default function ProductTabs({
               </div>
             ))}
           </div>
-        ) : (
+        ) : activeTab === "reviews" ? (
           <p className="text-slate-400 text-sm text-center py-8">
             No reviews yet. Be the first to review this product.
           </p>
-        )}
+        ) : null}
+
+        {activeTab === "qa" && productId && <ProductQATab productId={productId} />}
 
         {/* Review form — always shown in reviews tab if productId is set */}
         {productId && activeTab === "reviews" && (

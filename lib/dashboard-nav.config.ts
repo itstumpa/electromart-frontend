@@ -20,6 +20,8 @@ import {
   ClipboardList,
   BarChart2,
   Boxes,
+  RotateCcw,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 import type { UserRole } from "@/data/types";
@@ -58,6 +60,7 @@ export const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: "Orders",     href: "/dashboard/admin/orders",     icon: ShoppingBag },
     { label: "Categories", href: "/dashboard/admin/categories", icon: Tag },
     { label: "Coupons",    href: "/dashboard/admin/coupon",     icon: Tag },
+    { label: "Questions",  href: "/dashboard/admin/questions",  icon: MessageSquare },
   ],
   VENDOR: [
     { label: "Overview",   href: "/dashboard/vendor",           icon: LayoutDashboard },
@@ -65,12 +68,15 @@ export const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: "Orders",     href: "/dashboard/vendor/orders",    icon: ShoppingBag },
     { label: "Inventory",  href: "/dashboard/vendor/inventory", icon: Boxes },
     { label: "Earnings",   href: "/dashboard/vendor/earnings",  icon: Wallet },
+    { label: "Returns",    href: "/dashboard/vendor/returns",   icon: RotateCcw },
+    { label: "Questions",  href: "/dashboard/vendor/questions", icon: MessageSquare },
     { label: "Store",      href: "/dashboard/vendor/store",     icon: Store },
   ],
   CUSTOMER: [
     { label: "Overview",       href: "/dashboard/customer",               icon: LayoutDashboard },
     { label: "My Orders",      href: "/dashboard/customer/orders",        icon: ShoppingBag },
     { label: "My Cart",        href: "/dashboard/customer/cart",          icon: ShoppingCart },
+    { label: "Returns",        href: "/dashboard/customer/returns",       icon: RotateCcw },
     { label: "Wishlist",       href: "/dashboard/customer/wishlist",      icon: Heart },
     { label: "My Reviews",     href: "/dashboard/customer/reviews",       icon: Star },
     { label: "Addresses",      href: "/dashboard/customer/addresses",     icon: MapPin },
