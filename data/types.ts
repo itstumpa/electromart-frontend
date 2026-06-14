@@ -377,6 +377,7 @@ export interface WishlistItem {
 // ---------------------------
 
 export interface OrderItem {
+  id: string;
   productId: string;
   productName: string;
   productImage: string;
@@ -386,6 +387,7 @@ export interface OrderItem {
   price: number;
   total: number;
   variant?: string;
+  deliveredAt?: string;
 }
 
 export interface OrderTrackingStep {

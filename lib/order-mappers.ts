@@ -24,6 +24,7 @@ export const mapBackendPaymentStatus = (status?: string): PaymentStatus =>
   status ? PAYMENT_STATUS_MAP[status.toUpperCase()] ?? "unpaid" : "unpaid";
 
 const mapOrderItem = (item: OrderItemDto): OrderItem => ({
+  id: item.id,
   productId: item.productId,
   productName: item.product?.name ?? "Product",
   productImage:
@@ -36,6 +37,7 @@ const mapOrderItem = (item: OrderItemDto): OrderItem => ({
   price: toNumber(item.priceAtTime),
   total: toNumber(item.priceAtTime) * item.quantity,
   variant: item.variant ?? undefined,
+  deliveredAt: item.deliveredAt ?? undefined,
 });
 
 export const mapOrderDtoToUi = (dto: OrderDto): Order => {

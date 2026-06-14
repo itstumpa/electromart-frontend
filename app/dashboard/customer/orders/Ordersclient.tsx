@@ -11,18 +11,21 @@ import type { Order, OrderStatus } from "@/data/types";
 import { mapOrdersToUi } from "@/lib/order-mappers";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
+import { getMyReturnRequests } from "@/api/return.api";
 import {
   CheckCircle2,
   ChevronDown,
   Clock,
   MapPin,
   Package,
+  RotateCcw,
   ShoppingBag,
   Star,
   Truck,
   X,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -265,6 +268,7 @@ function WriteReviewModal({
 interface OrderDetailModalProps {
   order: Order;
   reviewedProductIds: Set<string>;
+  returnedItemIds: Set<string>;
   onClose: () => void;
   onReviewSuccess: (productId: string) => void;
 }
@@ -272,6 +276,7 @@ interface OrderDetailModalProps {
 function OrderDetailModal({
   order,
   reviewedProductIds,
+  returnedItemIds,
   onClose,
   onReviewSuccess,
 }: OrderDetailModalProps) {
@@ -487,11 +492,34 @@ function OrderDetailModal({
                           <Star size={10} /> Write Review
                         </button>
                       ))}
-                  </div>
+          {/* Per-item Request Return — only for delivered items */}
+          {order.status === "delivered" &&
+            (returnedItemIds.has(item.id) ? (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
+                <RotateCcw size={10} /> Return Requested
+              </span>
+            ) : item.deliveredAt &&
+              Date.now() - new Date(item.deliveredAt).getTime() >
+                2 * 24 * 60 * 60 * 1000 ? (
+              <span
+                title={`Delivered ${new Date(item.deliveredAt).toLocaleDateString()}`}
+                className="inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-lg cursor-not-allowed"
+              >
+                <RotateCcw size={10} /> Return Period Expired
+              </span>
+            ) : (
+              <Link
+                href={`/dashboard/customer/returns/create/${item.id}`}
+                className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg transition-colors"
+              >
+                <RotateCcw size={10} /> Request Return
+              </Link>
+            ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
 
           {/* Price summary */}
           <div className="bg-slate-50 rounded-xl p-4 space-y-2 text-sm mb-4">
@@ -499,12 +527,10 @@ function OrderDetailModal({
               <span>Subtotal</span>
               <span>${order.subtotal.toFixed(2)}</span>
             </div>
-            {order.shippingCost > 0 && (
-              <div className="flex justify-between text-slate-500">
-                <span>Shipping</span>
-                <span>${order.shippingCost.toFixed(2)}</span>
-              </div>
-            )}
+            <div className="flex justify-between text-slate-500">
+              <span>Shipping</span>
+              <span>${order.shippingCost.toFixed(2)}</span>
+            </div>
             <div className="flex justify-between text-slate-500">
               <span>Tax</span>
               <span>${order.tax.toFixed(2)}</span>
@@ -560,6 +586,11 @@ export default function CustomerOrdersClient() {
     new Set(),
   );
 
+  // Track which orderItemIds already have a return request
+  const [returnedItemIds, setReturnedItemIds] = useState<Set<string>>(
+    new Set(),
+  );
+
   useEffect(() => {
     getMyOrders({ limit: 50 })
       .then((res) => setOrders(mapOrdersToUi(res.data.data ?? [])))
@@ -577,6 +608,20 @@ export default function CustomerOrdersClient() {
       })
       .catch(() => {
         /* ignore — worst case, all buttons show */
+      });
+  }, []);
+
+  // Fetch which order items already have a return request
+  useEffect(() => {
+    getMyReturnRequests()
+      .then((res) => {
+        const ids = new Set(
+          (res.data.data ?? []).map((r) => r.orderItemId),
+        );
+        setReturnedItemIds(ids);
+      })
+      .catch(() => {
+        /* ignore */
       });
   }, []);
 
@@ -736,6 +781,7 @@ export default function CustomerOrdersClient() {
           <OrderDetailModal
             order={selected}
             reviewedProductIds={reviewedProductIds}
+            returnedItemIds={returnedItemIds}
             onClose={() => setSelected(null)}
             onReviewSuccess={handleReviewSuccess}
           />

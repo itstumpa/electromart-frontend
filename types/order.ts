@@ -15,6 +15,7 @@ export interface OrderItemDto {
   variant?: string | null;
   priceAtTime: string | number;
   status: string;
+  deliveredAt?: string | null;
   createdAt: string;
   product?: {
     id: string;

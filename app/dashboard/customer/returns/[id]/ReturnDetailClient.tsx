@@ -2,16 +2,19 @@
 
 import { getMyReturnRequests, type ReturnRequestDto } from "@/api/return.api";
 import { getApiErrorMessage } from "@/utils/api-error";
-import { ArrowLeft, Clock, CheckCircle2, XCircle, Calendar, MessageSquare } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle2, XCircle, Calendar, MessageSquare, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string; icon: React.ElementType }> = {
-  PENDING:  { label: "Pending Review", color: "bg-yellow-100 text-yellow-700 border-yellow-200", dot: "bg-yellow-500",  icon: Clock },
-  APPROVED: { label: "Approved",       color: "bg-green-100 text-green-700 border-green-200",   dot: "bg-green-500",   icon: CheckCircle2 },
-  REJECTED: { label: "Rejected",       color: "bg-red-100 text-red-600 border-red-200",         dot: "bg-red-500",     icon: XCircle },
+  PENDING:   { label: "Pending Review",                color: "bg-yellow-100 text-yellow-700 border-yellow-200", dot: "bg-yellow-500",  icon: Clock },
+  APPROVED:  { label: "Approved",                       color: "bg-green-100 text-green-700 border-green-200",   dot: "bg-green-500",   icon: CheckCircle2 },
+  REJECTED:  { label: "Rejected",                       color: "bg-red-100 text-red-600 border-red-200",         dot: "bg-red-500",     icon: XCircle },
+  RETURNED:  { label: "Returned",                       color: "bg-purple-100 text-purple-700 border-purple-200",dot: "bg-purple-500",  icon: RotateCcw },
+  REFUNDED:  { label: "Refunded",                       color: "bg-teal-100 text-teal-700 border-teal-200",      dot: "bg-teal-500",    icon: CheckCircle2 },
+  COMPLETED: { label: "Completed",                      color: "bg-slate-100 text-slate-700 border-slate-200",    dot: "bg-slate-500",   icon: CheckCircle2 },
 };
 
 export default function ReturnDetailClient() {
@@ -104,7 +107,33 @@ export default function ReturnDetailClient() {
               </div>
             </div>
 
-            {ret.vendorNote && (
+            {ret.status === "APPROVED" && (
+              <div className="bg-green-50 border-2 border-green-300 rounded-xl p-4">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 size={18} className="text-green-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-green-800">Return Approved</p>
+                    <p className="text-sm text-green-700 mt-1">
+                      Your return request has been approved. Please return the parcel within 2 business days. Returns received after this period may not be accepted.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {ret.status === "REJECTED" && ret.vendorNote && (
+              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+                <div className="flex items-start gap-2">
+                  <XCircle size={18} className="text-red-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-red-800">Return Rejected</p>
+                    <p className="text-sm text-red-700 mt-1">{ret.vendorNote}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {ret.vendorNote && ret.status !== "APPROVED" && ret.status !== "REJECTED" && (
               <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
                 <p className="text-xs font-bold text-amber-700 uppercase tracking-widest mb-1">Vendor Note</p>
                 <p className="text-sm text-amber-800">{ret.vendorNote}</p>

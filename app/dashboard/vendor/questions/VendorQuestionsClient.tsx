@@ -1,10 +1,10 @@
 "use client";
 
-import { getVendorQuestions, moderateQuestion, answerVendorQuestion, type QuestionDto } from "@/api/product-qa.api";
+import { getVendorQuestions, moderateQuestion, answerVendorQuestion, deleteQuestion, type QuestionDto } from "@/api/product-qa.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Clock, CheckCircle2, XCircle, MessageSquare, RefreshCw, ChevronDown,
+  Clock, CheckCircle2, XCircle, MessageSquare, RefreshCw, ChevronDown, Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ export default function VendorQuestionsClient() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [answerModal, setAnswerModal] = useState<QuestionDto | null>(null);
   const [answerText, setAnswerText] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<QuestionDto | null>(null);
 
   const fetchData = () => {
     setLoading(true);
@@ -66,6 +67,21 @@ export default function VendorQuestionsClient() {
       setAnswerText("");
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to answer question"));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteConfirm) return;
+    setActionLoading(deleteConfirm.id);
+    try {
+      await deleteQuestion(deleteConfirm.id);
+      setQuestions((prev) => prev.filter((q) => q.id !== deleteConfirm.id));
+      toast.success("Question deleted");
+      setDeleteConfirm(null);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to delete question"));
     } finally {
       setActionLoading(null);
     }
@@ -181,6 +197,15 @@ export default function VendorQuestionsClient() {
                           Answer
                         </button>
                       )}
+                      {q.status === "APPROVED" && (
+                        <button
+                          onClick={() => setDeleteConfirm(q)}
+                          disabled={actionLoading === q.id}
+                          className="flex items-center gap-1 text-xs font-bold bg-slate-100 text-slate-500 hover:bg-red-100 hover:text-red-600 px-2.5 py-1.5 rounded-xl transition-colors disabled:opacity-50"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -239,6 +264,57 @@ export default function VendorQuestionsClient() {
                   className="flex-1 text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 px-4 py-2.5 rounded-xl transition-colors"
                 >
                   {actionLoading === answerModal.id ? "Submitting..." : "Submit Answer"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete confirmation modal */}
+      <AnimatePresence>
+        {deleteConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+              onClick={() => setDeleteConfirm(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl z-10 p-5 sm:p-6 text-center"
+            >
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={24} className="text-red-500" />
+              </div>
+              <h3 className="text-lg font-black text-slate-900 mb-2">Delete Question?</h3>
+              <p className="text-sm text-slate-500 mb-1">
+                Are you sure you want to delete this question?
+              </p>
+              <p className="text-xs text-slate-400 font-medium mb-5">
+                This action cannot be undone.
+              </p>
+              <div className="bg-slate-50 rounded-xl p-3 mb-5 text-left">
+                <p className="text-xs text-slate-400 mb-1">Question from {deleteConfirm.customer.name}:</p>
+                <p className="text-sm text-slate-800 font-medium">{deleteConfirm.question}</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="flex-1 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 px-4 py-2.5 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={actionLoading === deleteConfirm.id}
+                  className="flex-1 text-sm font-bold text-white bg-red-500 hover:bg-red-600 disabled:bg-red-300 px-4 py-2.5 rounded-xl transition-colors"
+                >
+                  {actionLoading === deleteConfirm.id ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </motion.div>

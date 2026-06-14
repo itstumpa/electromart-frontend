@@ -9,9 +9,12 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string; icon: React.ElementType }> = {
-  PENDING:  { label: "Pending Review", color: "bg-yellow-100 text-yellow-700", dot: "bg-yellow-500",  icon: Clock },
-  APPROVED: { label: "Approved",       color: "bg-green-100 text-green-700",   dot: "bg-green-500",   icon: CheckCircle2 },
-  REJECTED: { label: "Rejected",       color: "bg-red-100 text-red-600",       dot: "bg-red-500",     icon: XCircle },
+  PENDING:   { label: "Pending Review",                color: "bg-yellow-100 text-yellow-700", dot: "bg-yellow-500",  icon: Clock },
+  APPROVED:  { label: "Approved",                       color: "bg-green-100 text-green-700",   dot: "bg-green-500",   icon: CheckCircle2 },
+  REJECTED:  { label: "Rejected",                       color: "bg-red-100 text-red-600",       dot: "bg-red-500",     icon: XCircle },
+  RETURNED:  { label: "Returned",                       color: "bg-purple-100 text-purple-700", dot: "bg-purple-500",  icon: RotateCcw },
+  REFUNDED:  { label: "Refunded",                       color: "bg-teal-100 text-teal-700",     dot: "bg-teal-500",    icon: CheckCircle2 },
+  COMPLETED: { label: "Completed",                      color: "bg-slate-100 text-slate-700",   dot: "bg-slate-500",   icon: CheckCircle2 },
 };
 
 export default function ReturnsClient() {
@@ -103,6 +106,13 @@ export default function ReturnsClient() {
                   <p className="text-xs text-slate-500 mt-1 line-clamp-2">
                     {ret.reason}
                   </p>
+                  {ret.status === "APPROVED" && (
+                    <div className="mt-2 bg-green-50 border border-green-200 rounded-xl p-3">
+                      <p className="text-xs font-bold text-green-700">
+                        ✅ Your return request has been approved. Please return the parcel within 2 business days. Returns received after this period may not be accepted.
+                      </p>
+                    </div>
+                  )}
                   {ret.vendorNote && (
                     <p className="text-xs text-amber-600 mt-1 font-medium">
                       Vendor note: {ret.vendorNote}

@@ -1055,6 +1055,7 @@ export const mockOrders: Order[] = [
     deliveryPersonName: "Carlos Rivera",
     items: [
       {
+        id: "oi-1",
         productId: "prod-3",
         productName: "Sony WH-1000XM5 Wireless Headphones",
         productImage:
@@ -1066,6 +1067,7 @@ export const mockOrders: Order[] = [
         total: 349.99,
       },
       {
+        id: "oi-2",
         productId: "prod-10",
         productName: "Samsung 65W USB-C Super Fast Charger Trio",
         productImage:
@@ -1115,6 +1117,7 @@ export const mockOrders: Order[] = [
     deliveryPersonName: "Carlos Rivera",
     items: [
       {
+        id: "oi-3",
         productId: "prod-2",
         productName: 'MacBook Pro 14" M3 Pro',
         productImage:
@@ -1162,6 +1165,7 @@ export const mockOrders: Order[] = [
     vendorName: "GadgetZone",
     items: [
       {
+        id: "oi-4",
         productId: "prod-4",
         productName: "Samsung Galaxy S24 Ultra",
         productImage:
@@ -1209,6 +1213,7 @@ export const mockOrders: Order[] = [
     vendorName: "TechStore Pro",
     items: [
       {
+        id: "oi-5",
         productId: "prod-7",
         productName: "PlayStation 5 Console (Slim)",
         productImage:
@@ -1255,6 +1260,7 @@ export const mockOrders: Order[] = [
     vendorName: "GadgetZone",
     items: [
       {
+        id: "oi-6",
         productId: "prod-6",
         productName: "Sony Alpha A7R V Mirrorless Camera",
         productImage:

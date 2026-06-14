@@ -6,7 +6,7 @@ export interface ReturnRequestDto {
   orderItemId: string;
   customerId: string;
   reason: string;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "RETURNED" | "REFUNDED" | "COMPLETED";
   vendorNote?: string | null;
   createdAt: string;
   updatedAt: string;

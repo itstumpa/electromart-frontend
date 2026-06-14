@@ -9,9 +9,12 @@ import { toast } from "sonner";
 import api from "@/api/axios";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
-  PENDING:  { label: "Pending",  color: "bg-yellow-100 text-yellow-700", dot: "bg-yellow-500" },
-  APPROVED: { label: "Approved", color: "bg-green-100 text-green-700",  dot: "bg-green-500" },
-  REJECTED: { label: "Rejected", color: "bg-red-100 text-red-600",      dot: "bg-red-500" },
+  PENDING:   { label: "Pending",   color: "bg-yellow-100 text-yellow-700", dot: "bg-yellow-500" },
+  APPROVED:  { label: "Approved",  color: "bg-green-100 text-green-700",   dot: "bg-green-500" },
+  REJECTED:  { label: "Rejected",  color: "bg-red-100 text-red-600",       dot: "bg-red-500" },
+  RETURNED:  { label: "Returned",  color: "bg-purple-100 text-purple-700", dot: "bg-purple-500" },
+  REFUNDED:  { label: "Refunded",  color: "bg-teal-100 text-teal-700",     dot: "bg-teal-500" },
+  COMPLETED: { label: "Completed", color: "bg-slate-100 text-slate-700",   dot: "bg-slate-500" },
 };
 
 export default function VendorReturnsClient() {
