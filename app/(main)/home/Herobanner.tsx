@@ -3,11 +3,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, useInView, Variants } from 'framer-motion';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight, Truck, Zap, Gift,
   Tag, RotateCcw, Star
 } from 'lucide-react';
+import { getBannersByType } from '@/api/banner.api';
+import type { BannerDto } from '@/api/banner.api';
+import { getBannerIcon } from '@/lib/banner-icon-map';
 
 // ─── All images: vivid, high-contrast, colorful Unsplash picks ─
 const CELLS = [
@@ -166,6 +169,39 @@ export default function HeroBentoGrid() {
   const ref     = useRef(null);
   const inView  = useInView(ref, { once: true, margin: '-60px' });
 
+  const [heroCells, setHeroCells] = useState<BannerDto[]>([]);
+  const [gridCells, setGridCells] = useState<BannerDto[]>([]);
+  const [pills, setPills] = useState<BannerDto[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchBanners = async () => {
+      const [heroRes, gridRes, pillRes] = await Promise.allSettled([
+        getBannersByType('HOME_HERO_MAIN'),
+        getBannersByType('HOME_GRID_CELL'),
+        getBannersByType('HOME_PILL'),
+      ]);
+      if (cancelled) return;
+      if (heroRes.status === 'fulfilled' && heroRes.value.data.data.length > 0) {
+        setHeroCells(heroRes.value.data.data);
+      }
+      if (gridRes.status === 'fulfilled' && gridRes.value.data.data.length > 0) {
+        setGridCells(gridRes.value.data.data);
+      }
+      if (pillRes.status === 'fulfilled' && pillRes.value.data.data.length > 0) {
+        setPills(pillRes.value.data.data);
+      }
+      setLoading(false);
+    };
+    fetchBanners();
+    return () => { cancelled = true; };
+  }, []);
+
+  const displayHero = heroCells.length > 0 ? heroCells[0] : null;
+  const displayGrid = gridCells.length > 0 ? gridCells : null;
+  const displayPills = pills.length > 0 ? pills : null;
+
   return (
     <section ref={ref} className="bg-[#FFFBEB] lg:py-2 md:pb-6">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
@@ -182,6 +218,16 @@ export default function HeroBentoGrid() {
         </motion.div>
 
         {/* ── Bento grid ── */}
+        {loading ? (
+          <div className="grid grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4">
+            {/* Skeleton hero cell */}
+            <div className="col-span-2 lg:col-span-8 lg:row-span-4 rounded-2xl sm:rounded-3xl bg-slate-100 animate-pulse" style={{ minHeight: 340 }} />
+            {/* Skeleton grid cells */}
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="hidden lg:flex col-span-2 rounded-2xl sm:rounded-3xl bg-slate-100 animate-pulse" style={{ minHeight: 170 }} />
+            ))}
+          </div>
+        ) : (
         <motion.div
           variants={stagger}
           initial="hidden"
@@ -196,7 +242,7 @@ export default function HeroBentoGrid() {
             style={{ minHeight: 340 }}
           >
             <Image
-              src={CELLS[0].image}
+              src={displayHero?.imageUrl ?? CELLS[0].image}
               alt="Premium electronics"
               fill
               priority
@@ -204,7 +250,7 @@ export default function HeroBentoGrid() {
               sizes="(max-width: 1024px) 100vw, 66vw"
             />
             {/* Deep colorful overlay */}
-            <div className={`absolute inset-0 bg-linear-to-t ${CELLS[0].gradientFrom} ${CELLS[0].gradientVia} to-transparent`} />
+            <div className={`absolute inset-0 bg-linear-to-t ${displayHero?.heroGradientFrom ?? CELLS[0].gradientFrom} ${displayHero?.heroGradientVia ?? CELLS[0].gradientVia} to-transparent`} />
             {/* Extra colour wash from bottom */}
             <div className="absolute inset-0 bg-linear-to-tr from-purple-800/40 via-transparent to-pink-700/20" />
 
@@ -248,90 +294,120 @@ export default function HeroBentoGrid() {
               transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] as const }}
               className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 z-10"
             >
-              <p className={`text-xs sm:text-sm font-bold uppercase tracking-widest mb-2 ${CELLS[0].accentColor}`}>
+              <p className={`text-xs sm:text-sm font-bold uppercase tracking-widest mb-2 ${displayHero?.heroAccentColor ?? CELLS[0].accentColor}`}>
                 Featured Collection
               </p>
               <h3 className="text-white text-xl sm:text-3xl font-black leading-tight mb-4" style={{ fontFamily: "'Georgia', serif" }}>
-                Premium Electronics,
-                <br />
-                <span className={CELLS[0].accentColor}>All in One Place</span>
+                {(displayHero?.heroTitle ?? 'Premium Electronics,\nAll in One Place').split('\n').map((line, i) => (
+                  <span key={i}>
+                    {i > 0 && <br />}
+                    {i === 1 ? <span className={displayHero?.heroAccentColor ?? CELLS[0].accentColor}>{line}</span> : line}
+                  </span>
+                ))}
               </h3>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Link href="/products" className={`inline-flex items-center gap-2 ${CELLS[0].ctaBg} text-sm font-black px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl transition-colors shadow-2xl`}>
-                  Shop Now <ArrowRight size={15} />
+                <Link href={displayHero?.heroHref ?? '/products'} className={`inline-flex items-center gap-2 ${displayHero?.heroCtaBg ?? CELLS[0].ctaBg} text-sm font-black px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl transition-colors shadow-2xl`}>
+                  {displayHero?.heroCtaText ?? 'Shop Now'} <ArrowRight size={15} />
                 </Link>
               </motion.div>
             </motion.div>
           </motion.div>
 
           {/* ████ 4 VENDOR SMALL CARDS ████ */}
-          {CELLS.slice(1).map((cell, i) => {
-            const Icon = cell.offerIcon!;
+          {(displayGrid ?? CELLS.slice(1)).map((item, i) => {
+            const fallback = CELLS.slice(1)[i] ?? CELLS[1];
+            const isApi = 'imageUrl' in item && typeof (item as BannerDto).id === 'string';
+            const banner = isApi ? (item as BannerDto) : null;
+            const imageUrl = banner?.imageUrl ?? fallback.image;
+            const gradientFrom = banner?.gridGradientFrom ?? fallback.gradientFrom;
+            const gradientVia = banner?.gridGradientVia ?? fallback.gradientVia;
+            const badgeBg = banner?.gridBadgeBg ?? fallback.badgeBg;
+            const label = banner?.gridLabel ?? fallback.label;
+            const title = banner?.gridTitle ?? fallback.title;
+            const href = banner?.gridHref ?? fallback.href;
+            const offer = banner?.gridOffer ?? fallback.offer;
+            const Icon = banner?.gridOfferIcon ? getBannerIcon(banner.gridOfferIcon) : fallback.offerIcon;
             return (
               <motion.div
-                key={cell.id}
+                key={banner?.id ?? fallback.id}
                 variants={fadeUp}
                 className="hidden lg:flex col-span-2 relative overflow-hidden rounded-2xl sm:rounded-3xl group cursor-pointer"
                 style={{ minHeight: 170 }}
               >
                 <Image
-                  src={cell.image}
-                  alt={cell.label}
+                  src={imageUrl}
+                  alt={label}
                   fill
                   className="object-cover transition-transform duration-600 ease-out group-hover:scale-110"
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
                 />
                 {/* Colorful gradient */}
-                <div className={`absolute inset-0 bg-linear-to-t ${cell.gradientFrom} ${cell.gradientVia} to-transparent`} />
+                <div className={`absolute inset-0 bg-linear-to-t ${gradientFrom} ${gradientVia} to-transparent`} />
 
                 {/* Floating offer badge */}
                 <motion.div {...bob(i)} className="absolute top-2.5 right-2.5 z-10">
-                  <div className={`${cell.badgeBg} text-white flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-lg text-[9px] sm:text-[10px] font-black border border-white/10`}>
+                  <div className={`${badgeBg} text-white flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-lg text-[9px] sm:text-[10px] font-black border border-white/10`}>
                     <Icon size={10} className="shrink-0 sm:w-3 sm:h-3" />
-                    <span className="whitespace-nowrap">{cell.offer}</span>
+                    <span className="whitespace-nowrap">{offer}</span>
                   </div>
                 </motion.div>
 
                 {/* Bottom info */}
                 <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 z-10">
-                  <p className="text-white/55 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider mb-0.5">{cell.label}</p>
-                  <p className="text-white text-xs sm:text-sm font-black leading-tight">{cell.title}</p>
+                  <p className="text-white/55 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider mb-0.5">{label}</p>
+                  <p className="text-white text-xs sm:text-sm font-black leading-tight">{title}</p>
                 </div>
 
                 {/* Hover shimmer overlay */}
                 <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors duration-300" />
 
-                <Link href={cell.href} className="absolute inset-0 z-20" aria-label={`Shop ${cell.label}`} />
+                <Link href={href} className="absolute inset-0 z-20" aria-label={`Shop ${label}`} />
               </motion.div>
             );
           })}
         </motion.div>
+        )}
 
         {/* ── Offer pills strip ── */}
+        {loading ? (
+          <div className="mt-4 flex gap-2 sm:gap-3 overflow-x-auto scrollbar-none pb-1">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="shrink-0 h-12 sm:h-14 w-32 sm:w-36 rounded-xl sm:rounded-2xl bg-slate-100 animate-pulse" />
+            ))}
+          </div>
+        ) : (
         <div className="mt-4 -mx-4 px-4 sm:mx-0 sm:px-0">
           <div className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-none pb-1">
-            {PILLS.map((pill, i) => {
-              const Icon = pill.icon;
+            {(displayPills ?? PILLS).map((item, i) => {
+              const fallbackPill = PILLS[i] ?? PILLS[0];
+              const isApi = 'imageUrl' in item && typeof (item as BannerDto).id === 'string';
+              const banner = isApi ? (item as BannerDto) : null;
+              const Icon = banner?.pillIcon ? getBannerIcon(banner.pillIcon) : fallbackPill.icon;
+              const label = banner?.pillLabel ?? fallbackPill.label;
+              const sub = banner?.pillSub ?? fallbackPill.sub;
+              const bg = banner?.pillBg ?? fallbackPill.bg;
+              const shadow = banner?.pillShadow ?? fallbackPill.shadow;
               return (
                 <motion.div
-                  key={pill.label}
+                  key={banner?.id ?? fallbackPill.label}
                   initial={{ opacity: 0, y: 18, scale: 0.88 }}
                   animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
                   transition={{ duration: 0.45, delay: 0.4 + i * 0.07, ease: [0.22, 1, 0.36, 1] as const }}
-                  className={`${pill.bg} shrink-0 flex items-center gap-2 sm:gap-2.5 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-md ${pill.shadow}`}
+                  className={`${bg} shrink-0 flex items-center gap-2 sm:gap-2.5 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-md ${shadow}`}
                 >
                   <div className="w-6 h-6 sm:w-7 sm:h-7 bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0">
                     <Icon size={13} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] sm:text-xs font-black whitespace-nowrap leading-tight">{pill.label}</p>
-                    <p className="text-[8px] sm:text-[10px] opacity-75 whitespace-nowrap leading-tight hidden sm:block">{pill.sub}</p>
+                    <p className="text-[10px] sm:text-xs font-black whitespace-nowrap leading-tight">{label}</p>
+                    <p className="text-[8px] sm:text-[10px] opacity-75 whitespace-nowrap leading-tight hidden sm:block">{sub}</p>
                   </div>
                 </motion.div>
               );
             })}
           </div>
         </div>
+        )}
 
       </div>
     </section>

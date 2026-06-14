@@ -1,5 +1,7 @@
 "use client";
 
+import { getBannersByType } from "@/api/banner.api";
+import type { BannerDto } from "@/api/banner.api";
 import { getBrands } from "@/api/brand.api";
 import { getCategories, mapCategoriesToListItems } from "@/api/category.api";
 import { getProducts, searchProducts } from "@/api/product.api";
@@ -140,14 +142,43 @@ function useCountUp(target: number, duration = 2000) {
 /* ── Component ────────────────────────────────── */
 export default function HeroBanner() {
   const [active, setActive] = useState(0);
-  const slide = heroSlides[active];
+  const [slideBanners, setSlideBanners] = useState<BannerDto[] | null>(null);
+  const [floatingBanners, setFloatingBanners] = useState<BannerDto[] | null>(null);
+  const [heroLoading, setHeroLoading] = useState(true);
+
+  const slide = heroSlides[active] ?? heroSlides[0];
+  const slideBanner = slideBanners?.[active] ?? null;
+  const floatingCard = floatingBanners?.[0] ?? null;
 
   // Auto-advance slides
   useEffect(() => {
+    const max = slideBanners?.length || heroSlides.length;
     const interval = setInterval(() => {
-      setActive((prev) => (prev + 1) % heroSlides.length);
+      setActive((prev) => (prev + 1) % max);
     }, 6000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slideBanners?.length]);
+
+  // Fetch banner data
+  useEffect(() => {
+    let cancelled = false;
+    setHeroLoading(true);
+    Promise.allSettled([
+      getBannersByType("PRODUCT_HERO_SLIDE"),
+      getBannersByType("PRODUCT_FLOATING"),
+    ])
+      .then(([slides, floats]) => {
+        if (cancelled) return;
+        if (slides.status === "fulfilled") setSlideBanners(slides.value.data.data);
+        if (floats.status === "fulfilled") setFloatingBanners(floats.value.data.data);
+      })
+      .finally(() => {
+        if (!cancelled) setHeroLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const customers = useCountUp(50000, 2200);
@@ -327,7 +358,7 @@ export default function HeroBanner() {
         <div
           className={cn(
             "absolute inset-0 transition-all duration-1000 bg-linear-to-br",
-            slide.bgGradient,
+            slideBanner?.slideBgGradient ?? slide.bgGradient,
           )}
         />
 
@@ -347,12 +378,29 @@ export default function HeroBanner() {
 
         {/* ── Content ── */}
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
+
+          {heroLoading ? (
+            <div className="grid lg:grid-cols-12 gap-8 lg:gap-6 items-center min-h-[78vh] py-3 md:py-0">
+              {/* Skeleton left column */}
+              <div className="lg:col-span-7 flex flex-col gap-6 order-2 lg:order-1">
+                <div className="h-8 w-40 rounded-full bg-slate-100 animate-pulse" />
+                <div className="h-16 w-3/4 rounded-xl bg-slate-100 animate-pulse" />
+                <div className="h-4 w-full rounded bg-slate-100 animate-pulse" />
+                <div className="h-4 w-2/3 rounded bg-slate-100 animate-pulse" />
+                <div className="h-12 w-60 rounded-2xl bg-slate-100 animate-pulse" />
+              </div>
+              {/* Skeleton right column */}
+              <div className="lg:col-span-5 order-1 lg:order-2 flex justify-center lg:justify-end">
+                <div className="w-full max-w-md lg:max-w-lg aspect-square rounded-full bg-slate-100 animate-pulse" />
+              </div>
+            </div>
+          ) : (
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-6 items-center min-h-[78vh] py-3 md:py-0">
             {/* ═══ LEFT COLUMN — 7 cols ═══ */}
             <div className="lg:col-span-7 flex flex-col gap-6 order-2 lg:order-1">
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={slide.id}
+                  key={slideBanner?.id ?? slide.id}
                   variants={stagger}
                   initial="hidden"
                   animate="visible"
@@ -366,19 +414,19 @@ export default function HeroBanner() {
                   >
                     <span className="inline-flex items-center gap-1.5 bg-primary text-white text-[11px] font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full shadow-lg shadow-primary/25">
                       <Zap size={12} className="fill-white" />
-                      {slide.badge}
+                      {slideBanner?.slideBadge ?? slide.badge}
                     </span>
                     <span className="inline-flex items-center gap-1 bg-error-light text-error text-[11px] font-bold px-2.5 py-1 rounded-full">
-                      {slide.discount}
+                      {slideBanner?.slideDiscount ?? slide.discount}
                     </span>
                   </motion.div>
 
                   {/* Headline */}
                   <motion.div variants={fadeSlideUp}>
                     <h1 className="text-[clamp(2.5rem,6vw,4.5rem)] font-extrabold leading-[1.05] tracking-tight text-foreground">
-                      {slide.title}{" "}
+                      {slideBanner?.slideTitle ?? slide.title}{" "}
                       <span className="relative inline-block text-primary">
-                        {slide.highlight}
+                        {slideBanner?.slideHighlight ?? slide.highlight}
                         <motion.span
                           initial={{ scaleX: 0 }}
                           animate={{ scaleX: 1 }}
@@ -394,7 +442,7 @@ export default function HeroBanner() {
                     variants={fadeSlideUp}
                     className="text-base sm:text-lg text-foreground-secondary max-w-3xl leading-relaxed"
                   >
-                    {slide.subtitle}
+                    {slideBanner?.slideSubtitle ?? slide.subtitle}
                   </motion.p>
 
                   {/* Price block */}
@@ -403,10 +451,10 @@ export default function HeroBanner() {
                     className="flex items-end gap-3"
                   >
                     <span className="text-3xl sm:text-4xl font-black text-foreground tracking-tight">
-                      {slide.price}
+                      {slideBanner?.slidePrice ?? slide.price}
                     </span>
                     <span className="text-2xl sm:text-2xl text-foreground-muted line-through mb-0.5">
-                      {slide.originalPrice}
+                      {slideBanner?.slideOriginalPrice ?? slide.originalPrice}
                     </span>
                   </motion.div>
 
@@ -446,9 +494,11 @@ export default function HeroBanner() {
                 transition={{ delay: 0.8 }}
                 className="flex items-center gap-2 pt-2"
               >
-                {heroSlides.map((s, i) => (
+                {(slideBanners ?? heroSlides).map((s, i) => {
+                  const slideId = "id" in s && typeof (s as BannerDto).id === "string" ? (s as BannerDto).id : (s as typeof heroSlides[number]).id;
+                  return (
                   <button
-                    key={s.id}
+                    key={slideId}
                     onClick={() => setActive(i)}
                     className={cn(
                       "h-1.5 rounded-full transition-all duration-500 cursor-pointer",
@@ -457,10 +507,11 @@ export default function HeroBanner() {
                         : "w-4 bg-amber-300/60 hover:bg-amber-400/80",
                     )}
                   />
-                ))}
+                  );
+                })}
                 <span className="ml-3 text-xs font-medium text-foreground-muted tabular-nums">
                   {String(active + 1).padStart(2, "0")} /{" "}
-                  {String(heroSlides.length).padStart(2, "0")}
+                  {String(slideBanners?.length ?? heroSlides.length).padStart(2, "0")}
                 </span>
               </motion.div>
 
@@ -574,7 +625,7 @@ export default function HeroBanner() {
                 <div className="absolute inset-0 flex items-center justify-center z-10">
                   <AnimatePresence mode="wait">
                     <motion.div
-                      key={slide.id}
+                      key={slideBanner?.id ?? slide.id}
                       initial={{ opacity: 0, scale: 0.85 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
@@ -596,8 +647,8 @@ export default function HeroBanner() {
                       >
                         <div className="relative w-90 h-90 rounded-full overflow-hidden">
                           <Image
-                            src={slide.image}
-                            alt={`${slide.title} ${slide.highlight}`}
+                            src={slideBanner?.imageUrl ?? slide.image}
+                            alt={`${slideBanner?.slideTitle ?? slide.title} ${slideBanner?.slideHighlight ?? slide.highlight}`}
                             fill
                             className="object-cover drop-shadow-xl"
                             priority
@@ -649,8 +700,8 @@ export default function HeroBanner() {
                   <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-black/6 p-3 border border-amber-100/80 flex items-center gap-3 min-w-50">
                     <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-amber-50 shrink-0">
                       <Image
-                        src={floatingProducts[0].image}
-                        alt={floatingProducts[0].name}
+                        src={floatingCard?.imageUrl ?? floatingProducts[0].image}
+                        alt={floatingCard?.floatingName ?? floatingProducts[0].name}
                         fill
                         className="object-cover"
                         sizes="56px"
@@ -660,17 +711,17 @@ export default function HeroBanner() {
                       <div className="flex items-center gap-1 mb-0.5">
                         <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                         <span className="text-xs font-bold text-foreground">
-                          {floatingProducts[0].rating}
+                          {floatingCard?.floatingRating ?? floatingProducts[0].rating}
                         </span>
                         <span className="text-[10px] text-foreground-muted">
-                          ({floatingProducts[0].reviews.toLocaleString()})
+                          ({floatingCard?.floatingReviews ?? floatingProducts[0].reviews.toLocaleString()})
                         </span>
                       </div>
                       <p className="text-sm font-bold text-foreground truncate">
-                        {floatingProducts[0].name}
+                        {floatingCard?.floatingName ?? floatingProducts[0].name}
                       </p>
                       <p className="text-sm font-black text-primary">
-                        {floatingProducts[0].price}
+                        {floatingCard?.floatingPrice ?? floatingProducts[0].price}
                       </p>
                     </div>
                     <button className="h-9 w-9 rounded-xl bg-primary/10 hover:bg-primary hover:text-white text-primary flex items-center justify-center transition-all duration-200 shrink-0">
@@ -715,6 +766,7 @@ export default function HeroBanner() {
               </div>
             </div>
           </div>
+          )}
         </div>
       </section>
 

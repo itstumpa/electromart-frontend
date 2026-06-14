@@ -23,6 +23,7 @@ import {
   RotateCcw,
   MessageSquare,
   Award,
+  ImageIcon,
   type LucideIcon,
 } from "lucide-react";
 import type { UserRole } from "@/data/types";
@@ -47,6 +48,7 @@ export const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
   SUPER_ADMIN: [
     { label: "Overview",   href: "/dashboard/admin",            icon: LayoutDashboard },
     { label: "Leaderboard", href: "/dashboard/admin/leaderboard", icon: Award },
+    { label: "Banners",   href: "/dashboard/admin/banners",     icon: ImageIcon },
     { label: "Users",      href: "/dashboard/admin/users",      icon: Users },
     { label: "Vendors",    href: "/dashboard/admin/vendors",    icon: Store },
     { label: "Products",   href: "/dashboard/admin/products",   icon: Package },
@@ -58,6 +60,7 @@ export const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
   ADMIN: [
     { label: "Overview",   href: "/dashboard/admin",            icon: LayoutDashboard },
     { label: "Leaderboard", href: "/dashboard/admin/leaderboard", icon: Award },
+    { label: "Banners",   href: "/dashboard/admin/banners",     icon: ImageIcon },
     { label: "Users",      href: "/dashboard/admin/users",      icon: Users },
     { label: "Vendors",    href: "/dashboard/admin/vendors",    icon: Store },
     { label: "Products",   href: "/dashboard/admin/products",   icon: Package },
