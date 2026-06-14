@@ -547,9 +547,9 @@ export default function VendorOrdersClient() {
                 {/* Customer info */}
                 <div className="bg-slate-50 rounded-xl p-4 space-y-1 text-sm">
                   <p className="font-bold text-slate-700 mb-2">Customer</p>
-                  <p className="text-slate-600">{viewItem.order.user.name}</p>
+                  <p className="text-slate-600">{viewItem.order.user?.name ?? "Guest"}</p>
                   <p className="text-slate-400 text-xs">
-                    {viewItem.order.user.email}
+                    {viewItem.order.user?.email ?? "N/A"}
                   </p>
                   <p className="text-xs text-slate-400 mt-2">
                     Ordered{" "}

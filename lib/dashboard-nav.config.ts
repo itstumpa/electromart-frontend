@@ -24,6 +24,7 @@ import {
   MessageSquare,
   Award,
   ImageIcon,
+  Bell,
   type LucideIcon,
 } from "lucide-react";
 import type { UserRole } from "@/data/types";
@@ -53,6 +54,7 @@ export const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: "Vendors",    href: "/dashboard/admin/vendors",    icon: Store },
     { label: "Products",   href: "/dashboard/admin/products",   icon: Package },
     { label: "Orders",     href: "/dashboard/admin/orders",     icon: ShoppingBag },
+    { label: "Notifications", href: "/dashboard/admin/notifications", icon: Bell },
     { label: "Categories", href: "/dashboard/admin/categories", icon: Tag },
     { label: "Coupons",    href: "/dashboard/admin/coupon",     icon: Tag },
     { label: "Questions",   href: "/dashboard/admin/questions",    icon: MessageSquare },
@@ -65,6 +67,7 @@ export const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: "Vendors",    href: "/dashboard/admin/vendors",    icon: Store },
     { label: "Products",   href: "/dashboard/admin/products",   icon: Package },
     { label: "Orders",     href: "/dashboard/admin/orders",     icon: ShoppingBag },
+    { label: "Notifications", href: "/dashboard/admin/notifications", icon: Bell },
     { label: "Categories", href: "/dashboard/admin/categories", icon: Tag },
     { label: "Coupons",    href: "/dashboard/admin/coupon",     icon: Tag },
     { label: "Questions",  href: "/dashboard/admin/questions",  icon: MessageSquare },
@@ -73,6 +76,7 @@ export const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: "Overview",   href: "/dashboard/vendor",           icon: LayoutDashboard },
     { label: "Products",   href: "/dashboard/vendor/products",  icon: Package },
     { label: "Orders",     href: "/dashboard/vendor/orders",    icon: ShoppingBag },
+    { label: "Notifications", href: "/dashboard/vendor/notifications", icon: Bell },
     { label: "Inventory",  href: "/dashboard/vendor/inventory", icon: Boxes },
     { label: "Earnings",   href: "/dashboard/vendor/earnings",  icon: Wallet },
     { label: "Returns",    href: "/dashboard/vendor/returns",   icon: RotateCcw },

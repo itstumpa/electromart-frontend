@@ -1,12 +1,58 @@
 "use client";
 
-import { adminCancelOrder, getAllOrders, OrderDto } from "@/api/order.api";
+import { adminCancelOrder, getAllOrders, getOrderTimeline, OrderDto, updateOrderItemStatus } from "@/api/order.api";
+import type { TimelineEntryDto } from "@/api/order.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
-import { Eye, Package, X, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronDown, Clock, Eye, Package, Truck, X, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import AdminDataTable, { Column } from "../Admindatatable";
+
+type ItemStatus = "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+
+const STATUS_OPTIONS: ItemStatus[] = [
+  "PROCESSING",
+  "SHIPPED",
+  "DELIVERED",
+  "CANCELLED",
+];
+
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; color: string; dot: string; icon: React.ElementType }
+> = {
+  PENDING: {
+    label: "Pending",
+    color: "bg-yellow-100 text-yellow-700",
+    dot: "bg-yellow-500",
+    icon: Clock,
+  },
+  PROCESSING: {
+    label: "Processing",
+    color: "bg-indigo-100 text-indigo-700",
+    dot: "bg-indigo-500",
+    icon: Package,
+  },
+  SHIPPED: {
+    label: "Shipped",
+    color: "bg-cyan-100 text-cyan-700",
+    dot: "bg-cyan-500",
+    icon: Truck,
+  },
+  DELIVERED: {
+    label: "Delivered",
+    color: "bg-green-100 text-green-700",
+    dot: "bg-green-500",
+    icon: CheckCircle2,
+  },
+  CANCELLED: {
+    label: "Cancelled",
+    color: "bg-red-100 text-red-600",
+    dot: "bg-red-500",
+    icon: Clock,
+  },
+};
 
 const mapMockOrderToOrderDto = (o: any): OrderDto => ({
   id: o.id,
@@ -51,6 +97,35 @@ export default function OrdersClient({
   const [cancelTarget, setCancelTarget] = useState<OrderDto | null>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
+  const [updatingItem, setUpdatingItem] = useState<string | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [timelineEntries, setTimelineEntries] = useState<TimelineEntryDto[]>([]);
+  const [timelineLoading, setTimelineLoading] = useState(false);
+
+  // Load timeline when viewing an order
+  useEffect(() => {
+    if (!viewOrder) {
+      setTimelineEntries([]);
+      return;
+    }
+    setTimelineLoading(true);
+    getOrderTimeline(viewOrder.id)
+      .then((res) => setTimelineEntries(res.data.data?.timeline ?? []))
+      .catch(() => setTimelineEntries([]))
+      .finally(() => setTimelineLoading(false));
+  }, [viewOrder]);
+
+  // close dropdown on outside click
+  useEffect(() => {
+    const close = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-dropdown]")) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
 
   useEffect(() => {
     getAllOrders()
@@ -66,6 +141,38 @@ export default function OrdersClient({
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const handleUpdateItemStatus = async (itemId: string, status: ItemStatus) => {
+    setUpdatingItem(itemId);
+    try {
+      await updateOrderItemStatus(itemId, status);
+      setOrders((prev) =>
+        prev.map((o) => ({
+          ...o,
+          items: o.items.map((item) =>
+            item.id === itemId ? { ...item, status } : item,
+          ),
+        })),
+      );
+      if (viewOrder) {
+        setViewOrder((prev) =>
+          prev
+            ? {
+                ...prev,
+                items: prev.items.map((item) =>
+                  item.id === itemId ? { ...item, status } : item,
+                ),
+              }
+            : null,
+        );
+      }
+      toast.success("Delivery status updated");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to update status"));
+    } finally {
+      setUpdatingItem(null);
+    }
+  };
 
   const handleCancel = async () => {
     if (!cancelTarget) return;
@@ -358,56 +465,198 @@ export default function OrdersClient({
                   </div>
                 </div>
 
-                {/* ── Products ── */}
+                {/* ── Products (with delivery status) ── */}
                 <div className="bg-slate-50 rounded-2xl p-4 mb-4">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">
                     Products
                   </p>
                   <div className="space-y-3">
-                    {viewOrder.items?.map((item, idx) => (
-                      <div
-                        key={item.id || idx}
-                        className="flex items-center gap-3 bg-white rounded-xl p-3"
-                      >
-                        <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden shrink-0">
-                          {item.productImage ? (
-                            <img
-                              src={item.productImage}
-                              alt={item.product?.name || "Product"}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <Package size={20} className="text-slate-400" />
-                          )}
+                    {viewOrder.items?.map((item, idx) => {
+                      const s = STATUS_CONFIG[item.status] ?? STATUS_CONFIG.PENDING;
+                      const isOpen = openDropdown === item.id;
+                      return (
+                        <div
+                          key={item.id || idx}
+                          className="bg-white rounded-xl p-3"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden shrink-0">
+                              {item.productImage ? (
+                                <img
+                                  src={item.productImage}
+                                  alt={item.product?.name || "Product"}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <Package size={20} className="text-slate-400" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-slate-800 truncate">
+                                {item.product?.name || `Product #${item.productId}`}
+                              </p>
+                              <p className="text-xs text-slate-400">
+                                {item.store?.name && `by ${item.store.name}`}
+                              </p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-sm font-medium text-slate-800">
+                                ${Number(item.priceAtTime).toFixed(2)}
+                              </p>
+                              <p className="text-xs text-slate-400">
+                                Qty: {item.quantity}
+                              </p>
+                            </div>
+                            <div className="text-right shrink-0 min-w-[72px]">
+                              <p className="text-sm font-bold text-slate-900">
+                                $
+                                {(Number(item.priceAtTime) * item.quantity).toFixed(2)}
+                              </p>
+                              <p className="text-xs text-slate-400">Subtotal</p>
+                            </div>
+                          </div>
+                          {/* Delivery status row */}
+                          <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                Delivery:
+                              </span>
+                              <span
+                                className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${s.color}`}
+                              >
+                                <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                                {s.label}
+                              </span>
+                            </div>
+                            <div className="relative shrink-0" data-dropdown>
+                              <button
+                                onClick={() => setOpenDropdown(isOpen ? null : item.id)}
+                                className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-xl transition-all ${s.color} hover:ring-2 hover:ring-offset-1 hover:ring-amber-300`}
+                              >
+                                {updatingItem === item.id ? "Updating..." : "Update"}
+                                <ChevronDown
+                                  size={10}
+                                  className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+                                />
+                              </button>
+                              {isOpen && (
+                                <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-30">
+                                  {STATUS_OPTIONS.map((st) => {
+                                    const cfg = STATUS_CONFIG[st];
+                                    return (
+                                      <button
+                                        key={st}
+                                        onClick={() => {
+                                          handleUpdateItemStatus(item.id, st);
+                                          setOpenDropdown(null);
+                                        }}
+                                        className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-colors hover:bg-slate-50 ${item.status === st ? "bg-amber-50 text-amber-700" : "text-slate-700"}`}
+                                      >
+                                        <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+                                        {cfg.label}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-800 truncate">
-                            {item.product?.name || `Product #${item.productId}`}
-                          </p>
-                          <p className="text-xs text-slate-400">
-                            {item.store?.name && `by ${item.store.name}`}
-                          </p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-sm font-medium text-slate-800">
-                            ${Number(item.priceAtTime).toFixed(2)}
-                          </p>
-                          <p className="text-xs text-slate-400">
-                            Qty: {item.quantity}
-                          </p>
-                        </div>
-                        <div className="text-right shrink-0 min-w-[72px]">
-                          <p className="text-sm font-bold text-slate-900">
-                            $
-                            {(Number(item.priceAtTime) * item.quantity).toFixed(
-                              2,
-                            )}
-                          </p>
-                          <p className="text-xs text-slate-400">Subtotal</p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
+                </div>
+
+                {/* ── Order Tracking Timeline ── */}
+                <div className="bg-slate-50 rounded-2xl p-4 mb-4">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">
+                    Order Tracking
+                  </p>
+                  {timelineLoading ? (
+                    <div className="space-y-3">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex items-center gap-3">
+                          <div className="w-7 h-7 rounded-xl bg-slate-200 animate-pulse shrink-0" />
+                          <div className="h-4 bg-slate-200 animate-pulse rounded w-32" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : timelineEntries.length === 0 ? (
+                    <p className="text-xs text-slate-400 text-center py-4">
+                      No tracking updates available.
+                    </p>
+                  ) : (
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-3.5 bottom-3.5 w-0.5 bg-slate-200" />
+                      <div className="space-y-4">
+                        {timelineEntries.map((entry, idx) => {
+                          const ICONS: Record<string, React.ElementType> = {
+                            PENDING: Clock,
+                            PROCESSING: Package,
+                            SHIPPED: Truck,
+                            DELIVERED: CheckCircle2,
+                            CANCELLED: X,
+                          };
+                          const LABELS: Record<string, string> = {
+                            PENDING: "Pending",
+                            PROCESSING: "Processing",
+                            SHIPPED: "Shipped",
+                            DELIVERED: "Delivered",
+                            CANCELLED: "Cancelled",
+                          };
+                          const Icon = ICONS[entry.status] || Clock;
+                          const isLast = idx === timelineEntries.length - 1;
+                          const isCancelled = entry.status === "CANCELLED";
+                          const label = LABELS[entry.status] || entry.status;
+                          return (
+                            <div
+                              key={entry.id}
+                              className="flex items-center gap-3 relative"
+                            >
+                              <div
+                                className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 z-10 ${
+                                  isCancelled
+                                    ? "bg-red-100 text-red-600"
+                                    : "bg-green-600 text-white shadow-sm"
+                                } ${isLast && !isCancelled ? "ring-2 ring-green-300 ring-offset-1" : ""}`}
+                              >
+                                <Icon size={13} />
+                              </div>
+                              <div>
+                                <p
+                                  className={`text-sm font-bold ${isCancelled ? "text-red-600" : "text-slate-900"}`}
+                                >
+                                  {label}
+                                </p>
+                                <p className="text-xs text-slate-400 mt-0.5">
+                                  {new Date(entry.createdAt).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    },
+                                  )}
+                                </p>
+                                {entry.note && (
+                                  <p className="text-xs text-slate-400/80 mt-0.5 italic">
+                                    {entry.note}
+                                  </p>
+                                )}
+                              </div>
+                              {isLast && !isCancelled && (
+                                <span className="ml-auto text-[10px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full">
+                                  Current
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* ── Shipping Information ── */}

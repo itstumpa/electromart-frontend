@@ -8,6 +8,7 @@ import {
   ArrowRight, Truck, Zap, Gift,
   Tag, RotateCcw, Star
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { getBannersByType } from '@/api/banner.api';
 import type { BannerDto } from '@/api/banner.api';
 import { getBannerIcon } from '@/lib/banner-icon-map';
@@ -326,7 +327,7 @@ export default function HeroBentoGrid() {
             const title = banner?.gridTitle ?? fallback.title;
             const href = banner?.gridHref ?? fallback.href;
             const offer = banner?.gridOffer ?? fallback.offer;
-            const Icon = banner?.gridOfferIcon ? getBannerIcon(banner.gridOfferIcon) : fallback.offerIcon;
+            const Icon: LucideIcon = banner?.gridOfferIcon ? getBannerIcon(banner.gridOfferIcon) : (fallback.offerIcon ?? Zap);
             return (
               <motion.div
                 key={banner?.id ?? fallback.id}
@@ -382,7 +383,7 @@ export default function HeroBentoGrid() {
               const fallbackPill = PILLS[i] ?? PILLS[0];
               const isApi = 'imageUrl' in item && typeof (item as BannerDto).id === 'string';
               const banner = isApi ? (item as BannerDto) : null;
-              const Icon = banner?.pillIcon ? getBannerIcon(banner.pillIcon) : fallbackPill.icon;
+              const Icon: LucideIcon = banner?.pillIcon ? getBannerIcon(banner.pillIcon) : fallbackPill.icon;
               const label = banner?.pillLabel ?? fallbackPill.label;
               const sub = banner?.pillSub ?? fallbackPill.sub;
               const bg = banner?.pillBg ?? fallbackPill.bg;

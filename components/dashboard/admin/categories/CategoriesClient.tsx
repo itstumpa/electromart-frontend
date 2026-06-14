@@ -16,7 +16,7 @@ import { Brand, Category } from "@/data/types";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bookmark, Pencil, Plus, Tag, Trash2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import ConfirmModal from "../Confirmmodal";
 
@@ -37,7 +37,21 @@ function CategoryModal({
     slug: initial?.slug ?? "",
     description: initial?.description ?? "",
     image: initial?.image ?? "",
+    isFeatured: initial?.isFeatured ?? false,
   });
+
+  // Sync form state when modal opens with new initial data
+  useEffect(() => {
+    if (open) {
+      setForm({
+        name: initial?.name ?? "",
+        slug: initial?.slug ?? "",
+        description: initial?.description ?? "",
+        image: initial?.image ?? "",
+        isFeatured: initial?.isFeatured ?? false,
+      });
+    }
+  }, [open, initial]);
 
   const handleSave = () => {
     if (!form.name.trim()) return;
@@ -113,6 +127,27 @@ function CategoryModal({
                   />
                 </div>
               ))}
+              {/* Featured toggle */}
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                  Featured
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm({ ...form, isFeatured: !form.isFeatured })
+                  }
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    form.isFeatured ? "bg-amber-600" : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      form.isFeatured ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button
@@ -152,7 +187,21 @@ function BrandModal({
     slug: initial?.slug ?? "",
     logo: initial?.logo ?? "",
     description: initial?.description ?? "",
+    isFeatured: initial?.isFeatured ?? false,
   });
+
+  // Sync form state when modal opens with new initial data
+  useEffect(() => {
+    if (open) {
+      setForm({
+        name: initial?.name ?? "",
+        slug: initial?.slug ?? "",
+        logo: initial?.logo ?? "",
+        description: initial?.description ?? "",
+        isFeatured: initial?.isFeatured ?? false,
+      });
+    }
+  }, [open, initial]);
 
   const handleSave = () => {
     if (!form.name.trim()) return;
@@ -224,6 +273,27 @@ function BrandModal({
                   />
                 </div>
               ))}
+              {/* Featured toggle */}
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                  Featured
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm({ ...form, isFeatured: !form.isFeatured })
+                  }
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    form.isFeatured ? "bg-amber-600" : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      form.isFeatured ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button
@@ -290,6 +360,7 @@ export default function CategoriesClient({
             slug: dto.slug,
             description: "",
             image: dto.image ?? "",
+            isFeatured: dto.isFeatured ?? false,
             productCount: dto._count?.products ?? 0,
             createdAt: dto.createdAt ?? new Date().toISOString(),
             updatedAt: dto.updatedAt ?? new Date().toISOString(),
@@ -304,6 +375,7 @@ export default function CategoriesClient({
             slug: dto.slug,
             logo: dto.logo ?? "",
             description: dto.description ?? "",
+            isFeatured: dto.isFeatured ?? false,
             productCount: dto._count?.products ?? 0,
             createdAt: dto.createdAt,
           }));
@@ -327,6 +399,7 @@ export default function CategoriesClient({
         const res = await updateCategory(editCat.id, {
           name: data.name,
           image: data.image,
+          isFeatured: data.isFeatured,
         });
         const updatedCat = res.data.data;
         const updatedUI: Category = {
@@ -335,6 +408,7 @@ export default function CategoriesClient({
           slug: updatedCat.slug,
           description: data.description ?? "",
           image: updatedCat.image ?? "",
+          isFeatured: updatedCat.isFeatured ?? false,
           productCount: updatedCat._count?.products ?? 0,
           createdAt: updatedCat.createdAt ?? new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -348,6 +422,7 @@ export default function CategoriesClient({
         const res = await createCategory({
           name: data.name!,
           image: data.image,
+          isFeatured: data.isFeatured,
         });
         const newCat = res.data.data;
         const newUI: Category = {
@@ -356,6 +431,7 @@ export default function CategoriesClient({
           slug: newCat.slug,
           description: data.description ?? "",
           image: newCat.image ?? "",
+          isFeatured: data.isFeatured ?? false,
           productCount: 0,
           createdAt: newCat.createdAt ?? new Date().toISOString(),
           updatedAt: newCat.createdAt ?? new Date().toISOString(),
@@ -388,6 +464,7 @@ export default function CategoriesClient({
           name: data.name,
           slug: data.slug,
           logo: data.logo,
+          isFeatured: data.isFeatured,
           description: data.description,
         });
         const b = res.data.data;
@@ -400,6 +477,7 @@ export default function CategoriesClient({
                   slug: b.slug,
                   logo: b.logo ?? "",
                   description: b.description ?? "",
+                  isFeatured: b.isFeatured ?? false,
                   productCount: b._count?.products ?? 0,
                   createdAt: b.createdAt,
                 }
@@ -413,6 +491,7 @@ export default function CategoriesClient({
           name: data.name!,
           slug: data.slug,
           logo: data.logo,
+          isFeatured: data.isFeatured,
           description: data.description,
         });
         const b = res.data.data;
@@ -423,6 +502,7 @@ export default function CategoriesClient({
             slug: b.slug,
             logo: b.logo ?? "",
             description: b.description ?? "",
+            isFeatured: data.isFeatured ?? false,
             productCount: 0,
             createdAt: b.createdAt,
           },
@@ -511,6 +591,12 @@ export default function CategoriesClient({
                     <Tag size={32} className="text-slate-300" />
                   </div>
                 )}
+                {/* Featured badge */}
+                {cat.isFeatured && (
+                  <span className="absolute top-2 left-2 z-10 text-[9px] font-bold bg-amber-600 text-white px-2 py-0.5 rounded-full">
+                    Featured
+                  </span>
+                )}
                 {/* Action overlay */}
                 <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/30 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                   <button
@@ -578,9 +664,16 @@ export default function CategoriesClient({
                     </div>
                   )}
                   <div>
-                    <h3 className="font-black text-slate-900 text-sm">
-                      {brand.name}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-black text-slate-900 text-sm">
+                        {brand.name}
+                      </h3>
+                      {brand.isFeatured && (
+                        <span className="text-[8px] font-bold bg-amber-600 text-white px-1.5 py-0.5 rounded-full">
+                          Featured
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[10px] text-slate-400 font-mono">
                       {brand.slug}
                     </span>

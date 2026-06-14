@@ -98,6 +98,10 @@ export const getVendorOrders = () => {
   return api.get<ApiResponse<VendorOrderItemDto[]>>("/orders/vendor/items");
 };
 
+export const updateOrderItemStatus = (itemId: string, status: string) => {
+  return api.patch<ApiResponse<null>>(`/orders/vendor/items/${itemId}/status`, { status });
+};
+
 export const getOrderTimeline = (orderId: string) => {
   return api.get<ApiResponse<TimelineResponse>>(
     `/orderTracking/${orderId}/timeline`,

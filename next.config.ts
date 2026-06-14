@@ -12,6 +12,7 @@ const nextConfig: import("next").NextConfig = {
       { protocol: "https", hostname: "i.pravatar.cc" },
       { protocol: "https", hostname: "upload.wikimedia.org" },
       { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "i.pinimg.com" },
     ],
   },
   async rewrites() {

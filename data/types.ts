@@ -229,6 +229,7 @@ export interface Category {
   description: string;
   image: string;
   parentId?: string | null;
+  isFeatured?: boolean;
   productCount: number;
   createdAt: string;
   updatedAt: string;
@@ -245,6 +246,7 @@ export interface Brand {
   slug: string;
   logo: string;
   description?: string;
+  isFeatured?: boolean;
   productCount: number;
   createdAt: string;
 }

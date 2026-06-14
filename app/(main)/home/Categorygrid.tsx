@@ -40,7 +40,7 @@ export default function CategoryGrid() {
             </h2>
           </div>
           <Link
-            href="/products"
+            href="/categories"
             className="group inline-flex items-center gap-2 text-sm font-bold text-amber-600 hover:text-amber-700 shrink-0"
           >
             All Categories
