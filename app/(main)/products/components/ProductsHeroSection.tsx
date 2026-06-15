@@ -193,7 +193,7 @@ export default function ProductsHeroSection() {
       <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
 
         {heroLoading ? (
-          <div className="grid lg:grid-cols-12 gap-8 lg:gap-6 items-center min-h-[78vh] py-3 md:py-0">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-6 items-center min-h-[50vh] md:min-h-[65vh] py-3 md:py-3">
             {/* Skeleton left column */}
             <div className="lg:col-span-7 flex flex-col gap-6 order-2 lg:order-1">
               <div className="h-8 w-40 rounded-full bg-slate-100 animate-pulse" />
@@ -208,7 +208,7 @@ export default function ProductsHeroSection() {
             </div>
           </div>
         ) : (
-        <div className="grid lg:grid-cols-12 gap-8 lg:gap-6 items-center min-h-[78vh] py-3 md:py-0">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-6 items-center min-h-[50vh] md:min-h-[65vh] py-3 md:py-3">
           {/* ═══ LEFT COLUMN — 7 cols ═══ */}
           <div className="lg:col-span-7 flex flex-col gap-6 order-2 lg:order-1">
             <AnimatePresence mode="wait">
