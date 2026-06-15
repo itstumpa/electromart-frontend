@@ -170,7 +170,7 @@ export default function SalePage() {
             <p className="text-slate-500">No sale products in this category.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-5">
             {saleProducts.map((product, i) => (
               <Reveal key={product.id} delay={i * 0.05} direction="up">
                 <ProductCard product={product} index={i} />

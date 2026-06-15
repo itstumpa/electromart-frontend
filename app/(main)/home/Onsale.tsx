@@ -225,7 +225,7 @@ export default function FlashSaleSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-18 overflow-hidden bg-linear-to-br from-slate-900 via-[#0c1222] to-slate-900"
+      className="relative py-3 overflow-hidden bg-linear-to-br from-slate-900 via-[#0c1222] to-slate-900"
     >
       {/* Ambient bg */}
       <div className="absolute inset-0 pointer-events-none">

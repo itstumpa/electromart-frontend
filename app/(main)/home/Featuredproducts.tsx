@@ -44,7 +44,7 @@ export default function FeaturedProducts() {
           </Link>
         </Reveal>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-2 md:gap-6">
           {products.slice(0, 6).map((product, i) => (
             <Reveal key={product.id} delay={i * 0.08} direction="up">
               <ProductCard product={product} index={i} />

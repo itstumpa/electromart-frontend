@@ -26,7 +26,7 @@ export default function CategoryGrid() {
   }, []);
 
   return (
-    <section className="py-8 bg-white">
+    <section className="pt-4 pb-8 md:py-8 bg-white">
       <div className="container mx-auto px-4 sm:px-6">
 
         <Reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-4">
@@ -48,7 +48,7 @@ export default function CategoryGrid() {
           </Link>
         </Reveal>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-9 gap-4">
           {categories.map((cat, i) => (
             <Reveal key={cat.id} delay={i * 0.07} direction="up">
               <Link
@@ -65,20 +65,20 @@ export default function CategoryGrid() {
                   <div className="absolute inset-0 bg-linear-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
                 </motion.div>
 
-                <div className="relative p-4">
-                  <h3 className="text-white font-bold text-sm sm:text-base leading-tight">
+                <div className="relative p-4 lg:p-2.5 xl:p-2">
+                  <h3 className="text-white font-bold text-sm lg:text-xs xl:text-[11px] leading-tight">
                     {cat.name}
                   </h3>
-                  <p className="text-amber-300 text-xs font-medium mt-0.5">
+                  <p className="text-amber-300 text-xs lg:text-[10px] font-medium mt-0.5">
                     {cat.productCount} Products
                   </p>
                 </div>
 
                 <motion.div
                   initial={false}
-                  className="absolute top-3 right-3 w-8 h-8 bg-amber-600 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  className="absolute top-3 right-3 w-8 h-8 lg:w-6 lg:h-6 xl:w-5 xl:h-5 bg-amber-600 rounded-xl lg:rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                 >
-                  <ArrowRight size={14} className="text-white" />
+                  <ArrowRight size={12} className="text-white" />
                 </motion.div>
               </Link>
             </Reveal>

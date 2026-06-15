@@ -36,7 +36,7 @@ export default function PopularProducts() {
   });
 
   return (
-    <section className="bg-[#FFFBEB] py-1 md:py-4 lg:py-10 sm:py-4">
+    <section className="bg-[#FFFBEB] py-1 md:py-1 lg:py-3 sm:py-4">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
 
         {/* Header */}
@@ -71,7 +71,7 @@ export default function PopularProducts() {
         </div>
 
         {/* Products grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4">
           <AnimatePresence mode="popLayout">
             {filtered.map((product, i) => (
               <motion.div

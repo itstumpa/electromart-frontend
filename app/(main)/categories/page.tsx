@@ -64,7 +64,7 @@ export default function CategoriesPage() {
       {/* ══ CATEGORIES GRID ══ */}
       <div className="container mx-auto px-4 sm:px-6 py-10">
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-6">
             {Array.from({ length: 10 }).map((_, i) => (
               <div
                 key={i}
@@ -85,7 +85,7 @@ export default function CategoriesPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-6">
             {categories.map((cat, i) => (
               <Reveal key={cat.id} delay={i * 0.05} direction="up">
                 <Link

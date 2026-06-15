@@ -204,15 +204,15 @@ export default function HeroBentoGrid() {
   const displayPills = pills.length > 0 ? pills : null;
 
   return (
-    <section ref={ref} className="bg-[#FFFBEB] lg:py-2 md:pb-6">
-      <div className="container mx-auto px-4 sm:px-6 md:px-8">
+    <section ref={ref} className="bg-[#FFFBEB] py-4 lg:py-2">
+      <div className="container mx-auto px-4 lg:px-6">
 
         {/* ── Header ── */}
         <motion.div
           variants={fadeSlide}
           initial="hidden"
           animate={inView ? 'show' : 'hidden'}
-          className="flex items-end justify-between mb-2 sm:mb-4 md:mb-6 flex-wrap gap-3"
+          className="flex items-end justify-between mb-2 lg:mb-6 flex-wrap gap-3"
         >
           
        
@@ -220,12 +220,12 @@ export default function HeroBentoGrid() {
 
         {/* ── Bento grid ── */}
         {loading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-12 gap-3 lg:gap-4">
             {/* Skeleton hero cell */}
-            <div className="col-span-2 lg:col-span-8 lg:row-span-4 rounded-2xl sm:rounded-3xl bg-slate-100 animate-pulse" style={{ minHeight: 340 }} />
+            <div className="col-span-2 lg:col-span-8 lg:row-span-4 rounded-2xl lg:rounded-3xl bg-slate-100 animate-pulse min-h-[70vh] lg:min-h-[400px]" />
             {/* Skeleton grid cells */}
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="hidden lg:flex col-span-2 rounded-2xl sm:rounded-3xl bg-slate-100 animate-pulse" style={{ minHeight: 170 }} />
+              <div key={i} className="hidden lg:flex col-span-2 rounded-2xl lg:rounded-3xl bg-slate-100 animate-pulse" style={{ minHeight: 170 }} />
             ))}
           </div>
         ) : (
@@ -233,14 +233,13 @@ export default function HeroBentoGrid() {
           variants={stagger}
           initial="hidden"
           animate={inView ? 'show' : 'hidden'}
-          className="grid grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4"
+          className="grid grid-cols-2 lg:grid-cols-12 gap-3 lg:gap-4"
         >
 
           {/* ████ HERO CELL — big, left, spans 4 cols + 2 rows ████ */}
           <motion.div
             variants={fadeUp}
-            className="col-span-2 lg:col-span-8 lg:row-span-4 relative overflow-hidden rounded-2xl sm:rounded-3xl group"
-            style={{ minHeight: 340 }}
+            className="col-span-2 lg:col-span-8 lg:row-span-4 relative overflow-hidden rounded-2xl lg:rounded-3xl group min-h-[70vh] lg:min-h-[400px]"
           >
             <Image
               src={displayHero?.imageUrl ?? CELLS[0].image}
@@ -256,34 +255,34 @@ export default function HeroBentoGrid() {
             <div className="absolute inset-0 bg-linear-to-tr from-purple-800/40 via-transparent to-pink-700/20" />
 
             {/* Floating badge 1 — top left */}
-            <motion.div {...bob(0)} className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10">
+            <motion.div {...bob(0)} className="absolute top-4 left-4 lg:top-6 lg:left-6 z-10">
               <div className="bg-rose-500 text-white flex items-center gap-2 px-3 py-2 rounded-2xl shadow-xl shadow-rose-500/40 backdrop-blur-sm border border-white/10">
                 <Zap size={13} className="fill-white shrink-0" />
                 <div>
-                  <p className="text-[10px] sm:text-xs font-black leading-tight">Flash Sale</p>
-                  <p className="text-[8px] sm:text-[10px] opacity-80 leading-tight hidden sm:block">Up to 40% OFF</p>
+                  <p className="text-[10px] lg:text-xs font-black leading-tight">Flash Sale</p>
+                  <p className="text-[8px] lg:text-[10px] opacity-80 leading-tight hidden lg:block">Up to 40% OFF</p>
                 </div>
               </div>
             </motion.div>
 
             {/* Floating badge 2 — top right */}
-            <motion.div {...bob(1)} className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
+            <motion.div {...bob(1)} className="absolute top-4 right-4 lg:top-6 lg:right-6 z-10">
               <div className="bg-emerald-500 text-white flex items-center gap-2 px-3 py-2 rounded-2xl shadow-xl shadow-emerald-500/40 backdrop-blur-sm border border-white/10">
                 <Truck size={13} className="shrink-0" />
                 <div>
-                  <p className="text-[10px] sm:text-xs font-black leading-tight">Free Delivery</p>
-                  <p className="text-[8px] sm:text-[10px] opacity-80 leading-tight hidden sm:block">Orders $99+</p>
+                  <p className="text-[10px] lg:text-xs font-black leading-tight">Free Delivery</p>
+                  <p className="text-[8px] lg:text-[10px] opacity-80 leading-tight hidden lg:block">Orders $99+</p>
                 </div>
               </div>
             </motion.div>
 
-            {/* Floating badge 3 — middle right (desktop only) */}
-            <motion.div {...bob(2)} className="absolute top-4 right-4 sm:top-22 sm:right-6 z-10 hidden sm:block">
+            {/* Floating badge 3 — middle right (tablet + desktop only — hidden on mobile to prevent crowding) */}
+            <motion.div {...bob(2)} className="absolute top-4 right-4 lg:top-22 lg:right-6 z-10 hidden lg:block">
               <div className="bg-amber-500 text-white flex items-center gap-2 px-3 py-2 rounded-2xl shadow-xl shadow-amber-500/40 backdrop-blur-sm border border-white/10">
                 <Gift size={13} className="shrink-0" />
                 <div>
-                  <p className="text-[10px] sm:text-xs font-black leading-tight">Buy 1 Get 1</p>
-                  <p className="text-[8px] sm:text-[10px] opacity-80 leading-tight hidden sm:block">Selected items</p>
+                  <p className="text-[10px] lg:text-xs font-black leading-tight">Buy 1 Get 1</p>
+                  <p className="text-[8px] lg:text-[10px] opacity-80 leading-tight hidden lg:block">Selected items</p>
                 </div>
               </div>
             </motion.div>
@@ -293,12 +292,12 @@ export default function HeroBentoGrid() {
               initial={{ opacity: 0, y: 24 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] as const }}
-              className="absolute bottom-0 left-0 right-0 p-5 sm:p-8 z-10"
+              className="absolute bottom-0 left-0 right-0 p-5 lg:p-8 z-10"
             >
-              <p className={`text-xs sm:text-sm font-bold uppercase tracking-widest mb-2 ${displayHero?.heroAccentColor ?? CELLS[0].accentColor}`}>
+              <p className={`text-xs lg:text-sm font-bold uppercase tracking-widest mb-2 ${displayHero?.heroAccentColor ?? CELLS[0].accentColor}`}>
                 Featured Collection
               </p>
-              <h3 className="text-white text-xl sm:text-3xl font-black leading-tight mb-4" style={{ fontFamily: "'Georgia', serif" }}>
+              <h3 className="text-white text-xl lg:text-3xl font-black leading-tight mb-4" style={{ fontFamily: "'Georgia', serif" }}>
                 {(displayHero?.heroTitle ?? 'Premium Electronics,\nAll in One Place').split('\n').map((line, i) => (
                   <span key={i}>
                     {i > 0 && <br />}
@@ -307,7 +306,7 @@ export default function HeroBentoGrid() {
                 ))}
               </h3>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Link href={displayHero?.heroHref ?? '/products'} className={`inline-flex items-center gap-2 ${displayHero?.heroCtaBg ?? CELLS[0].ctaBg} text-sm font-black px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl transition-colors shadow-2xl`}>
+                <Link href={displayHero?.heroHref ?? '/products'} className={`inline-flex items-center justify-center gap-2 ${displayHero?.heroCtaBg ?? CELLS[0].ctaBg} text-sm font-black px-5 lg:px-6 py-2.5 lg:py-3 rounded-xl transition-colors shadow-2xl`}>
                   {displayHero?.heroCtaText ?? 'Shop Now'} <ArrowRight size={15} />
                 </Link>
               </motion.div>
@@ -332,7 +331,7 @@ export default function HeroBentoGrid() {
               <motion.div
                 key={banner?.id ?? fallback.id}
                 variants={fadeUp}
-                className="hidden lg:flex col-span-2 relative overflow-hidden rounded-2xl sm:rounded-3xl group cursor-pointer"
+                className="hidden lg:flex col-span-2 relative overflow-hidden rounded-2xl lg:rounded-3xl group cursor-pointer"
                 style={{ minHeight: 170 }}
               >
                 <Image
@@ -347,16 +346,16 @@ export default function HeroBentoGrid() {
 
                 {/* Floating offer badge */}
                 <motion.div {...bob(i)} className="absolute top-2.5 right-2.5 z-10">
-                  <div className={`${badgeBg} text-white flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-lg text-[9px] sm:text-[10px] font-black border border-white/10`}>
-                    <Icon size={10} className="shrink-0 sm:w-3 sm:h-3" />
+                  <div className={`${badgeBg} text-white flex items-center gap-1 lg:gap-1.5 px-2 lg:px-2.5 py-1 lg:py-1.5 rounded-lg lg:rounded-xl shadow-lg text-[9px] lg:text-[10px] font-black border border-white/10`}>
+                    <Icon size={10} className="shrink-0 lg:w-3 lg:h-3" />
                     <span className="whitespace-nowrap">{offer}</span>
                   </div>
                 </motion.div>
 
                 {/* Bottom info */}
-                <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 z-10">
-                  <p className="text-white/55 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider mb-0.5">{label}</p>
-                  <p className="text-white text-xs sm:text-sm font-black leading-tight">{title}</p>
+                <div className="absolute bottom-0 left-0 right-0 p-3 lg:p-4 z-10">
+                  <p className="text-white/55 text-[8px] lg:text-[10px] font-bold uppercase tracking-wider mb-0.5">{label}</p>
+                  <p className="text-white text-xs lg:text-sm font-black leading-tight">{title}</p>
                 </div>
 
                 {/* Hover shimmer overlay */}
@@ -371,14 +370,14 @@ export default function HeroBentoGrid() {
 
         {/* ── Offer pills strip ── */}
         {loading ? (
-          <div className="mt-4 flex gap-2 sm:gap-3 overflow-x-auto scrollbar-none pb-1">
+          <div className="mt-4 flex gap-2 lg:gap-3 overflow-x-auto scrollbar-none pb-1">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="shrink-0 h-12 sm:h-14 w-32 sm:w-36 rounded-xl sm:rounded-2xl bg-slate-100 animate-pulse" />
+              <div key={i} className="shrink-0 h-12 lg:h-14 w-32 lg:w-36 rounded-xl lg:rounded-2xl bg-slate-100 animate-pulse" />
             ))}
           </div>
         ) : (
-        <div className="mt-4 -mx-4 px-4 sm:mx-0 sm:px-0">
-          <div className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-none pb-1">
+        <div className="mt-4 -mx-4 px-4 lg:mx-0 lg:px-0">
+          <div className="flex gap-2 lg:gap-3 overflow-x-auto scrollbar-none pb-1">
             {(displayPills ?? PILLS).map((item, i) => {
               const fallbackPill = PILLS[i] ?? PILLS[0];
               const isApi = 'imageUrl' in item && typeof (item as BannerDto).id === 'string';
@@ -394,14 +393,14 @@ export default function HeroBentoGrid() {
                   initial={{ opacity: 0, y: 18, scale: 0.88 }}
                   animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
                   transition={{ duration: 0.45, delay: 0.4 + i * 0.07, ease: [0.22, 1, 0.36, 1] as const }}
-                  className={`${bg} shrink-0 flex items-center gap-2 sm:gap-2.5 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-md ${shadow}`}
+                  className={`${bg} shrink-0 flex items-center gap-2 lg:gap-2.5 text-white px-3 lg:px-4 py-2 lg:py-2.5 rounded-xl lg:rounded-2xl shadow-md ${shadow}`}
                 >
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0">
+                  <div className="w-6 h-6 lg:w-7 lg:h-7 bg-white/20 rounded-lg lg:rounded-xl flex items-center justify-center shrink-0">
                     <Icon size={13} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] sm:text-xs font-black whitespace-nowrap leading-tight">{label}</p>
-                    <p className="text-[8px] sm:text-[10px] opacity-75 whitespace-nowrap leading-tight hidden sm:block">{sub}</p>
+                    <p className="text-[10px] lg:text-xs font-black whitespace-nowrap leading-tight">{label}</p>
+                    <p className="text-[8px] lg:text-[10px] opacity-75 whitespace-nowrap leading-tight hidden lg:block">{sub}</p>
                   </div>
                 </motion.div>
               );
