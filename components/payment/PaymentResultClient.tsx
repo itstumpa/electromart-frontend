@@ -1,8 +1,9 @@
 "use client";
 
-import { getOrderById } from "@/api/order.api";
+import { getOrderById, getGuestOrderConfirmation } from "@/api/order.api";
 import type { Order } from "@/data/types";
 import { mapOrderDtoToUi } from "@/lib/order-mappers";
+import { authStorage } from "@/utils/auth-storage";
 import {
   AlertTriangle,
   ArrowRight,
@@ -41,7 +42,12 @@ export default function PaymentResultClient({
   const router = useRouter();
 
   useEffect(() => {
-    getOrderById(orderId)
+    const user = authStorage.getAuthUser();
+    const guest = !user;
+
+    const fetchOrder = guest ? getGuestOrderConfirmation(orderId) : getOrderById(orderId);
+
+    fetchOrder
       .then((res) => {
         if (res.data.data) setOrder(mapOrderDtoToUi(res.data.data));
       })

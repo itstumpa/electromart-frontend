@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CheckCircle2, MapPin, ArrowRight, Search } from 'lucide-react';
-import { getOrderById } from '@/api/order.api';
+import { getOrderById, getGuestOrderConfirmation } from '@/api/order.api';
 import { authStorage } from '@/utils/auth-storage';
 import { mapOrderDtoToUi } from '@/lib/order-mappers';
 import type { Order } from '@/data/types';
@@ -16,8 +16,13 @@ export default function OrderConfirmationClient({ orderId }: { orderId: string }
 
   useEffect(() => {
     const user = authStorage.getAuthUser();
-    setIsGuest(!user);
-    getOrderById(orderId)
+    const guest = !user;
+    setIsGuest(guest);
+
+    // Guest users use public endpoint (no auth required); authenticated users use regular endpoint
+    const fetchOrder = guest ? getGuestOrderConfirmation(orderId) : getOrderById(orderId);
+
+    fetchOrder
       .then((res) => {
         if (res.data.data) setOrder(mapOrderDtoToUi(res.data.data));
       })

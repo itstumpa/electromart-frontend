@@ -128,6 +128,11 @@ export const trackGuestOrder = (orderId: string, email: string) => {
   });
 };
 
+// Public endpoint for order confirmation page (no auth required)
+export const getGuestOrderConfirmation = (orderId: string) => {
+  return api.get<ApiResponse<OrderDto>>(`/orders/guest/confirmation/${orderId}`);
+};
+
 export const getGuestOrderTimeline = (orderId: string, email: string) => {
   return api.get<ApiResponse<TimelineResponse>>(
     `/orderTracking/${orderId}/guest-timeline`,
