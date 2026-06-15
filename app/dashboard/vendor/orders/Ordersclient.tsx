@@ -74,6 +74,12 @@ const STATUS_CONFIG: Record<
   },
 };
 
+const getOrderUserLabel = (order: any) => {
+  if (order.user?.id) return `User (${order.user.id})`;
+  if (order.guestId) return `Guest (${order.guestId})`;
+  return "Unknown User";
+};
+
 export default function VendorOrdersClient() {
   const [items, setItems] = useState<VendorOrderItemDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -284,7 +290,7 @@ export default function VendorOrdersClient() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5 truncate">
-                        {item.order.user?.name ?? "Unknown User"} · {item.product.name} · qty{" "}
+                        {getOrderUserLabel(item.order)} · {item.product.name} · qty{" "}
                         {item.quantity} ·{" "}
                         {new Date(item.createdAt).toLocaleDateString("en-US", {
                           month: "short",

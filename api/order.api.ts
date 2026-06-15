@@ -85,7 +85,10 @@ export interface VendorOrderItemDto {
     status: string;
     total: number;
     createdAt: string;
-    user: { id: string; name: string; email: string };
+    guestId?: string;
+    guestName?: string;
+    guestEmail?: string;
+    user: { id: string; name: string; email: string } | null;
   };
   product: {
     id: string;

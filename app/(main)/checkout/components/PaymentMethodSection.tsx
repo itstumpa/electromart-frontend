@@ -55,9 +55,9 @@ export default function PaymentMethodSection({
       {/* Method selection */}
       <div className="grid grid-cols-3 gap-3">
         {[
+          { value: "cod", label: "Cash on Delivery", icon: ShoppingBag },
           { value: "stripe", label: "Stripe", icon: CreditCard },
           { value: "sslcommerz", label: "Online Payment", icon: Globe },
-          { value: "cod", label: "Cash on Delivery", icon: ShoppingBag },
         ].map(({ value, label, icon: Icon }) => (
           <label
             key={value}

@@ -9,7 +9,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col bg-white">
       <TopBar />
       <Suspense fallback={null}>
-        <Toaster richColors position="top-right" />
+        <Toaster richColors position="bottom-right" />
 
         <MainNavbar />
       </Suspense>

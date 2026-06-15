@@ -54,6 +54,12 @@ const STATUS_CONFIG: Record<
   },
 };
 
+const getAdminOrderUserLabel = (order: any) => {
+  if (order.user?.id) return `User (${order.user.id})`;
+  if (order.guestId) return `Guest (${order.guestId})`;
+  return order.customerName || "Unknown User";
+};
+
 const mapMockOrderToOrderDto = (o: any): OrderDto => ({
   id: o.id,
   userId: o.customerId,
@@ -216,7 +222,7 @@ export default function OrdersClient({
       render: (o) => (
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-slate-800">
-            {o.user?.name || (o as any).customerName}
+            {getAdminOrderUserLabel(o)}
           </span>
         </div>
       ),
