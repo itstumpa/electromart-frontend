@@ -151,7 +151,7 @@ export type OrderStatus =
 
 export type PaymentStatus = 'unpaid' | 'paid' | 'failed' | 'refunded';
 
-export type PaymentMethod = 'SSLCommerz' | 'Cash on Delivery' | 'Bank Transfer';
+export type PaymentMethod = 'Stripe' | 'SSLCommerz' | 'Cash on Delivery' | 'Bank Transfer';
 
 export type DeliveryStatus = 'assigned' | 'picked_up' | 'in_transit' | 'delivered' | 'failed';
 

@@ -53,6 +53,7 @@ export interface OrderDto {
   payment?: {
     id: string;
     status: string;
+    gateway: string;
     method?: string;
     amount?: string | number;
   } | null;

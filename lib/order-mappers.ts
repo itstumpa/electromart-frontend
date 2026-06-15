@@ -61,7 +61,17 @@ export const mapOrderDtoToUi = (dto: OrderDto): Order => {
     total: toNumber(dto.total),
     status: mapBackendOrderStatus(dto.status),
     paymentStatus: mapBackendPaymentStatus(dto.payment?.status),
-    paymentMethod: "SSLCommerz",
+    paymentMethod: (() => {
+      if (!dto.payment?.gateway) return "SSLCommerz";
+      switch (dto.payment.gateway.toUpperCase()) {
+        case "STRIPE":
+          return "Stripe";
+        case "SSLCOMMERZ":
+          return "SSLCommerz";
+        default:
+          return "SSLCommerz";
+      }
+    })(),
     shippingAddress: {
       label: "home",
       fullName: shipping?.fullName ?? "",
