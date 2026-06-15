@@ -214,7 +214,7 @@ export default function VendorOrdersClient() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             {
               label: "Total Orders",
@@ -280,6 +280,10 @@ export default function VendorOrdersClient() {
                         <p className="text-sm font-black text-amber-600">
                           #{item.orderId.slice(-6).toUpperCase()}
                         </p>
+                        {/* Mobile-only price under order ID */}
+                        <p className="sm:hidden text-sm font-black text-slate-900">
+                          ${(Number(item.priceAtTime) * item.quantity).toFixed(2)}
+                        </p>
                         <span
                           className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${s.color}`}
                         >
@@ -290,7 +294,8 @@ export default function VendorOrdersClient() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5 truncate">
-                        {getOrderUserLabel(item.order)} · {item.product.name} · qty{" "}
+                        <span className="sm:inline hidden">{getOrderUserLabel(item.order)} · </span>
+                        {item.product.name} · qty{" "}
                         {item.quantity} ·{" "}
                         {new Date(item.createdAt).toLocaleDateString("en-US", {
                           month: "short",
@@ -299,8 +304,8 @@ export default function VendorOrdersClient() {
                       </p>
                     </div>
 
-                    {/* Total */}
-                    <p className="text-base font-black text-slate-900 shrink-0">
+                    {/* Total (desktop only) */}
+                    <p className="hidden sm:block text-base font-black text-slate-900 shrink-0 whitespace-nowrap min-w-20 text-right">
                       ${(Number(item.priceAtTime) * item.quantity).toFixed(2)}
                     </p>
 

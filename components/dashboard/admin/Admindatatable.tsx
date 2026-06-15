@@ -115,9 +115,9 @@ export default function AdminDataTable<T extends { id: string }>({
         </p>
       </div>
 
-      {/* ── Table ── */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      {/* ── Table (desktop) ── */}
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full min-w-0">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/60">
               {columns.map((col) => (
@@ -173,6 +173,43 @@ export default function AdminDataTable<T extends { id: string }>({
             </AnimatePresence>
           </tbody>
         </table>
+      </div>
+
+      {/* ── Card layout (mobile) ── */}
+      <div className="sm:hidden divide-y divide-slate-50">
+        <AnimatePresence mode="wait">
+          {paginated.length === 0 ? (
+            <div className="px-5 py-16 text-center">
+              <p className="text-slate-400 text-sm">{emptyMessage}</p>
+            </div>
+          ) : (
+            paginated.map((row, i) => (
+              <motion.div
+                key={row.id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.03, duration: 0.2 }}
+                className="px-4 py-4 hover:bg-slate-50 transition-colors space-y-2"
+              >
+                {columns.map((col) => (
+                  <div key={String(col.key)} className="flex items-start justify-between gap-2">
+                    <span className="text-xs font-bold text-slate-400 uppercase shrink-0 min-w-20">
+                      {col.label}
+                    </span>
+                    <span className={`text-sm text-slate-700 text-right ${col.className ?? ''}`}>
+                      {col.render ? col.render(row) : String((row as any)[col.key] ?? '—')}
+                    </span>
+                  </div>
+                ))}
+                {actions && (
+                  <div className="flex justify-end pt-2 border-t border-slate-100 mt-2">
+                    {actions(row)}
+                  </div>
+                )}
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
       </div>
 
       {/* ── Pagination ── */}

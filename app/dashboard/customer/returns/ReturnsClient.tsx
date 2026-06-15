@@ -61,7 +61,7 @@ export default function ReturnsClient() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
           { label: "Total", value: returns.length, color: "text-slate-900", bg: "bg-white" },
           { label: "Pending", value: returns.filter((r) => r.status === "PENDING").length, color: "text-yellow-700", bg: "bg-yellow-50" },

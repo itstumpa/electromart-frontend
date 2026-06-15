@@ -288,7 +288,7 @@ export default async function AdminOverviewPage() {
       </div>
 
       {/* ── Stat cards — server rendered ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {stats.map((s) => (
           <StatCard key={s.label} {...s} />
         ))}
@@ -314,8 +314,10 @@ export default async function AdminOverviewPage() {
               View all →
             </Link>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
+
+          {/* Desktop table */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full min-w-0">
               <thead>
                 <tr className="border-b border-slate-100">
                   {["Order", "Customer", "Total", "Status", "Date"].map((h) => (
@@ -332,7 +334,6 @@ export default async function AdminOverviewPage() {
                 {recentOrders.map((order) => {
                   const s = statusConfig[order.status] ?? fallbackStatus;
 
-                  // Handle mapping compatibility between dynamic and mock structures
                   const displayId =
                     order.orderNumber ?? `#${order.id.slice(-6).toUpperCase()}`;
                   const customerName =
@@ -392,6 +393,61 @@ export default async function AdminOverviewPage() {
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="sm:hidden divide-y divide-slate-50">
+            {recentOrders.map((order) => {
+              const s = statusConfig[order.status] ?? fallbackStatus;
+              const displayId =
+                order.orderNumber ?? `#${order.id.slice(-6).toUpperCase()}`;
+              const customerName =
+                order.user?.name ??
+                (order as any).customerName ??
+                "Unknown";
+              const customerEmail =
+                order.user?.email ?? (order as any).customerEmail ?? "";
+
+              return (
+                <div key={order.id} className="px-4 py-3.5 space-y-2 hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <Link
+                      href={`/admin/orders`}
+                      className="text-sm font-bold text-amber-600 hover:text-amber-700"
+                    >
+                      {displayId}
+                    </Link>
+                    <span className="text-xs text-slate-400 font-medium">
+                      {new Date(order.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-slate-900 truncate">
+                        {customerName}
+                      </p>
+                      <p className="text-xs text-slate-400 truncate">
+                        {customerEmail}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0 ml-3">
+                      <p className="text-sm font-bold text-slate-900">
+                        ${Number(order.total).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      </p>
+                      <span
+                        className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${s.color}`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                        {s.label}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

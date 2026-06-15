@@ -123,7 +123,7 @@ export default function VendorEarningsClient() {
     return (
       <div className="space-y-4">
         <h1 className="text-2xl font-black text-slate-900" style={{ fontFamily: "'Georgia', serif" }}>Earnings & Payouts</h1>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="bg-slate-100 animate-pulse rounded-2xl h-28" />
           ))}

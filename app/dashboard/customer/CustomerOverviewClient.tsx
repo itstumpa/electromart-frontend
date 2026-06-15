@@ -94,7 +94,7 @@ export default function CustomerOverviewClient() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {stats.map(({ label, value, icon: Icon, color, text, href }) => (
           <Link key={label} href={href}
             className="group bg-white rounded-2xl border border-slate-100 hover:border-amber-200 hover:shadow-md transition-all p-4 sm:p-5 flex flex-col gap-3"

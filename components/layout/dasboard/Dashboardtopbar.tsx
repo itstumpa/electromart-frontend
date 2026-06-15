@@ -166,7 +166,7 @@ export default function DashboardTopbar({ user }: Props) {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.96 }}
                 transition={{ duration: 0.15 }}
-                className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50"
+                className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50"
               >
                 <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
                   <p className="font-bold text-slate-900 text-sm">Notifications</p>

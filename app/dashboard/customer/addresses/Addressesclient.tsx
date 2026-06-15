@@ -96,7 +96,7 @@ function AddressModal({ initial, onSave, onClose }: {
           })}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Full Name *" k="fullName" placeholder="John Smith" value={form.fullName} onChange={(value) => setForm({ ...form, fullName: value })} />
           <Field label="Phone" k="phone" placeholder="+1 555 000" value={form.phone} onChange={(value) => setForm({ ...form, phone: value })} />
           <Field label="Street Address *" k="street" placeholder="123 Main St, Apt 4B" value={form.street} onChange={(value) => setForm({ ...form, street: value })} />
