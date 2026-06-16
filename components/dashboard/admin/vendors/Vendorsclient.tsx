@@ -65,7 +65,6 @@ const [cancelTarget, setCancelTarget] = useState<VendorDto | null>(null);
   useEffect(() => {
     getAllStores()
       .then((res) => {
-        console.log('getAllStores response:', res.data);
         if (res.data?.data) {
           const realVendors = res.data.data
             .filter((v: any) => !v.id.startsWith("store-vendor") && !v.id.startsWith("vendor"))
@@ -83,13 +82,10 @@ const [cancelTarget, setCancelTarget] = useState<VendorDto | null>(null);
 
 const handleApprove = async () => {
   if (!approveTarget) return;
-  console.log('approving:', approveTarget.id);
   setProcessing(true);
   try {
     const res = await api.patch(`/stores/${approveTarget.id}/approve`, { isApproved: true });
-    console.log('approve response:', res.data);
     setVendors((prev) => {
-      console.log('prev vendors:', prev.map(v => v.id));
       return prev.map((v) => v.id === approveTarget.id ? { ...v, isApproved: true } : v);
     });
     toast.success("Store approved");

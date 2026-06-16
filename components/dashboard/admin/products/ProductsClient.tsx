@@ -45,29 +45,6 @@ export default function ProductsClient({
       .finally(() => setLoading(false));
   }, []);
 
-  // useEffect(() => {
-  //   getProducts({ includeInactive: true })
-  //     .then((res) => {
-  //       console.log('API response:', res.data);
-  //       if (res.data?.data) {
-  //         const mapped = res.data.data.map((p) => {
-  //           const card = mapProductToUiCard(p);
-  //           return {
-  //             ...card,
-  //             sku: (p as any).sku || `EM-${p.id.slice(0, 8).toUpperCase()}`,
-  //             isPublished: p.isActive,
-  //             specifications: (p as any).specifications || [],
-  //           } as any;
-  //         });
-  //         setProducts(mapped);
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       toast.error(getApiErrorMessage(err, 'Failed to load products, using offline data.'));
-  //     })
-  //     .finally(() => setLoading(false));
-  // }, []);
-
   const categories = [...new Set(products.map((p) => p.categoryName))];
   const filtered = catFilter
     ? products.filter((p) => p.categoryName === catFilter)

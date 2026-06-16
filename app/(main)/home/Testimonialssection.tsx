@@ -246,7 +246,7 @@ export default function TestimonialsSection() {
     getLatestReviews(10)
       .then((res) => {
         const real = (res.data?.data ?? []).filter((r) => r.comment?.trim());
-         console.log('real reviews:', real.length, real);
+        
         if (real.length >= 3) {
           setDisplayList(real.map(mapReviewToTestimonial));
         } else if (real.length > 0) {

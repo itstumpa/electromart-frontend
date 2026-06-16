@@ -136,7 +136,6 @@ export default function VendorProfileClient() {
     try {
       const res = await uploadAvatar(file);
       const url = res.data.data.avatar;
-      console.log('avatar url:', url);
       setForm((prev) => ({ ...prev, avatar: url }));
       setAvatarPreview(url);
       toast.success('Avatar uploaded');
