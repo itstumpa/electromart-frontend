@@ -1,5 +1,5 @@
 # ElectroMart — Frontend
-# Live: [https://electromart-frontend-jet.vercel.app]
+# Live: [https://electromart-frontend-rust.vercel.app]
 
 > **Production-grade multi-vendor electronics marketplace** built with Next.js 15, TypeScript, Tailwind CSS v4, Redux Toolkit, Framer Motion, and shadcn/ui.
 
