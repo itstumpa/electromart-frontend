@@ -11,7 +11,7 @@ import {
   removeGuestCartItem,
   updateCartItem,
   updateGuestCartItem,
-} from "@/api/cart.api";
+} from "@/src/services/api/cart.api";
 import { CartItem } from "@/data/types";
 import { notifyCartUpdated } from "@/hooks/useCartCount";
 import { mapCartItemsToUi } from "@/lib/cart-mappers";

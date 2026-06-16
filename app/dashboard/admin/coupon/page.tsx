@@ -9,7 +9,7 @@ import {
   toggleAdminCoupon,
   deleteAdminCoupon,
   type AdminCoupon,
-} from "@/api/admin.api";
+} from "@/src/services/api/admin.api";
 import { mapFormToPayload, type CouponFormData } from "./types";
 import CouponStatsCards from "./components/CouponStatsCards";
 import CouponTable from "./components/CouponTable";

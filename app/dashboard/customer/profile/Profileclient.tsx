@@ -9,15 +9,15 @@ import {
   ShoppingBag, Heart, Star, Package,
 } from 'lucide-react';
 import { authStorage } from '@/utils/auth-storage';
-import { getMe } from '@/api/auth.api';
-import { getMyOrders } from '@/api/order.api';
-import { getWishlist } from '@/api/wishlist.api';
-import { getMyReviews } from '@/api/review.api';
-import { updateUserProfile } from '@/api/user.api';
+import { getMe } from '@/src/services/api/auth.api';
+import { getMyOrders } from '@/src/services/api/order.api';
+import { getWishlist } from '@/src/services/api/wishlist.api';
+import { getMyReviews } from '@/src/services/api/review.api';
+import { updateUserProfile } from '@/src/services/api/user.api';
 import { mapOrdersToUi } from '@/lib/order-mappers';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
-import { uploadAvatar } from '@/api/user.api';
+import { uploadAvatar } from '@/src/services/api/user.api';
 
 export default function CustomerProfileClient() {
   const [userId, setUserId] = useState('');

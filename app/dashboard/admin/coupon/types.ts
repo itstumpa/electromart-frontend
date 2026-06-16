@@ -1,7 +1,7 @@
-import type { AdminCoupon } from "@/api/admin.api";
+import type { AdminCoupon } from "@/src/services/api/admin.api";
 
 /* ── Re-export API type ─────────────────────────────── */
-export type { AdminCoupon } from "@/api/admin.api";
+export type { AdminCoupon } from "@/src/services/api/admin.api";
 
 /* ── Discount type ──────────────────────────────────── */
 export type DiscountType = "PERCENTAGE" | "FIXED";

@@ -1,8 +1,8 @@
 "use client";
 
-import { getBrands } from "@/api/brand.api";
-import { getCategories, mapCategoriesToListItems } from "@/api/category.api";
-import { getProducts, searchProducts } from "@/api/product.api";
+import { getBrands } from "@/src/services/api/brand.api";
+import { getCategories, mapCategoriesToListItems } from "@/src/services/api/category.api";
+import { getProducts, searchProducts } from "@/src/services/api/product.api";
 import type { Brand, Category, Product } from "@/data/types";
 import { mapListItemDtoToProduct } from "@/lib/product-mappers";
 import Link from "next/link";

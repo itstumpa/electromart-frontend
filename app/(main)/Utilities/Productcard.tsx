@@ -7,7 +7,7 @@ import { Product } from '@/data/types';
 import Image from 'next/image';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { addToCart, addToGuestCart } from '@/api/cart.api';
+import { addToCart, addToGuestCart } from '@/src/services/api/cart.api';
 import { notifyCartUpdated } from '@/hooks/useCartCount';
 import { useWishlist } from '@/hooks/useWishlistCount';
 import { getApiErrorMessage, isUnauthorized } from '@/utils/api-error';
@@ -73,6 +73,7 @@ const handleWishlist = async (e: React.MouseEvent) => {
             src={product.image}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 14vw"
           />
 
           {/* Badges */}

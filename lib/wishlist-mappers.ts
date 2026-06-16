@@ -1,5 +1,5 @@
 import type { WishlistItem } from "@/data/types";
-import type { WishlistItemDto } from "@/api/wishlist.api";
+import type { WishlistItemDto } from "@/src/services/api/wishlist.api";
 
 export const mapWishlistItemDtoToUi = (dto: WishlistItemDto): WishlistItem => ({
   id: dto.id,

@@ -1,12 +1,12 @@
 "use client";
 
-import { getVendorReturnRequests, resolveReturnRequest, type ReturnRequestDto } from "@/api/return.api";
+import { getVendorReturnRequests, resolveReturnRequest, type ReturnRequestDto } from "@/src/services/api/return.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
 import { Clock, CheckCircle2, XCircle, RotateCcw, ChevronDown, RefreshCw, MessageSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import api from "@/api/axios";
+import api from "@/src/services/api/axios";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
   PENDING:   { label: "Pending",   color: "bg-yellow-100 text-yellow-700", dot: "bg-yellow-500" },

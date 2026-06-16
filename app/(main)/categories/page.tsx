@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, LayoutGrid } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getCategories, mapCategoriesToListItems } from "@/api/category.api";
+import { getCategories, mapCategoriesToListItems } from "@/src/services/api/category.api";
 import type { CategoryListItem } from "@/types/category";
 import Reveal from "../Utilities/Reveal";
 import Image from "next/image";

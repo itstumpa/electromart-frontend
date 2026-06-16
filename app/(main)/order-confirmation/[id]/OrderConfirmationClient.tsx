@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CheckCircle2, MapPin, ArrowRight, Search } from 'lucide-react';
-import { getOrderById, getGuestOrderConfirmation } from '@/api/order.api';
+import { getOrderById, getGuestOrderConfirmation } from '@/src/services/api/order.api';
 import { authStorage } from '@/utils/auth-storage';
 import { mapOrderDtoToUi } from '@/lib/order-mappers';
 import type { Order } from '@/data/types';

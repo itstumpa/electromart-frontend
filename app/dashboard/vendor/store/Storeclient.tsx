@@ -9,8 +9,8 @@ import {
   Star, Package, ShoppingBag, Link as LinkIcon,
   MapPin, FileText, Shield,
 } from 'lucide-react';
-import { closeStore, deleteAllProducts, getMyStore, pauseStore, updateStore, updateStorePolicies, type MyStoreDto } from '@/api/store.api';
-import { getMe } from '@/api/auth.api';
+import { closeStore, deleteAllProducts, getMyStore, pauseStore, updateStore, updateStorePolicies, type MyStoreDto } from '@/src/services/api/store.api';
+import { getMe } from '@/src/services/api/auth.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
 

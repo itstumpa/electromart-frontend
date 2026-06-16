@@ -1,7 +1,7 @@
 "use client";
 
-import { getBannersByType } from "@/api/banner.api";
-import type { BannerDto } from "@/api/banner.api";
+import { getBannersByType } from "@/src/services/api/banner.api";
+import type { BannerDto } from "@/src/services/api/banner.api";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";

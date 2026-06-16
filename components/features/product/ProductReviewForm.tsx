@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Star } from 'lucide-react';
-import { createProductReview } from '@/api/review.api';
+import { createProductReview } from '@/src/services/api/review.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
 

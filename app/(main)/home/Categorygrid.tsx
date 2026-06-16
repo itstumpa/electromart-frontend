@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { getFeaturedCategories, mapCategoriesToListItems } from '@/api/category.api';
+import { getFeaturedCategories, mapCategoriesToListItems } from '@/src/services/api/category.api';
 import type { CategoryListItem } from '@/types/category';
 import Reveal from '../Utilities/Reveal';
 import Image from 'next/image';
@@ -61,6 +61,7 @@ export default function CategoryGrid() {
                     src={cat.image ?? PLACEHOLDER_IMAGE}
                     alt={cat.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 640px) 33vw, (max-width: 1024px) 16vw, 11vw"
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
                 </motion.div>

@@ -9,7 +9,7 @@ import {
   Star, BadgePercent, Heart, Package,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getProducts } from '@/api/product.api';
+import { getProducts } from '@/src/services/api/product.api';
 import { mapProductToUiCard } from '@/types/product';
 
 /* ── Data ─────────────────────────────────────── */

@@ -1,12 +1,12 @@
 "use client";
 
-import api from "@/api/axios";
+import api from "@/src/services/api/axios";
 import {
   getOrderTimeline,
   getVendorOrders,
   type TimelineEntryDto,
   type VendorOrderItemDto,
-} from "@/api/order.api";
+} from "@/src/services/api/order.api";
 import type { ApiResponse } from "@/types/api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";

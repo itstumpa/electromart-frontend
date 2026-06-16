@@ -5,7 +5,7 @@ import {
   adminGetAllBanners,
   type BannerDto,
   type BannerType,
-} from "@/api/banner.api";
+} from "@/src/services/api/banner.api";
 import ConfirmModal from "@/components/dashboard/admin/Confirmmodal";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";

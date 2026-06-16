@@ -1,6 +1,6 @@
 "use client";
 
-import { getMyAddresses } from "@/api/address.api";
+import { getMyAddresses } from "@/src/services/api/address.api";
 import {
   applyCartCoupon,
   applyGuestCartCoupon,
@@ -8,9 +8,9 @@ import {
   getGuestCart,
   removeCartCoupon,
   removeGuestCartCoupon,
-} from "@/api/cart.api";
-import { placeGuestOrder, placeOrder } from "@/api/order.api";
-import { initiatePayment, initiateGuestPayment } from "@/api/payment.api";
+} from "@/src/services/api/cart.api";
+import { placeGuestOrder, placeOrder } from "@/src/services/api/order.api";
+import { initiatePayment, initiateGuestPayment } from "@/src/services/api/payment.api";
 import type { Address, CartItem } from "@/data/types";
 import { notifyCartUpdated } from "@/hooks/useCartCount";
 import { mapAddressesToUi } from "@/lib/address-mappers";
@@ -428,7 +428,10 @@ export default function CheckoutPage() {
       router.push(`/order-confirmation/${order.id}`);
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to place order"));
-      throw err;
+      // Clear the coupon so the user can retry without stale state
+      setCouponCode("");
+      setCouponInput("");
+      setDiscountAmt(0);
     }
   };
 

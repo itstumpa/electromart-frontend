@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { addToCart, addToGuestCart } from "@/api/cart.api";
+import { addToCart, addToGuestCart } from "@/src/services/api/cart.api";
 import {
   addToWishlist,
   addToGuestWishlist,
@@ -22,7 +22,7 @@ import {
   checkGuestWishlistItem,
   removeFromWishlist,
   removeFromGuestWishlist,
-} from "@/api/wishlist.api";
+} from "@/src/services/api/wishlist.api";
 import { notifyCartUpdated } from "@/hooks/useCartCount";
 import { getApiErrorMessage, isUnauthorized } from "@/utils/api-error";
 import { authStorage } from "@/utils/auth-storage";

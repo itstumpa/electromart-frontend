@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
-import { verifyEmail } from '@/api/auth.api';
+import { verifyEmail } from '@/src/services/api/auth.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 
 type Status = 'verifying' | 'success' | 'error';

@@ -1,6 +1,6 @@
 "use client";
 
-import { searchProducts } from "@/api/product.api";
+import { searchProducts } from "@/src/services/api/product.api";
 import type { Product } from "@/data/types";
 import { mapListItemDtoToProduct } from "@/lib/product-mappers";
 import { AnimatePresence, motion } from "framer-motion";

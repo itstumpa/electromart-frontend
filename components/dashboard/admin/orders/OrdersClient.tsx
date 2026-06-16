@@ -1,7 +1,7 @@
 "use client";
 
-import { adminCancelOrder, getAllOrders, getOrderTimeline, OrderDto, updateOrderItemStatus } from "@/api/order.api";
-import type { TimelineEntryDto } from "@/api/order.api";
+import { adminCancelOrder, getAllOrders, getOrderTimeline, OrderDto, updateOrderItemStatus } from "@/src/services/api/order.api";
+import type { TimelineEntryDto } from "@/src/services/api/order.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, ChevronDown, Clock, Eye, Package, Truck, X, XCircle } from "lucide-react";

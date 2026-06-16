@@ -1,6 +1,6 @@
 "use client";
 
-import { getProductReviews } from "@/api/review.api";
+import { getProductReviews } from "@/src/services/api/review.api";
 import TiptapRenderer from "@/components/ui/TiptapRenderer";
 import type { ProductSpecification, Review } from "@/data/types";
 import { motion } from "framer-motion";

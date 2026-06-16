@@ -12,8 +12,8 @@ import {
 import { mockUsers } from '@/data/mock-data';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/utils/api-error';
-import { getMe, changePassword } from '@/api/auth.api';
-import { updateUserProfile, getNotificationPrefs, updateNotificationPrefs } from '@/api/user.api';
+import { getMe, changePassword } from '@/src/services/api/auth.api';
+import { updateUserProfile, getNotificationPrefs, updateNotificationPrefs } from '@/src/services/api/user.api';
 import { authStorage } from '@/utils/auth-storage';
 
 // ─── Types ────────────────────────────────────────────────

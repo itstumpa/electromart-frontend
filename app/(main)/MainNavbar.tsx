@@ -1,7 +1,7 @@
 "use client";
 
-import { getMe, logoutUser } from "@/api/auth.api";
-import { getSearchSuggestions } from "@/api/product.api";
+import { getMe, logoutUser } from "@/src/services/api/auth.api";
+import { getSearchSuggestions } from "@/src/services/api/product.api";
 import { useCartCount } from "@/hooks/useCartCount";
 import { useWishlistCount } from "@/hooks/useWishlistCount";
 import { authStorage } from "@/utils/auth-storage";

@@ -8,11 +8,11 @@ import {
   Bell, Package, ArrowRight,
   CheckCircle2, Clock, Truck,
 } from 'lucide-react';
-import { getMe } from '@/api/auth.api';
-import { getMyOrders } from '@/api/order.api';
-import { getMyNotifications } from '@/api/notification.api';
-import { getWishlist } from '@/api/wishlist.api';
-import { getMyReviews } from '@/api/review.api';
+import { getMe } from '@/src/services/api/auth.api';
+import { getMyOrders } from '@/src/services/api/order.api';
+import { getMyNotifications } from '@/src/services/api/notification.api';
+import { getWishlist } from '@/src/services/api/wishlist.api';
+import { getMyReviews } from '@/src/services/api/review.api';
 import { mapOrdersToUi } from '@/lib/order-mappers';
 import { mapNotificationDtoToUi } from '@/lib/notification-mappers';
 import { mapWishlistItemsToUi } from '@/lib/wishlist-mappers';

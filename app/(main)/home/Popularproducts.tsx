@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, TrendingUp } from 'lucide-react';
-import { getProducts } from '@/api/product.api';
+import { getProducts } from '@/src/services/api/product.api';
 import type { Product } from '@/data/types';
 import { mapListItemDtoToProduct } from '@/lib/product-mappers';
 import ProductCard from '../Utilities/Productcard';

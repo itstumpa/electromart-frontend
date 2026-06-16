@@ -1,6 +1,6 @@
 "use client";
 
-import { getProductQA, askQuestion, type QuestionDto } from "@/api/product-qa.api";
+import { getProductQA, askQuestion, type QuestionDto } from "@/src/services/api/product-qa.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
 import { MessageSquare, Send, User, Store, ChevronDown, ChevronUp } from "lucide-react";

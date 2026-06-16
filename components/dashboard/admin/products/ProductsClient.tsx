@@ -1,6 +1,6 @@
 "use client";
 
-import { getAdminProducts, toggleProductVisibility } from "@/api/product.api";
+import { getAdminProducts, toggleProductVisibility } from "@/src/services/api/product.api";
 import { Product } from "@/data/types";
 import { mapProductToUiCard } from "@/types/product";
 import { getApiErrorMessage } from "@/utils/api-error";

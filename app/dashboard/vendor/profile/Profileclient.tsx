@@ -9,11 +9,11 @@ import {
   ShoppingBag, MapPin, Calendar,
 } from 'lucide-react';
 import { authStorage } from '@/utils/auth-storage';
-import { getMe } from '@/api/auth.api';
+import { getMe } from '@/src/services/api/auth.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
-import { getMyStore, updateStore, type MyStoreDto } from '@/api/store.api';
-import { updateUserProfile, uploadAvatar } from '@/api/user.api';
+import { getMyStore, updateStore, type MyStoreDto } from '@/src/services/api/store.api';
+import { updateUserProfile, uploadAvatar } from '@/src/services/api/user.api';
 
 export default function VendorProfileClient() {
   const [store,      setStore]      = useState<MyStoreDto | null>(null);

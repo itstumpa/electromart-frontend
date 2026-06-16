@@ -1,6 +1,6 @@
 "use client";
 
-import { createAddress } from "@/api/address.api";
+import { createAddress } from "@/src/services/api/address.api";
 import type { Address } from "@/data/types";
 import type { CreateAddressPayload } from "@/types/address";
 import { getApiErrorMessage } from "@/utils/api-error";

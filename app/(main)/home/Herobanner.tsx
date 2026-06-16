@@ -9,8 +9,8 @@ import {
   Tag, RotateCcw, Star
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { getBannersByType } from '@/api/banner.api';
-import type { BannerDto } from '@/api/banner.api';
+import { getBannersByType } from '@/src/services/api/banner.api';
+import type { BannerDto } from '@/src/services/api/banner.api';
 import { getBannerIcon } from '@/lib/banner-icon-map';
 
 // ─── All images: vivid, high-contrast, colorful Unsplash picks ─

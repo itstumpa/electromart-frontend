@@ -6,11 +6,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertTriangle, Pencil, Check, X, Search,
 } from 'lucide-react';
-import { getMyProducts } from '@/api/product.api';
+import { getMyProducts } from '@/src/services/api/product.api';
 import { type ProductListItemDto } from '@/types/product';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
-import api from '@/api/axios';
+import api from '@/src/services/api/axios';
 import type { ApiResponse } from '@/types/api';
 
 type StockFilter = 'all' | 'low' | 'out' | 'ok';

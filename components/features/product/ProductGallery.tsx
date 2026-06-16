@@ -30,6 +30,7 @@ export default function ProductGallery({ images, name, discount, bestseller }: P
           src={images[activeImage]}
           alt={name}
           className="w-full h-full object-contain p-8"
+          sizes="(max-width: 768px) 100vw, 50vw"
         />
         {discount && (
           <span className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
@@ -56,7 +57,7 @@ export default function ProductGallery({ images, name, discount, bestseller }: P
             }`}
             aria-label={`View image ${i + 1}`}
           >
-            <Image fill src={img} alt="" className="w-full h-full object-contain p-2" />
+            <Image fill src={img} alt="" className="w-full h-full object-contain p-2" sizes="80px" />
           </button>
         ))}
       </div>

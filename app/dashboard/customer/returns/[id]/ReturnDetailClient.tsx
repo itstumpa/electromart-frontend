@@ -1,6 +1,6 @@
 "use client";
 
-import { getMyReturnRequests, type ReturnRequestDto } from "@/api/return.api";
+import { getMyReturnRequests, type ReturnRequestDto } from "@/src/services/api/return.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { ArrowLeft, Clock, CheckCircle2, XCircle, Calendar, MessageSquare, RotateCcw } from "lucide-react";
 import Link from "next/link";

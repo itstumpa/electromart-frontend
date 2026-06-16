@@ -5,7 +5,7 @@ import {
   adminUpdateBanner,
   type BannerDto,
   type BannerType,
-} from "@/api/banner.api";
+} from "@/src/services/api/banner.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
 import {

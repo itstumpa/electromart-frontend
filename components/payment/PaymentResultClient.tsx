@@ -1,6 +1,6 @@
 "use client";
 
-import { getOrderById, getGuestOrderConfirmation } from "@/api/order.api";
+import { getOrderById, getGuestOrderConfirmation } from "@/src/services/api/order.api";
 import type { Order } from "@/data/types";
 import { mapOrderDtoToUi } from "@/lib/order-mappers";
 import { authStorage } from "@/utils/auth-storage";

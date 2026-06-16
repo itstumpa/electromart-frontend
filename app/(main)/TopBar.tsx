@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Tag, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getPromotionalCoupons, type PromoCoupon } from "@/api/coupon.api";
+import { getPromotionalCoupons, type PromoCoupon } from "@/src/services/api/coupon.api";
 
 export default function TopBar() {
   const [visible, setVisible] = useState(true);

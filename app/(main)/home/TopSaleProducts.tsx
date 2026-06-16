@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { ArrowRight, Trophy } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { getProducts } from '@/api/product.api';
+import { getProducts } from '@/src/services/api/product.api';
 import type { Product } from '@/data/types';
 import { mapListItemDtoToProduct } from '@/lib/product-mappers';
 import Reveal from '../Utilities/Reveal';

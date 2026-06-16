@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Pencil, Trash2, X, CheckCircle2 } from 'lucide-react';
-import { getMyReviews, updateReview, deleteReview, type ReviewDto } from '@/api/review.api';
+import { getMyReviews, updateReview, deleteReview, type ReviewDto } from '@/src/services/api/review.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
 

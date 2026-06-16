@@ -1,6 +1,6 @@
 "use client";
 
-import { getProductsByTag, type TagWithProductsDto } from "@/api/tag.api";
+import { getProductsByTag, type TagWithProductsDto } from "@/src/services/api/tag.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { motion } from "framer-motion";
 import { ArrowLeft, Package, RefreshCw, ShoppingBag, Star } from "lucide-react";

@@ -14,8 +14,8 @@ import {
 import {
   getMyPayouts, getMyTransactions, requestPayout,
   type PayoutDto, type TransactionDto,
-} from '@/api/payout.api';
-import { getMyAnalytics, type VendorAnalyticsDto } from '@/api/vendor-analytics.api';
+} from '@/src/services/api/payout.api';
+import { getMyAnalytics, type VendorAnalyticsDto } from '@/src/services/api/vendor-analytics.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
 

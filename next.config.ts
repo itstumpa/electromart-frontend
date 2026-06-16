@@ -3,7 +3,6 @@ const backendUrl =
   process.env.BACKEND_URL || "http://localhost:5000";
 
 const nextConfig: import("next").NextConfig = {
-  output: 'standalone',
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "randomuser.me" },

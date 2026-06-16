@@ -8,8 +8,8 @@ import {
 } from 'lucide-react';
 import AdminDataTable, { Column } from '../Admindatatable';
 import ConfirmModal from '../Confirmmodal';
-import { getAllUsers, UserListItemDto } from '@/api/user.api';
-import api from '@/api/axios';
+import { getAllUsers, UserListItemDto } from '@/src/services/api/user.api';
+import api from '@/src/services/api/axios';
 import type { ApiResponse } from '@/types/api';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';

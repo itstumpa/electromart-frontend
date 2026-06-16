@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Marquee from 'react-fast-marquee';
 import Link from 'next/link';
-import { getLatestReviews, type ReviewDto } from '@/api/review.api';
+import { getLatestReviews, type ReviewDto } from '@/src/services/api/review.api';
 
 /* ── Static fallback data ──────────────────── */
 const STATIC_TESTIMONIALS = [

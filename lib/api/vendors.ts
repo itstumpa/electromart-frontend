@@ -1,5 +1,5 @@
 // lib/api/vendors.ts
-import api from '@/api/axios';
+import api from '@/src/services/api/axios';
 import type { TopVendor } from '@/types/vendors';
 
 // ✅ Server Component usage (TopVendors on home page)

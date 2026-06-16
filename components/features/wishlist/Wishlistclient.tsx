@@ -1,12 +1,12 @@
 "use client";
 
-import { addToCart as addToCartApi, addToGuestCart } from "@/api/cart.api";
+import { addToCart as addToCartApi, addToGuestCart } from "@/src/services/api/cart.api";
 import {
   getWishlist,
   getGuestWishlist,
   removeFromWishlist,
   removeFromGuestWishlist,
-} from "@/api/wishlist.api";
+} from "@/src/services/api/wishlist.api";
 import { authStorage } from "@/utils/auth-storage";
 import ConfirmModal from "@/components/dashboard/admin/Confirmmodal";
 import type { WishlistItem } from "@/data/types";

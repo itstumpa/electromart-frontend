@@ -1,6 +1,6 @@
 "use client";
 
-import { getLeaderboard, type LeaderboardEntryDto } from "@/api/leaderboard.api";
+import { getLeaderboard, type LeaderboardEntryDto } from "@/src/services/api/leaderboard.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
 import { Award, ChevronRight, ShoppingBag, Star, Package, DollarSign, TrendingUp, RefreshCw } from "lucide-react";

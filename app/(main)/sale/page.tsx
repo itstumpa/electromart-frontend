@@ -1,7 +1,7 @@
 "use client";
 
-import { getCategories, mapCategoriesToListItems } from "@/api/category.api";
-import { getProducts } from "@/api/product.api";
+import { getCategories, mapCategoriesToListItems } from "@/src/services/api/category.api";
+import { getProducts } from "@/src/services/api/product.api";
 // import type { Product } from "@/data/types"; 
 import { mapListItemDtoToProduct } from "@/lib/product-mappers";
 import { motion } from "framer-motion";

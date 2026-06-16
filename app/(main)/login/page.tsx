@@ -2,7 +2,7 @@
 
 "use client";
 
-import { loginUser } from "@/api/auth.api";
+import { loginUser } from "@/src/services/api/auth.api";
 import type { ApiResponse } from "@/types/api";
 import type { SigninResponseData } from "@/types/auth";
 import { getApiErrorMessage } from "@/utils/api-error";

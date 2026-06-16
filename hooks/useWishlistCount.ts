@@ -8,7 +8,7 @@ import {
   getWishlist,
   removeFromGuestWishlist,
   removeFromWishlist,
-} from "@/api/wishlist.api";
+} from "@/src/services/api/wishlist.api";
 import { authStorage } from "@/utils/auth-storage";
 
 interface WishlistStore {

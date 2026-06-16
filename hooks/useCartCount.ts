@@ -1,6 +1,6 @@
 "use client";
 
-import { getCart, getGuestCart } from "@/api/cart.api";
+import { getCart, getGuestCart } from "@/src/services/api/cart.api";
 import { authStorage } from "@/utils/auth-storage";
 import { useCallback, useEffect, useState } from "react";
 

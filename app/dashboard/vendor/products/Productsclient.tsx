@@ -1,7 +1,7 @@
 "use client";
 
-import { getCategories, mapCategoriesToListItems } from "@/api/category.api";
-import { getBrands } from "@/api/brand.api";
+import { getCategories, mapCategoriesToListItems } from "@/src/services/api/category.api";
+import { getBrands } from "@/src/services/api/brand.api";
 import {
   createProduct,
   deleteProduct,
@@ -10,7 +10,7 @@ import {
   updateProduct,
   type CreateProductDto,
   type ProductImageResponse,
-} from "@/api/product.api";
+} from "@/src/services/api/product.api";
 import ConfirmModal from "@/components/dashboard/admin/Confirmmodal";
 import ProductImageManager from "@/components/dashboard/vendor/ProductImageManager";
 import { toNumber, type ProductListItemDto } from "@/types/product";

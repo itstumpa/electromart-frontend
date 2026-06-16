@@ -11,8 +11,8 @@ import {
 } from 'lucide-react';
 import type { UserRole } from '@/data/types';
 import { authStorage } from '@/utils/auth-storage';
-import { logoutUser } from '@/api/auth.api';
-import { getAdminDashboard } from '@/api/admin.api';
+import { logoutUser } from '@/src/services/api/auth.api';
+import { getAdminDashboard } from '@/src/services/api/admin.api';
 import { toast } from 'sonner';
 import {
   NAV_BY_ROLE,

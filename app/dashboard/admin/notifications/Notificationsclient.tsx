@@ -15,7 +15,7 @@ import {
   getMyNotifications,
   markAllNotificationsRead,
   markNotificationRead,
-} from "@/api/notification.api";
+} from "@/src/services/api/notification.api";
 import { mapNotificationDtoToUi } from "@/lib/notification-mappers";
 import type { Notification, NotificationType } from "@/data/types";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { getAdminQuestions, moderateQuestion, deleteQuestion, type QuestionDto } from "@/api/product-qa.api";
+import { getAdminQuestions, moderateQuestion, deleteQuestion, type QuestionDto } from "@/src/services/api/product-qa.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
 import { Clock, CheckCircle2, XCircle, MessageSquare, RefreshCw, ChevronDown, Trash2 } from "lucide-react";

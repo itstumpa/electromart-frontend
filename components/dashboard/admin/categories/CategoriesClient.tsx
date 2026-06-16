@@ -5,13 +5,13 @@ import {
   deleteBrand as deleteBrandApi,
   getBrands,
   updateBrand,
-} from "@/api/brand.api";
+} from "@/src/services/api/brand.api";
 import {
   createCategory,
   deleteCategory,
   getCategories,
   updateCategory,
-} from "@/api/category.api";
+} from "@/src/services/api/category.api";
 import { Brand, Category } from "@/data/types";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";

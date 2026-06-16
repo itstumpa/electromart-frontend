@@ -1,6 +1,6 @@
 'use client';
 
-import { trackGuestOrder, getGuestOrderTimeline } from '@/api/order.api';
+import { trackGuestOrder, getGuestOrderTimeline } from '@/src/services/api/order.api';
 import type { TimelineEntryDto } from '@/types/order';
 import { mapOrderDtoToUi } from '@/lib/order-mappers';
 import type { Order } from '@/data/types';

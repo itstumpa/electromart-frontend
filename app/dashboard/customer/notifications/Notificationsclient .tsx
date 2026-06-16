@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, ShoppingBag, Tag, Package, Truck, CheckCheck, Trash2, ChevronDown } from 'lucide-react';
-import { getMyNotifications, markAllNotificationsRead, markNotificationRead } from '@/api/notification.api';
+import { getMyNotifications, markAllNotificationsRead, markNotificationRead } from '@/src/services/api/notification.api';
 import { mapNotificationDtoToUi } from '@/lib/notification-mappers';
 import type { Notification, NotificationType } from '@/data/types';
 

@@ -7,7 +7,7 @@ import {
   setPrimaryImage,
   uploadProductImages,
   type ProductImageResponse,
-} from "@/api/product.api";
+} from "@/src/services/api/product.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import {
   DndContext,

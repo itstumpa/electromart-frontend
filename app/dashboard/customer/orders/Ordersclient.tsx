@@ -1,17 +1,17 @@
 "use client";
 
-import type { TimelineEntryDto } from "@/api/order.api";
-import { getMyOrders, getOrderTimeline } from "@/api/order.api";
+import type { TimelineEntryDto } from "@/src/services/api/order.api";
+import { getMyOrders, getOrderTimeline } from "@/src/services/api/order.api";
 import {
   createProductReview,
   getMyReviews,
   type ReviewDto,
-} from "@/api/review.api";
+} from "@/src/services/api/review.api";
 import type { Order, OrderStatus } from "@/data/types";
 import { mapOrdersToUi } from "@/lib/order-mappers";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
-import { getMyReturnRequests } from "@/api/return.api";
+import { getMyReturnRequests } from "@/src/services/api/return.api";
 import {
   CheckCircle2,
   ChevronDown,

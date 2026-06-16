@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Plus, Pencil, Trash2, Home, Briefcase, Star, X, CheckCircle2 } from 'lucide-react';
-import { createAddress, deleteAddress, getMyAddresses, setDefaultAddress, updateAddress } from '@/api/address.api';
+import { createAddress, deleteAddress, getMyAddresses, setDefaultAddress, updateAddress } from '@/src/services/api/address.api';
 import { mapAddressesToUi } from '@/lib/address-mappers';
 import type { Address } from '@/data/types';
 import type { CreateAddressPayload } from '@/types/address';

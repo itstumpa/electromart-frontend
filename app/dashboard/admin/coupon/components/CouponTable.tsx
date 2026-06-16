@@ -16,7 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
-import type { AdminCoupon } from "@/api/admin.api";
+import type { AdminCoupon } from "@/src/services/api/admin.api";
 import CouponStatusBadge from "./CouponStatusBadge";
 
 /* ── Coupon Table ──────────────────────────────────── */

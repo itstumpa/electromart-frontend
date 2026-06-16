@@ -1,6 +1,6 @@
 "use client";
 
-import { getVendorQuestions, moderateQuestion, answerVendorQuestion, deleteQuestion, type QuestionDto } from "@/api/product-qa.api";
+import { getVendorQuestions, moderateQuestion, answerVendorQuestion, deleteQuestion, type QuestionDto } from "@/src/services/api/product-qa.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
 import {

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { getMe } from '@/api/auth.api';
+import { getMe } from '@/src/services/api/auth.api';
 import type { User, UserRole } from '@/data/types';
 import { mapMeToUser } from '@/lib/user-mappers';
 import { authStorage } from '@/utils/auth-storage';

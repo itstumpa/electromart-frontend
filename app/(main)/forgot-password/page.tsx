@@ -8,7 +8,7 @@ import {
   Mail, ArrowRight, ArrowLeft,
   CheckCircle2, RefreshCw, AlertCircle,
 } from 'lucide-react';
-import { forgotPassword } from '@/api/auth.api';
+import { forgotPassword } from '@/src/services/api/auth.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 
 type Step = 'email' | 'sent';

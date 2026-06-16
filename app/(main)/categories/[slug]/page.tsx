@@ -1,7 +1,7 @@
 "use client";
 
-import { getCategoryBySlug } from "@/api/category.api";
-import { getProducts } from "@/api/product.api";
+import { getCategoryBySlug } from "@/src/services/api/category.api";
+import { getProducts } from "@/src/services/api/product.api";
 import type { CategoryDetailDto } from "@/types/category";
 import type { Product } from "@/data/types";
 import type { ProductsMeta } from "@/types/product";

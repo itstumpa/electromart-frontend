@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Marquee from "react-fast-marquee";
 import { useEffect, useState } from 'react';
-import { getFeaturedBrands } from '@/api/brand.api';
+import { getFeaturedBrands } from '@/src/services/api/brand.api';
 import type { BrandDto } from '@/types/brand';
 
 const PLACEHOLDER_IMAGE =

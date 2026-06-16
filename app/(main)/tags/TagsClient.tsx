@@ -1,6 +1,6 @@
 "use client";
 
-import { getAllTags, type TagDto } from "@/api/tag.api";
+import { getAllTags, type TagDto } from "@/src/services/api/tag.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { motion } from "framer-motion";
 import { Tag, RefreshCw } from "lucide-react";

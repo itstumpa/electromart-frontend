@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Copy, Tag, X } from "lucide-react";
 import { useState } from "react";
-import type { AdminCoupon } from "@/api/admin.api";
+import type { AdminCoupon } from "@/src/services/api/admin.api";
 
 /* ── View Modal ─────────────────────────────────────── */
 export default function CouponDetailModal({

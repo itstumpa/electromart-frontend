@@ -1,4 +1,4 @@
-import type { AdminCoupon } from "@/api/admin.api";
+import type { AdminCoupon } from "@/src/services/api/admin.api";
 
 /* ── Status Badge ───────────────────────────────────── */
 export default function CouponStatusBadge({

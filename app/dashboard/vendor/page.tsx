@@ -1,10 +1,10 @@
 "use client";
 
-import { getMyStore, type MyStoreDto } from "@/api/store.api";
+import { getMyStore, type MyStoreDto } from "@/src/services/api/store.api";
 import {
   getMyAnalytics,
   type VendorAnalyticsDto,
-} from "@/api/vendor-analytics.api";
+} from "@/src/services/api/vendor-analytics.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import {
   AlertTriangle,
@@ -162,6 +162,7 @@ export default function VendorOverviewPage() {
                   alt={store.name}
                   fill
                   className="object-cover"
+                  sizes="56px"
                 />
               </div>
             )}

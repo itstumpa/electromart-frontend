@@ -1,6 +1,6 @@
 "use client";
 
-import { signupUser } from "@/api/auth.api";
+import { signupUser } from "@/src/services/api/auth.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
 import {

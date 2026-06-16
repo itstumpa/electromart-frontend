@@ -7,7 +7,7 @@ import {
   clearCart,
   applyCartCoupon,
   removeCartCoupon,
-} from "@/api/cart.api";
+} from "@/src/services/api/cart.api";
 import ConfirmModal from "@/components/dashboard/admin/Confirmmodal";
 import { notifyCartUpdated } from "@/hooks/useCartCount";
 import { mapCartItemsToUi } from "@/lib/cart-mappers";

@@ -7,10 +7,10 @@ import { usePathname } from 'next/navigation';
 import { Bell, Search, ChevronDown, LogOut, User, Settings, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { User as UserType, UserRole } from '@/data/types';
-import { getMyNotifications } from '@/api/notification.api';
+import { getMyNotifications } from '@/src/services/api/notification.api';
 import { mapNotificationDtoToUi } from '@/lib/notification-mappers';
 import { authStorage } from '@/utils/auth-storage';
-import { logoutUser } from '@/api/auth.api';
+import { logoutUser } from '@/src/services/api/auth.api';
 import { toast } from 'sonner';
 
 // ─── Role-specific topbar config ─────────────────────────────

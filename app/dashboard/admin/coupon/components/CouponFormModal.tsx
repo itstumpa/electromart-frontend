@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { DollarSign, Percent, Tag, ToggleLeft, ToggleRight, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { AdminCoupon } from "@/api/admin.api";
+import type { AdminCoupon } from "@/src/services/api/admin.api";
 import {
   type CouponFormData,
   type DiscountType,

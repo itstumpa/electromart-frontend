@@ -7,11 +7,11 @@ import {
   Eye, EyeOff, Lock, Smartphone, ShoppingBag,
   Tag, Star, Trash2,
 } from 'lucide-react';
-import { changePassword, getMe, logoutUser } from '@/api/auth.api';
+import { changePassword, getMe, logoutUser } from '@/src/services/api/auth.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { deleteAccount, getNotificationPrefs, updateNotificationPrefs } from '@/api/user.api';
+import { deleteAccount, getNotificationPrefs, updateNotificationPrefs } from '@/src/services/api/user.api';
 
 type Tab = 'account' | 'notifications' | 'security';
 

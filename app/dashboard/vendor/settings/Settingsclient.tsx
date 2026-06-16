@@ -1,7 +1,7 @@
 "use client";
 
-import { changePassword } from "@/api/auth.api";
-import { getMyStore, updateStoreSettings } from "@/api/store.api";
+import { changePassword } from "@/src/services/api/auth.api";
+import { getMyStore, updateStoreSettings } from "@/src/services/api/store.api";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { AnimatePresence, motion } from "framer-motion";
 import {

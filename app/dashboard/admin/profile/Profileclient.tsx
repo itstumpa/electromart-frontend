@@ -5,8 +5,8 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Save, CheckCircle2, Mail, Phone, User, Shield } from 'lucide-react';
 import { authStorage } from '@/utils/auth-storage';
-import { getMe } from '@/api/auth.api';
-import { updateUserProfile } from '@/api/user.api';
+import { getMe } from '@/src/services/api/auth.api';
+import { updateUserProfile } from '@/src/services/api/user.api';
 import { getApiErrorMessage } from '@/utils/api-error';
 import { toast } from 'sonner';
 
