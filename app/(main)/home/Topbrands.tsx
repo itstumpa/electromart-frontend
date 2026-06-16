@@ -55,6 +55,7 @@ export default function TopBrands() {
                 <Link
                   key={brand.id}
                   href={`/products?brand=${brand.slug}`}
+                  prefetch={false}
                   className="group relative overflow-hidden rounded-2xl bg-white border border-slate-100 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-50 transition-all duration-300 aspect-square flex flex-col justify-end"
                 >
                   {/* Cover image fills the card */}

@@ -26,6 +26,26 @@ export default function DashboardShell({ children, allowedRoles }: Props) {
 
     const load = async () => {
       try {
+        // ── Fast path: use cached auth if available ──
+        const cached = authStorage.getAuthUser();
+        if (cached && allowedRolesRef.current.includes(cached.role as UserRole)) {
+          setUser({
+            id:        cached.id,
+            name:      cached.name,
+            email:     cached.email,
+            role:      cached.role as UserRole,
+            avatar:    cached.avatar,
+            isVerified: true,
+            isBanned:  false,
+            phone:     undefined,
+            createdAt: '',
+            updatedAt: '',
+          });
+          if (!cancelled) setLoading(false);
+          return;
+        }
+
+        // ── Slow path: validate via API ──
         const res    = await getMe();
         const mapped = mapMeToUser(res.data.data);
 
@@ -53,7 +73,21 @@ export default function DashboardShell({ children, allowedRoles }: Props) {
     };
 
     load();
-    return () => { cancelled = true; };
+
+    // ── Listen for auth-updated event (e.g., logout from sidebar/topbar) ──
+    const handleAuthUpdate = () => {
+      const storedUser = authStorage.getAuthUser();
+      if (!storedUser) {
+        setUser(null);
+        router.replace('/');
+      }
+    };
+    window.addEventListener('auth-updated', handleAuthUpdate);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('auth-updated', handleAuthUpdate);
+    };
   }, []);
 
   if (loading || !user) {

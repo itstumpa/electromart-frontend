@@ -92,7 +92,7 @@ export default function DashboardTopbar({ user }: Props) {
     getMyNotifications()
       .then((res) => setNotifs((res.data.data ?? []).map(mapNotificationDtoToUi).slice(0, 5)))
       .catch(() => setNotifs([]));
-  }, [activeUser.id]);
+  }, []); // Fetch once on mount — identity is session-based, not ID-based
 
   const unread = notifs.filter((n) => !n.isRead).length;
   const handleSignOut = async () => {

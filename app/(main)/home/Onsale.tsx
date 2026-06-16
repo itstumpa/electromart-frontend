@@ -399,7 +399,7 @@ export default function FlashSaleSection() {
                   <StockBar sold={featured.sold} stock={featured.stock} />
 
                   {/* CTA */}
-                  <Link href={`/products/${featured.slug}`}
+                  <Link href={`/products/${featured.slug}`} prefetch={false}
 
                     className="group/btn w-full flex items-center justify-center gap-2 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 transition-all duration-300 mt-1"
                   >
@@ -419,7 +419,7 @@ export default function FlashSaleSection() {
               initial="hidden" animate={isInView ? 'visible' : 'hidden'}
               variants={cardVariant} custom={i + 3}
             >
-              <Link href={`/products/${p.slug}`} className="group block">
+              <Link href={`/products/${p.slug}`} prefetch={false} className="group block">
                 <div className="relative bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden hover:border-amber-500/35 transition-all duration-300">
                   <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/2.5 transition-all duration-400 pointer-events-none" />
 

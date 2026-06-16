@@ -31,6 +31,7 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -853,9 +854,12 @@ export default function VendorProductsClient() {
                     <p className="text-[10px] font-semibold text-amber-600 mb-1">
                       {p.category?.name}
                     </p>
-                    <h3 className="text-sm font-bold text-slate-900 line-clamp-2 leading-snug mb-2">
+                    <Link
+                      href={`/products/${p.slug}`}
+                      className="text-sm font-bold text-slate-900 line-clamp-2 leading-snug mb-2 block hover:text-amber-600 transition-colors"
+                    >
                       {p.name}
-                    </h3>
+                    </Link>
                     <div className="flex items-center gap-2 mb-3">
                       <span className="text-base font-black text-slate-900">
                         ${toNumber(p.price).toLocaleString()}

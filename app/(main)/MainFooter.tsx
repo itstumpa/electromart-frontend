@@ -198,6 +198,7 @@ export default function MainFooter() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
+                      prefetch={false}
                       className="text-sm text-slate-400 hover:text-amber-400 transition-colors"
                     >
                       {link.label}

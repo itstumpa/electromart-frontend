@@ -105,9 +105,12 @@ export default function ProductsClient({
             className="w-11 h-11 rounded-xl object-cover bg-slate-100 shrink-0"
           />
           <div className="min-w-0">
-            <p className="font-bold text-slate-900 text-sm truncate max-w-[180px]">
+            <Link
+              href={`/products/${p.slug}`}
+              className="font-bold text-slate-900 text-sm truncate max-w-[180px] block hover:text-amber-600 transition-colors"
+            >
               {p.name}
-            </p>
+            </Link>
             <p className="text-xs text-slate-400">{p.sku}</p>
           </div>
         </div>

@@ -63,7 +63,7 @@ const handleWishlist = async (e: React.MouseEvent) => {
     : null;
 
   return (
-    <Link href={`/products/${product.slug}`} className="group block">
+    <Link href={`/products/${product.slug}`} prefetch={false} className="group block">
       <div className="bg-white rounded-2xl border border-slate-100 hover:border-amber-200 hover:shadow-xl hover:shadow-amber-100/50 transition-all duration-300 overflow-hidden">
 
         {/* Image container */}

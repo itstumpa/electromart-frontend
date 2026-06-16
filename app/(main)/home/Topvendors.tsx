@@ -62,6 +62,7 @@ export default async function TopVendors() {
             <Link
               key={vendor.id}
               href={`/products?vendor=${vendor.id}`}
+              prefetch={false}
               className="group block bg-white rounded-2xl border border-slate-100 hover:border-amber-200 hover:shadow-lg hover:shadow-amber-50 overflow-hidden transition-all duration-300"
             >
               {/* Cover */}

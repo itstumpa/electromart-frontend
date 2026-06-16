@@ -335,6 +335,7 @@ export default function MainNavbar() {
                               <Link
                                 key={item.label}
                                 href={item.href}
+                                prefetch={false}
                                 className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
                                   isActive
                                     ? "bg-amber-50 text-amber-700 font-semibold"
@@ -622,6 +623,7 @@ export default function MainNavbar() {
                                   <Link
                                     key={item.label}
                                     href={item.href}
+                                    prefetch={false}
                                     onClick={() => setMobileOpen(false)}
                                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
                                       isActive

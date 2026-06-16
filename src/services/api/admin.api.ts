@@ -15,7 +15,7 @@ export interface AdminDashboardOverview {
 }
 
 export const getAdminDashboard = () => {
-  return api.get<ApiResponse<AdminDashboardOverview>>("/admin/dashboard");
+  return api.get<ApiResponse<AdminDashboardOverview>>("/admin/overview");
 };
 
 export const getAdminVendors = (params?: {

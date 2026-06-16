@@ -68,6 +68,7 @@ export default function DashboardSidebar({ role, compact = false, onToggleCompac
       // Clear session regardless of API response
     } finally {
       authStorage.clearSession();
+      window.dispatchEvent(new Event('auth-updated'));
       toast.success('You are logged out');
     }
   };
@@ -79,6 +80,7 @@ export default function DashboardSidebar({ role, compact = false, onToggleCompac
     return (
       <Link
         href={item.href}
+        prefetch={false}
         onClick={() => setMobileOpen(false)}
         className={[
           'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 group relative',
@@ -152,6 +154,7 @@ export default function DashboardSidebar({ role, compact = false, onToggleCompac
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               onClick={() => setMobileOpen(false)}
               className={[
                 'flex items-center justify-center px-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 group relative',
