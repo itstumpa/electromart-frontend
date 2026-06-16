@@ -6,25 +6,16 @@ interface ApiError {
 }
 
 class ApiClient {
-  private getAuthToken(): string | null {
-    // Later: Get from cookies or localStorage
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('accessToken');
-    }
-    return null;
-  }
-
   async request<T>(
     endpoint: string,
     options?: RequestInit
   ): Promise<T> {
     const url = `${API_BASE}${endpoint}`;
-    const token = this.getAuthToken();
 
     const response = await fetch(url, {
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
         ...options?.headers,
       },
       ...options,

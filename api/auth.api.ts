@@ -38,9 +38,7 @@ export const resendVerification = (email: string) => {
 };
 
 export const verifyEmail = (token: string) => {
-  return api.get<ApiResponse<null>>("/auth/verify-email", {
-    params: { token },
-  });
+  return api.post<ApiResponse<null>>("/auth/verify-email", { token });
 };
 
 export const forgotPassword = (email: string) => {
